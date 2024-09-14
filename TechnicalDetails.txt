@@ -1,0 +1,373 @@
+Spring Batch
+==========================
+Job and Step
+
+Job - transafer money
+Step - contact other bank and debit money and send notification
+
+Step types
+-------------
+tasklet and chunk oriented
+
+Tasklet - contact other bank and debit money and send notification
+Chunk oriented - item reader, item processor and item writer in chunks of say 3 out of 10000 records
+
+Architecture
+-------------
+Job Launcher - Job - Step
+	Job Repo
+	Database
+	
+JobBuilderFactory
+StepBuilderFactory
+	
+Job -> Job Execution -> Job Execution Context		stored in DB details/status
+step -> Step Execution -> Step Execution Context	stored in DB details/status
+
+https://stackoverflow.com/questions/63035702/spring-batch-mongo-db-to-csv-to-email
+
+
+Angular
+======================
+npm install -g create-react-app
+create-react-app first-app
+npm start
+
+robots.txt which page must not be scrawled
+
+diffing and reconciliation
+
+materialdesign
+npm install bootstrap@latest
+
+tool having inbuilt css
+
+https://drive.google.com/drive/folders/1G0yr6oZjuWFnpd8ePU3xOkQrjursZaEO?usp=drive_link
+
+Angular pathmatch prefix full
+https://stackoverflow.com/questions/42992212/in-angular-what-is-pathmatch-full-and-what-effect-does-it-have
+
+angular best practices
+https://www.tatvasoft.com/blog/angular-optimization-and-best-practices/
+
+*ngFor with trackBy
+
+takeUntil() prevet memory leaks in observables
+
+Async pipe It subscribes to an Observable or Promise and returns to the recent emitted value. *ngFor="let item of bookService.GetBookList() | async";
+{{item.bookName}}
+
+Using take(1) It makes sure that you’re getting the data only once.
+this.bookService.GetBookList()
+      .pipe(take(1))
+      .subscribe(res = {this.bookList = res;})
+	  
+type WeekEnd = "Saturday" | "Sunday";
+const day1: WeekEnd = "Saturday";
+const day2: WeekEnd = "Sunday";
+const day3: WeekEnd = "Monday";
+// The last line will give this error: Type ‘"Monday"’ is not assignable to type 'WeekEnd'.
+
+Use CDK Virtual Scroll CDK(Component Development Kit) Virtual Scroll can be used to display large lists of elements more efficiently.
+
+Use Lint Rules The tslint has various inbuilt options like no-any, no-console, no-magic-numbers, etc, which can be configured in tslint.json file. 
+It enforces the program to be decent and more consistent.
+
+const vs let - if the value is not reassigned “Const” can be used to declare the value. 
+The “let” keyword declares an input variable referenced within the template
+
+Avoid having Subscriptions Inside Subscriptions - you can use preferrable chaining options like combineLatest, withLatestFrom, etc 
+rather than subscribing one observable in the subscribe block of another observable.
+
+Strict string declaration
+private vehicleType: 'decimal' | 'hexadecimal';
+this.vehicleType = 'decimal';
+this.vehicleType = 'hexadecimal';
+this.vehicleType = 'xyz'; // This will give the below error
+Type '"xyz"' is not assignable to type '"decimal" | "hexadecimal"'
+
+State Management
+libraries NGRX, NGXS, Akita, and others
+
+Using Interfaces
+
+es6 spread operator(…) If we wish to copy Object/array into another object or array and modify them, we should use
+const student = {
+    id: 1,
+    name: "John Doe";
+    email: "john@google.com";
+}
+const results = {
+    ...student,
+    percentage : 90
+}
+
+Change Detection Optimisations.
+	To make your expressions faster, transfer challenging calculations into the ngDoCheck lifecycle hook.
+	To inform Angular that no modifications have occurred, use the OnPush change detection technique. This allows you to skip the whole change 
+	detection process.
+	
+Using Smart – Dumb components / Use Smart – Dumb Components Technique
+This technique aids the adoption of the OnPush change detection strategy to inform Angular that the dumb components have not changed. 
+When you are processing the data via API calls, focusing on functionalities, and controlling states, smart components are used. 
+Whereas the dumb components are all about appearances, they are more concerned with how they appear.
+
+Spring Boot
+=========================
+@RestController implies @ResponseBody so no need to put @ResponseBody on top of methods
+say we have a class @Service and one Autowired bean declaration. Here we can remove @Autowired annotation and use constructore injection
+
+https://medium.com/cloud-native-daily/spring-cloud-config-externalizing-the-configurations-from-your-microservice-284e319f7056#:~:text=With%20the%20Config%20server%2C%20you,CodeCommit%2C%20and%20Google%20Cloud%20Store.
+
+spring security
+
+https://spring.io/guides/topicals/spring-security-architecture
+https://spring.io/projects/spring-security#learn
+https://docs.spring.io/spring-security/reference/servlet/architecture.html#servlet-architecture
+
+add spring security starter
+spring adds
+2024-03-12 22:43:27.132  WARN 17360 --- [  restartedMain] .s.s.UserDetailsServiceAutoConfiguration : 
+Using generated security password: e2d62668-fa5c-4d12-b124-e80631460622
+
+
+//This is just a configuration properties class that binds externalized config properties to bean variables. not instantiated by spring context
+@ConfigurationProperties(prefix="config1")
+public class config1{
+	public string configprop1;
+	publif List<User> user = new ArrayList<>();
+	
+	private statuc class User{
+		private String name;
+		private String password;
+	}
+}
+
+@EnableConfigurationProperties({config1.class, config2.class}) - 
+it allows you to quickly register @ConfigurationProperties-annotated beans without explicitly defining them as Spring beans using @Component or @Bean.
+
+@Configuration - 
+indicates this object is a source of bean definitions
+
+@Primary/@Qualifier
+
+creates JSESSIONID
+
+https://www.linkedin.com/pulse/jsessionid-spring-security-shanawaj-mansuri/
+https://docs.spring.io/spring-security/reference/servlet/authentication/session-management.html
+
+GraphQL
+===================================================
+https://medium.com/swlh/understanding-graphql-error-handling-mechanisms-in-spring-boot-604301c9bedb
+GraphQL specs	-	https://spec.graphql.org/October2021/
+
+Alex the analyst
+
+mutation add{
+  addProduct(productCode:"code07",productName:"Belt",category:"Accessories",price:505.34,stock:100) {
+    id,
+    productCode,
+    productName
+  }
+}
+
+addProduct(productCode:String,productName:String,category:String,price:Float,stock:Int):Product
+
+
+Kafka
+===============================================
+1. LinkedIn's Kafka Journey: https://lnkd.in/gPw-ruEz
+2. Pinterest's Kafka at Scale: https://lnkd.in/gb5skEtU
+3. Why Trello Chose Kafka: https://lnkd.in/gJhvX-dg
+4. Salesforce's Kafka-Inspired Architecture: https://lnkd.in/gBH3bwGq
+5. NYT's Publishing with Kafka: https://lnkd.in/gqcwF_zP
+6. Yelp's Billions of Messages: https://lnkd.in/g7_fcfB7
+7. Criteo's Kafka Upgrade: https://lnkd.in/gwGx8wvq
+8. Shopify's Kafka on Kubernetes: https://lnkd.in/gSdHqzb4
+9. Yelp's Kafka on Kubernetes: https://lnkd.in/gkcfT-Vq
+10. Yelp's Zero-Downtime Zookeeper Migration: https://lnkd.in/gHdphiQY
+11. Uber's Kafka Reprocessing: https://lnkd.in/gti2xZuR
+12. Uber's Kafka Auditing: https://lnkd.in/gDF2S-vX
+13. Dropbox's Kafka Throughput Limits:
+https://lnkd.in/gqpwjHzv
+14. Walmart's Cost Orchestration: https://lnkd.in/gdtc5Az9
+15. Hulu's Million Metrics per Second: https://lnkd.in/gRnBFEUv
+16. PayPal's Kafka Scaling: https://lnkd.in/gSxAVa89
+
+provide a step by step guide to install and implement kafka in springboot
+
+setup and implementation steps to setup kafka in springboot application
+
+Producer, Consumer, Broker, Cluster, Topics, Partitions, Offset, Consumer Group, Zookeeper
+
+Open Source: Apache Kafka
+Commercial Distribution: Confluent Kafka
+Managed Kafka Service: Confluent & AWS
+
+Kafka Offeset explorer
+
+windows>zookeeper-server-start.bat ..\..\config\zookeeper.properties	2181
+windows>kafka-server-start.bat ..\..\config\server.properties			9092
+
+kafka-topics.bat --bootstrap-server localhost:9092 --create --topic javatechie-topic --partitions 3 --replication-factor 1 (single clone of broker)
+kafka-topics.bat --bootstrap-server localhost:9092 --create --topic javatechie-topic1 --partitions 3 --replication-factor 1 (single clone of broker)
+kafka-topics.bat --bootstrap-server localhost:9092 --list
+kafka-topics.bat --bootstrap-server localhost:9092 --describe --topic javatechie-topic
+kafka-topics.bat --bootstrap-server localhost:9092 --delete --topic javatechie-topic
+
+windows>kafka-console-producer --broker-list localhost:9092 --topic javatechie-topic
+windows>kafka-console-consumer --bootstrap-server localhost:9092 --topic javatechie-topic --from-beginning
+windows>kafka-console-producer --broker-list localhost:9092 --topic javatechie-topic <"C:\Backup Files\Interview\Self assessment_Core Java_UID_Name.csv"
+
+
+
+Docker
+======================
+kiranrdocker/email/7*
+
+docker login issues
+	error response from daemon: get "https://registry-1.docker.io/v2/": get "https://auth.docker.io/token?account=xxxxxxxx&client_id=docker&offline_token=true&service=registry.docker.io": eof
+	https://stackoverflow.com/questions/57108005/how-to-login-to-docker-hub-on-the-command-line
+Access your Docker Hub account.
+Click on your avatar (on the page top right side).
+Click on My Account.
+Click on Security (on the page left side second from the top).
+And then click on New Access Token button.
+Give a token description, define the token permissions and click on Generate.
+Copy and save your token.
+
+hit command "docker login registry-1.docker.io/v2"
+enter username
+enter token copied above
+
+docker ps (shows active containers)
+docker ps --all (shows all containers)
+docker run hello-world
+docker container create hellp-world:linux
+docker container start containerid
+docker logs <first 3 letters of containerid>
+docker container start --attach <first 3 letters of containerid> (this will start container and attach our terminal to container output)
+docker run hello-world:linux (creates, starts a container and attachs our terminal)
+docker run = docker container create + docker container start + docker container attach
+
+Kubernetes
+======================
+kind - Deployment, Service, ConfigMap, Secret
+type - NodePort, LoadBalancer, ClusterIP (to access resource within cluster)
+
+ClusterIP - which is the default and only exposes the service internally within the cluster.
+
+NodePort and LoadBalancer are two types of services used to expose your applications to external traffic
+
+NodePort - Kubernetes allocates a port from a range (default: 30000-32767) on each node, we can access service by http://<NodeIP>:<NodePort>/app
+http://<NodeIP>:30001/app
+http://<NodeIP>:30002/app
+
+IP can be mapped to DNS name but port has to be specified by client. if service fails and starts new instance the IP changes 
+and now client need to update the new port assigned (range: 30000-32767). for this we can create a proxy server which is again work load
+
+
+Load Balancer - Kubernetes requests a load balancer from the cloud provider. cloud provider assigns a fixed, external IP to the service.
+				this static IP for each service is expensive
+
+kubectl version --client
+kubectl version --client --output=yaml
+minicube start
+eval $(minicube docker-env)
+docker build -t imagename:tag .
+docker images
+kubectl apply -f .yaml
+kubectl get configmap
+kubectl get secrets
+kubectl get deployments
+kubectl get svc/services
+kubectl get pods
+kubectil logs podname
+minicube ip;
+minicube dashboard;
+echo -n 'admin' | base64		kubectl command to encrypt a string in base64
+
+connect to mysql instance in pod
+=================================
+kubectl exec -it mysql-instance-podname /bin/bash		(-it integrated terminal)
+mysql -h mysql -u usename -p pasword					(-h host)
+show databases;
+use database;
+show tables;
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecret
+type: Opaque
+data:
+  username: YWRtaW4=
+  password: MWYyZDFlMmU2N2Rm
+-------------------------------
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecret
+type: Opaque
+stringData:
+  config.yaml: |
+    apiUrl: "https://my.api.com/api/v1"
+    username: <user>
+    password: <password>
+----------------------------------------
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecret
+type: Opaque
+data:
+  username: YWRtaW4=
+stringData:
+  username: administrator
+  
+kubectl get secret mysecret -o yaml
+kubectl delete secret mysecret
+
+
+Ingress (NGINX) NGINX. Others Traefik and HAProxy
+===========================================
+we have NodePort and LoadBalancer but still why we need Ingress
+if nginx ingress is not enabled by defaylt then run "minikube addons enable ingress"
+
+
+HttpsSSLTLS
+=========================
+MMA		-	Man in the Middle Attacker
+Crypto graphic protocol 	-	SSL (Secure Socket Layer) and TLS (Transport layer Security)
+SSL	-	keystore, type of keystore. public key infrastructure (uses public key encryption to secure data)
+TLS - successor to SSL. cased on same specification as SSL
+
+Symmetric Encrytion		-	Single KEY is used to both encrypt and decrypt
+ASymmetric Encrytion	-	we will have 2 KEYS. public key (for encryption) and private key (decryption)
+
+SSL Signature = issuer public key + server public key
+
+use Letsencrypt.org openssl for self signed certificates
+
+
+Redis
+=====================
+Remore Directory Service
+Inmemory data structure
+driven by keystore beased datastructure
+db, cache, message broker
+
+@Cacheable	-	when you want to cache data
+@CacheEvict	-	when you want delete record from db and want to reflect that in cache
+@CachePut	-	when you want to update a record in db and want to reflect that in cache
+
+
+AWS
+====================
+EC2		-	VM
+S3		-	storage to store jar/war etc....
+
+
+GIT
+================================
+git config --global http.sslVerify false

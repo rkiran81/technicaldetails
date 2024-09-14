@@ -1,0 +1,70 @@
+hungrycoders
+==========================
+Tools for debugging performance issue
+===================================================
+CPU and Memory usuage - JProfiler
+real time monitoring - VisualVM
+Actuator and Micrometer for application metrics
+zipkin for tracing the requests
+
+Scaling spring boot apps to handle increased traffic
+================================================
+Horizontal scaling - increase number of instances usually achieved through container orchestartion platform like kubernetes
+Vertical scaling - upgrade server resources like increasing cpu, memory
+Asychronous processing - using @Async
+Caching - @Cacheable @CacheEvict
+
+Handling transactions
+================================
+@Transactional removes all the below boilerplate code
+	datasource.getconnection()
+	connection.setautocommit(false)
+	execute queries
+	connection.commit()
+	exception
+		connection.rollback()
+
+deploy a small boot app cost effectively, ensuring you only pay for server resources when app is update 
+(server less computing, Lambda/Google cloud finction/Azure fuction)
+=============================================================================
+define a class extending SpringBootRequestHandler<String, String>
+
+How to handle multiple beans of same type
+=============================================
+@Qualifier
+@Primary
+
+How to avoid a dependency auto-configured by AutoConfiguration
+==================================================================
+use attribute exclude={DataSourceAutoConfiguration.class} in @SpringBootApplication or @EnableAutoConfiguration
+spring.autoconfigure.exclude=co,.xxx.yyy.DataSourceAutoConfiguration
+search for spring boot auto-configuration-classes
+
+handle requests before controller process it, to, say log requesst, add headers
+===========================================================================
+use interceptors or aop
+interceptors - intercepts requests between dispatcher servlet and controller
+	preHandle - before controller
+	postHandle - after controller before view render
+	afterCompletion  -
+in webmvcconfigurer we must register our interceptor with url pattern for urls to intercept
+filter - intercepts requests before dispatcher servlet. suitable auth, logging, auditing, data compression
+
+all methods annotated with @Transactional must log execution time
+===================================================================
+use AOP. intercepts method calls. for logging, modifying actual business logic
+@Aspect - to define aspect
+@Around - to intercept execution of @Transactional methods
+@Around("@annotation{"transactional"}")
+
+authentication, authorization, jwt, pre authorize
+==================================================
+hungrycoders website - jwt-authentication-in-spring-boot-with-mongodb
+
+Annotations
+=================================================
+@SpringBootApplication - serves as entry point for running the application. used to bootstarp our application. 
+						 Designate a main class that will bootstrap the application context
+	@Configuration -
+	@EnableAutoConfiguration
+	@ComponentScan

@@ -1,0 +1,158 @@
+Hands-on experience with logging and monitoring tools such as Splunk, AppDynamics, Logstash, CloudTrail. New Relic, 
+
+chassis
+polyglot persistence
+jenkins violation
+
+Adobe
+----------------------
+Explain on Collection and it's different implementations.
+Write a sample api.
+Write a code to change the sequence.
+Even numbers in ascending, Odd numbers in descending. Each should come one after the other.
+Sample Input : 347251908
+Sample Output : 091827354
+How can we figure out if particular method is taking so much time to execute( which impacts the response turn around time of a specific api).
+Write a LinkedList DS code that can accommodate adding and removing of nodes.
+What are Comparable and Comparator in Java, and how do they differ?
+Can you explain the concepts of multithreading?
+How do you find the maximum number in a list of integers?
+
+different ways of data binding
+http->subscribe->handle data and error and timeout
+decorators
+array of numbers table display even and odd row in diff colors
+async and promise
+pipe
+routes
+change detection strategies
+rxjs
+
+read millions of rows froma file and process and same with DB
+why functional interface is required
+"hello" find duplicates
+linkedhashmap of number find last but third in first attempt
+order object with id and date. no hash and equals impl. how it will work in hashmap
+compare list objects
+
+synchronized and concurrenthashmap
+
+What are the steps to follow to setup Spring boot microservice?
+How do you make api call?
+Mongo Db questions
+Angular questions
+Questions about nodes
+NPM, Neon (Package Manager)
+Angular - Sprint native support with properties
+In angular, which one will use - either node or Angular.
+Java project 'Dependencies' - how to handle dependencies in different ways
+How to fine tune SQL and Mongo DB queries to improve program performance
+Write a Java program using advanced Java methods.
+to sort numbers
+to find greater date within the given dates
+To find common numbers given in two integer arrays
+Reverse print the string
+Swagger
+Spring batch
+Multithreading and concurrency
+Diff between Oracle and MySQL
+Why using Springboot 3
+Consumer Group
+Kafka – what to use for consuming? Details about partitioning, how to read messages from each partitions
+NoSQL and Relational DB
+JPA Lifecycle
+How to connect to two different databases?
+Write code for Post Method and Controller Method
+Response codes for POST
+Exception handling in API
+Concurrent exception handling
+Version of JAVA used and questions based on that
+Removing duplicates in Java 8 list feature
+Spring profiles
+Enabling endpoint of API
+
+Does Hibernate support Native SQL Queries?
+What happens when the Entity bean lacks the no-args constructor?
+What do you understand about the states of a persistent entity?
+What is Query Cache in Java Hibernate?
+What do you understand about the N+1 SELECT problem in Hibernate?
+How would you solve the N+1 SELECT problem?
+What is the role of the session.lock() method?
+What is Hibernate caching?
+What is the role of the merge() method in Hibernate?
+What is the difference between setMaxResults() and setFetchSize() of Query?
+What is a Single Table Strategy?
+What is the Table Per Class Strategy?
+What is the Table per Concrete Class in Hibernate?
+What is light object mapping in Hibernate?
+What do you understand by version property and derived property in Hibernate?
+What are the benefits of NamedQuery?
+What is the use of projection in Hibernate?
+How would you implement joins in Hibernate?
+
+
+Certainly! Linked lists are fundamental data structures, and interviewers often ask questions related to them. Here are some tricky questions along with their answers:
+
+1. **Print the Middle of a Linked List:**
+   - Find the middle element of a singly linked list.
+   - Solution: Use two pointers—one slow (moves one step at a time) and one fast (moves two steps at a time). When the fast pointer reaches the end, the slow pointer will be at the middle¹.
+
+2. **Reverse a Linked List:**
+   - Reverse the order of elements in a singly linked list.
+   - Solution: Use three pointers (prev, curr, next) to reverse the links between nodes iteratively or recursively¹.
+
+3. **Detect Loop in a Linked List:**
+   - Determine if a linked list contains a cycle (loop).
+   - Solution: Use Floyd's Tortoise and Hare algorithm (slow and fast pointers). If they meet, there's a loop¹.
+
+4. **Remove Duplicates from a Sorted Linked List:**
+   - Remove duplicate elements from a sorted singly linked list.
+   - Solution: Traverse the list and remove duplicates by adjusting pointers¹.
+
+5. **Intersection Point of Two Linked Lists:**
+   - Find the node where two linked lists intersect (if they do).
+   - Solution: Calculate the length difference, then advance the longer list's pointer. Traverse both lists together until they meet¹.
+
+6. **Rotate a Linked List:**
+   - Rotate the elements of a singly linked list by k positions.
+   - Solution: Find the new head and tail, adjust pointers, and handle edge cases¹.
+
+7. **Clone a Linked List with Random Pointers:**
+   - Given a linked list with an additional random pointer, create a deep copy.
+   - Solution: Create new nodes and maintain a mapping between original and cloned nodes¹.
+
+8. **Merge k Sorted Linked Lists:**
+   - Merge k sorted singly linked lists into a single sorted list.
+   - Solution: Use a min-heap or divide-and-conquer approach¹.
+
+9. **Flattening a Linked List:**
+   - Flatten a multilevel doubly linked list (with child pointers) into a single-level doubly linked list.
+   - Solution: Recursively merge child lists while maintaining the order¹.
+
+10. **Rearrange a Linked List in-place:**
+    - Rearrange the linked list such that odd-indexed nodes come before even-indexed nodes.
+    - Solution: Separate odd and even nodes, reverse the even part, and merge them¹.
+
+Source: Conversation with Copilot, 8/5/2024
+(1) Top 50 Problems on Linked List Data Structure asked in SDE Interviews. https://www.geeksforgeeks.org/top-20-linked-list-interview-question/.
+(2) Top 35 Linked List Interview Questions (2023) - javatpoint. https://www.javatpoint.com/linked-list-interview-questions.
+(3) Top linked list interview questions and answers - Educative. https://www.educative.io/blog/linked-list-interview-questions.
+(4) Java LinkedList Exercises, Practice & Solutions - w3resource. https://www.w3resource.com/java-exercises/collection/linked-list.php.
+(5) 20+ Linked List Interview Questions for Java Programmers. https://dzone.com/articles/20-linked-list-interview-questions-for-java-progra.
+(6) 32 Linked List Interview Questions (ANSWERED) To Nail Your Coding .... https://www.fullstack.cafe/blog/linked-list-interview-questions.
+
+
+Leetcode
+==========================================
+https://seanprashad.com/leetcode-patterns/
+@https://projectlearn.io/
+terraform guru, abhishek veramalla dev ops
+https://www.programcreek.com/2012/11/top-10-algorithms-for-coding-interview/
+https://www.programcreek.com/2013/08/leetcode-problem-classification/
+1.	Given a string find out duplicate character and its count .
+	Ex: i/p- ”manojpandey”, o/p- a-2,n-2.	
+Practice App
+---------------
+https://zerotomastery.io/blog/top-10-angular-projects-for-beginners-and-beyond/
+https://medium.com/@mktechm/5-years-experienced-java-coding-interview-questions-4470b1a17330
+	

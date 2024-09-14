@@ -1,0 +1,4 @@
+AWS
+====================
+EC2		-	VM
+S3		-	storage to store jar/war etc....

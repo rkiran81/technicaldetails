@@ -1,0 +1,50 @@
+Movies
+=========================
+osee.in
+lookmovies.com
+tubitv.com
+
+Microservices: (Must cover)
+https://www.udemy.com/course/microservices-with-spring-boot-and-spring-cloud/learn/lecture/8005594#overview
+
+Junit testing for Spring Boot:(optional)
+https://www.udemy.com/course/testing-spring-boot-beginner-to-guru/learn/lecture/11939160#overview
+
+Junit and Mockito: (Must cover)
+https://www.udemy.com/course/junitandmockitocrashcourse/learn/lecture/3413064#overview
+
+Docker : (Must cover)
+https://www.udemy.com/course/docker-course-with-java-and-spring-boot-for-beginners/learn/lecture/16381916#overview
+
+Kubernetes+istio (service Mesh ) - microservice in GCP explained cleary (Must cover)
+https://www.udemy.com/course/kubernetes-crash-course-for-java-developers/learn/lecture/16905570#overview (Till Section 11)
+
+Microservice design patterns:(Must cover)
+https://www.udemy.com/course/microservices-software-architecture-patterns-and-techniques/learn/practice/1038070#overview
+
+Java Design Patterns:(Must cover)
+https://www.udemy.com/course/java-design-patterns/learn/lecture/9687662#overview
+
+Username: ambattavinash.afc@gmail.com
+Password: Upskilling@2021
+
+
+youtube
+-------------------------
+CrashCourse
+Y combinator
+talksatgoogle
+skillsshare
+practical engineering
+veritasiumkurzgesagt-in a nutshell
+teded
+thomas frank
+MIT OpenCourseWare
+
+https://www.marcobehler.com/  7
+
+https://medium.com/@AlexanderObregon/working-with-springs-conditional-annotation-for-conditional-bean-registration-f65bc6a486ea#:~:text=Advanced%20Custom%20Conditions%3A%20Examining%20AnnotatedTypeMetadata,to%20which%20%40Conditional%20is%20applied.
+
+https://algomap.io/
+
+piyush garg github
