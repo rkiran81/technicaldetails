@@ -1,0 +1,47 @@
+Propagation.REQUIRED - participate in existing transaction if not available then create one
+	Order insert service pass, Inventory service fails then roll back all\
+	
+Propagation.REQUIRES_NEW - suspend existing transaction, create new transaction and after completing resume suspended transaction
+	Order insert service pass, Inventory service fails then suspend this transaction. for audit create new transaction and after completing resume 
+	suspended transaction which gets rolled back
+	
+Propagation.MANDATORY - Requires existing transaction if not available it will throw exception
+
+PROPAGATION_SUPPORTS: The current method will join an existing transaction if one exists. If there isn't one, it will execute non-transactionally.
+
+PROPAGATION_NOT_SUPPORTED: The method will always execute non-transactionally, and any existing transaction will be suspended.
+
+PROPAGATION_NEVER: The method will execute non-transactionally, and if a transaction exists, an exception will be thrown.
+
+PROPAGATION_NESTED: If a transaction exists, a nested transaction will be started. If there isn't one, it behaves like PROPAGATION_REQUIRED
+
+
+																Isolation
+isolation controls the visibility of changes made by one transaction to another transaction
+
+DEFAULT: This uses the default isolation level of the underlying database. It varies depending on the database configuration.
+
+READ_UNCOMMITTED: This is the lowest isolation level. It allows a transaction to read data that has been modified 
+					but not yet committed by other transactions. This can lead to "dirty reads."
+
+READ_COMMITTED: This level ensures that a transaction can only read data that has been committed by other transactions. 
+				It prevents dirty reads but allows non-repeatable reads.
+
+REPEATABLE_READ: This level ensures that if a transaction reads a row, it will see the same data if it reads that row again, 
+				even if other transactions modify the data in the meantime. It prevents dirty reads and non-repeatable reads but 
+				can still allow phantom reads.
+
+SERIALIZABLE: This is the highest isolation level. It ensures complete isolation from other transactions, 
+				making it appear as if transactions are executed sequentially. It prevents dirty reads, non-repeatable reads, 
+				and phantom reads, but can significantly impact performance due to locking.
+
+A phantom read occurs when a transaction reads a set of rows that match a certain condition, and then, during the same transaction, 
+another transaction inserts or deletes rows that also match that condition. 
+When the first transaction reads the rows again, it sees a different set of rows, including the newly inserted or excluding the deleted rows. 
+This can lead to inconsistent results within the same transaction123.
+
+For example, imagine a transaction that reads all employees with a salary above a certain amount. 
+If another transaction adds a new employee with a salary above that amount while the first transaction is still running, 
+the first transaction will see this new employee in subsequent reads, causing a phantom read.
+
+Phantom reads are prevented by the highest isolation level, SERIALIZABLE, which ensures complete isolation from other transactions.

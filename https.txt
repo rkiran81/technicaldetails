@@ -1,0 +1,26 @@
+Symmetric key
+	client generates a private key, encrypts data, sends both data and key to the server to decrypt
+	here an hacker/MMA (Man in the Middle Attack) can steal the client private key as well as data
+
+Asymmetric key
+	server generates two keys,
+	Public key	- is used for encryption
+	Private key	- is used for decryption
+	
+	server shares its Asymmetric Public key to the client.
+	client encrypts its data using its own symmetric private key and sends that encrypted data to server
+	also client encrypts its symmetric private key using above Asymmetric public key and sends it to server
+	now server decrypts this encrypted symmetric private key using server's Asymmetric private key and uses this symmetric private key to decrypt data
+	
+	
+In above scenario, a hacker can intercept the Asymmetric Public key from server and share his own public key to client acting as proxy.
+now the client is unware of this. This is where SSL certificates come into picture
+
+
+SSL Issuer/Let's Encrypt
+1. server shares its public key and sever url to issuer and asks for certificates
+2. issuer also has a private and public key.
+3. issuer creates a certificate using the server url and creates certificate and using a signature equal to server pub key + issuer pub key
+4. now during client server interaction server shares its asymmetric public and certificate to client.
+5. client contacts issuer and receives its public key and client verfies that public key is same as in certificate.
+6. if same then its assured that server aymmetric public key is not changed by any hacker.

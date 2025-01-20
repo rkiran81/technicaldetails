@@ -1,0 +1,490 @@
+SAGA
+	Choreography	-	Order/Payment/Inventory services each have their own data base. order has to make http request to other two services
+						They can also be down. to avoid multiple http requests we go with Saga with Chereography where we will not have any http calls
+						Use messaging system. order will produce order created deatils to topic. payemnt will consume from that topic to produce response 
+						to another topic. order will consume from this another topic and process further
+	Orchestartion
+
+CQRS
+	Command and Query Responsibility Segregation, a pattern that separates read and update operations for a data store. 
+	Implementing CQRS in your application can maximize its performance, scalability, and security.
+	
+	Says during festival or before festival sale users will read orders and keep in cart. so read requests will be more compared to placing order
+	so its better to keep read/Query service separate from Write/Update/Delete/Commands separetely
+	
+Transactional Outbox
+	how to avoid Dual Write & Data inconsistency problem in microservice architecture using Transactional Outbox Pattern
+	Gurantees reliable message delivery
+	
+	Order services creates order in db and wries to kafka for other services to consume. but kafka may fail or write to db may fail and so data
+	can be missed in either one which is dual write.
+	
+	order services writes to its db and also write the order created to another outbox db with processed flag as false. 
+	now a scheduler will continously poll outbox db for orders with processed flag as false and sends to kafka and updates processed flag to true
+	
+Sidecar
+	use the sidecar design pattern in microservice architecture to separate cross-cutting concerns like logging, monitoring, configuration, 
+	and authentication from the primary business logic.
+
+Event Sourcing
+
+												Event driven pattern
+												========================
+												========================
+1. competing consumer pattern
+	one or more producers add messages to queue
+	multiple consumers are set up o process these tasks
+	
+	how to ensure only consumer processes one tasks
+	
+	KAFKA
+	Partitions: Kafka topics are divided into multiple partitions. Each partition is an ordered, immutable sequence of records that is continually appended to—a structured commit log1.
+
+	Consumer Groups: Consumers in Kafka are part of a consumer group. Each consumer in the group reads data from one or more partitions exclusively. This ensures that each record is processed by only one consumer within the group1.
+
+	Load Balancing: Kafka's partitioning mechanism allows for load balancing among consumers. When a consumer joins or leaves the group, Kafka reassigns the partitions among the remaining consumers to balance the load1.
+
+	Scalability: By adding more partitions to a topic, you can increase the number of consumers that can process messages concurrently. This makes Kafka highly scalable and capable of handling high-throughput use case
+		
+	RABBITMQ
+	Uses prefetch count
+	
+	AZURE SQS
+	uses PEEK-LOCK mechanism
+	
+	AZURE SQS
+	sets a visbility count
+
+2. Retry message pattern
+	
+	Main Queue			-	this where new tasks are published
+	Dead Letter Queue	-	holds tasks that failed multiple retries
+	Retry Queue			-	this is where tasks are retried with schudeled delays. Even Main Queue can be used for this
+	
+	This pattern can be handled using retry count on each task
+
+3. Async Request Response Pattern
+	here correlation ID will be used.
+	this will remain same across services
+	
+	a. an order service instance generates correlationid and publishes to queue
+	b. a payment service instance consumes it, processes and publishes to queue with same correlationid
+	c. now another order service instance consumes it and based on correlationid picks the additional details from db if required and process further
+
+
+												Strategies to reduce latency
+												========================
+												========================
+1. caching
+	fundamental technique to reduce costly database operations
+2. content delivery network
+	similar to caching where cdn cahches static content (images, videos, css) that can be served to other consumers instead of hitting origin server
+3. load balancing
+4. db indexing
+5. async processing
+6. data compression
+7. precaching
+	is a technique used to proactively cache data in anticipation of future requests
+8. use keep alive connections
+	Server-Side: The server sets the Connection header to keep-alive and specifies the Keep-Alive header with parameters like timeout and max. 
+				This tells the client that the server is willing to keep the connection open for a specified time and number of requests.
+	Client-Side: The client sets the Connection header to keep-alive and uses an http.Agent with keepAlive set to true. 
+				This allows the client to reuse the same TCP connection for multiple requests, reducing the overhead of establishing new connections.
+	
+														Eureka
+												========================
+												========================
+Eureka server
+========================
+include starter-eureka
+
+annotate application class with @EnableEurekaServer
+
+application.yml
+eureka.client.register-with-eureka=false
+eureka.client.fetch-registry=false
+server.port=8761
+spring.app.name=EUREKA-SERVER-NAME
+
+run localhost:8071 - loads eureka dashboard
+
+Register a service with Eureka server
+======================================
+include starter-eureka-discovery
+
+annotate application class with @EnableEurekaClient
+
+application.yml
+eureka.client.register-with-eureka=true
+eureka.client.fetch-registry=true
+eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka/
+eureka.instance.hostname=localhost
+server.port=9090
+spring.app.name=SOME-SERVICE-NAME
+
+In services where the above service is to be consumed
+=================================================================
+include starter-eureka-discovery
+annotate application class with @EnableEurekaClient
+Create RestTemplate @Bean and annotate it with @LoadBalanced
+
+Now in controller when assessing this service using RestTemplate and the url must be
+http://SOME-SERVICE-NAME/path?params
+
+then restTemplate.getForObject(url, String.class);//url and responseType
+
+if this needs to be registered the add above application.yml here as well
+
+
+														Spring Cloud Config Server using GitHub repository
+														========================
+														========================
+Spring Cloud Config Server - distributed config server system. centralized place to define our configs. microservices are loosely coupled
+
+Create spring cloud config server
+add dependemcies
+web, dev, starter-config-server, accuator
+Actuator provides operational information environment properties
+
+annotate application class with @EnableConfigServer
+
+go to GitHub, create a reposirtory and name it example-config-server
+Create a New File and name it application.properties and define the urls and other properties
+
+in spring boot app application.properties provide github path
+
+spring.cloud.config.server.git.uri=https://github.com/rkiran81/example-config-server
+management.endpoints.web.exposure.include=*
+server.port=someport
+
+start server and hit
+http://locahost:port/actuator/default
+
+
+create a service with web dependency and give this service url in app properties created in github
+
+create a client service with dependencies web starter-config-client
+createa rest template and call template.getForObject(url,List.class);
+add @RefreshScope in controller so any update to github app properties gets reflected
+
+in app properties add
+spring.cloud.config.uri=http://localhost:port //url to cloud config server
+
+@RefreshScope - allows beans to be refreshed at runtime without restarting the application. 
+				This is particularly useful for updating configuration properties dynamically.
+				
+				
+														Load Balancer using Spring Cloud Ribbon
+														========================
+														========================
+Default/Round Ribbon/sequential disribution - sequential requests routing to different instance
+List connections - define first 100 requests to instance1, next 100 to instance2 and so one
+IP hash - based on IP address
+
+create an application with dependency web and starter-ribbon
+
+annotate application class with @RibbonClient(name='somename', configuration=RibbonConfiguration.clss) // this is our custom class
+
+Create @Bean RestTemplate and annotate it with @LoadBalanced
+
+Create RibbonConfiguration class and configure iping and irule
+
+public class RibbonConfiguration{
+	@autowired
+	iclientconfig client;
+	@bean
+	puclic iping ping(iclientconfig client){
+		return new PingUrl();
+	}
+	@bean
+	puclic irule rule(iclientconfig client){
+		return new availabilityfilteringrule();
+	}
+}
+
+application.yml
+somename:
+ ribbon:
+  eureka:
+   enabled:false
+  listOfServers:localhost:8081,localhost:8082,localhost:8083
+  ServerListRefreshInterval:2000
+  
+controller
+String url = http://somename/path/path?xyh=asd
+use this url in restTemplate
+
+IPing:
+
+Purpose: IPing is used to determine the availability of servers in real-time.
+Function: It periodically pings the servers to check if they are up and running. If a server does not respond to the ping, it is marked as unavailable and will not receive traffic until it becomes responsive again1.
+Example: A common implementation is PingUrl, which sends an HTTP request to a specified URL to check the server's health1.
+IRule:
+
+Purpose: IRule defines the load balancing strategy or rule that Ribbon uses to distribute requests among available servers.
+Function: It determines which server should handle a given request based on the chosen load balancing algorithm1.
+Examples:
+RoundRobinRule: Distributes requests in a round-robin fashion.
+WeightedResponseTimeRule: Assigns more requests to servers with faster response times.
+AvailabilityFilteringRule: Filters out servers that are deemed "circuit tripped" or with high concurrent connection counts
+
+
+											Load balancing using netflix ribbon + Eureka
+											========================
+											========================
+how to perform load balancing using spring cloud eureka
+in the above eureka example add ribbon dependency to the client and automatically eureka will take care of load balancing
+
+
+											spring cloud feign - declarative rest client
+											========================
+											========================
+add feign client starter dependency
+add @EnableFeignClient to springboot application class
+
+create an interface
+@FeignClient(url="https://jsonplaceholder.typicode.com", name="USER_CLIENT")
+public interface UserClient{
+	
+	@GetMapping("/users")
+	public List<Users> getUsers();
+}
+
+create a controller
+autowire UserClient
+
+@getmapping("/findalluser")
+public List<Users> getAllUsers(){
+	return UserClient.getUsers();
+}
+
+											Distributed Tracing in Microservice with Spring Cloud Sleuth & Zipkin
+											========================
+											========================
+used in distributed tracing by generating unique traceid and spanid
+
+create an application and add starter-sleuth, starter-sleuth-zipkin dependencies
+create a @configurationclass
+
+puclic class config{
+
+	@bean
+	public alwayssampler sampler(){
+		return new alwayssampler();
+	}
+	@bean
+	public resttemplate template(){
+		return new resttemplate();
+	}
+}
+
+using resttemplate call the same service again and see how traceid remains same but spanid changes
+
+now see tracing in zipkin server
+create an application say zipkinserver and add web dependency, zipkin-autoconfigure-ui, zipkin-server and spring cloud dependency in 
+dependency management
+annotate application class with @enablezipkinserver
+default port is 9411
+
+												(API gateway)How to configure SpringCloud Zuul – Routing and Filtering using SpringBoot
+												========================
+												========================
+zuul is jvm based router and server side load balancer
+jvm based router - based on url pattern zuul will deceide which micriservice to route to
+
+APIgateway app - create a springboot app with web, zuul dependencies
+annotate application class with @enablezuulproxy
+
+in app properties
+server.port=8080
+zuul.routes.app1-name.path=/app1-name/**     					// this is because we have multiple endpoints here
+zuul.routes.app1-name.url=http://localhost:8081
+zuul.routes.app2-name.url=http://localhost:8082/endpoint		// this is because we have only one endpoint here
+
+now create 4 filter class extending ZuulFilter for prefilter, routefiler, postfilter, errorfilter and override run() and other methods and log data
+
+now run all services and zuul gateway server
+hit http://localhost:8080/app2-name/ 		// this will route to http://localhost:8082/endpoint
+
+
+											Microservice - Centralize configuration using spring cloud consul (HashiCorp)
+											========================
+											========================
+download consul and where its downloaded go to that folder and run below two commands
+
+Check IP : ipconfig
+bootstrap consul : consul agent -server -bootstrap-expect=1 -data-dir=consul-data -ui -bind=YOUR_IP_ADDRESS
+
+create a springboot app with dependencies web, consul configuration, configuration processor
+add app yml
+spring.cloud.consul.config.fail-fast=true
+spring.cloud.consul.host=localhost
+spring.cloud.consul.port=8500
+application.name=consul-example
+
+
+Spring Cloud Config and HashiCorp Vault are both powerful tools for managing configuration in a distributed system, but they serve slightly 
+different purposes and have different strengths. Here's a comparison to help you understand the differences:
+
+Spring Cloud Config with Git
+Version Control: Spring Cloud Config typically uses Git as a backend, which means all configuration changes are versioned. This allows you to track changes over time and roll back if necessary1.
+Centralized Configuration: It provides a centralized configuration server that multiple applications can query to get their configuration properties. This promotes consistency across environments1.
+Ease of Use: Using Git as a backend is straightforward and integrates well with existing development workflows. Developers can manage configurations using familiar Git commands1.
+Dynamic Refresh: Spring Cloud Config supports dynamic refresh of configuration properties without restarting the application, especially when combined with Spring Cloud Bus1.
+
+HashiCorp Vault
+Security: Vault is designed with security in mind. It provides robust mechanisms for managing secrets, including encryption, access control, and audit logging2.
+Dynamic Secrets: Vault can generate dynamic secrets, such as database credentials, which are created on-demand and have a limited lifespan. This reduces the risk of credential leakage2.
+Secret Management: Vault is excellent for managing sensitive information like API keys, passwords, and certificates. It ensures that secrets are stored securely and accessed only by authorized entities2.
+Integration: Vault can be integrated with various authentication methods (e.g., LDAP, AWS IAM) and can be used alongside Spring Cloud Config to enhance security for sensitive configuration properties3.
+
+Use Cases
+Spring Cloud Config with Git: Ideal for managing application configuration properties that need to be versioned and shared across multiple environments. It's great for properties that don't require high security.
+
+HashiCorp Vault: Best suited for managing sensitive information and secrets that require strong security controls. It's also useful for generating dynamic secrets and managing access to them.
+Combined Approach
+In many cases, you can use both tools together. For example, you can use Spring Cloud Config with Git for general configuration properties and integrate HashiCorp Vault for managing sensitive information. This way, you get the best of both worlds: versioned configuration management and secure secret handling3.
+
+
+													Single Sign-On with Spring Boot & Okta | OAuth 2.0
+													========================
+													========================
+
+Login to okta, create account, register your app and get the client id and client secret. use that in app properties. 
+@Emableoauth2sso will automatically pick it up
+
+create springboot app with dependencies web, security, okta, cloud oauth2
+annotate app class with @Emableoauth2sso
+
+https://github.com/Java-Techie-jt/spring-boot-okta-sso
+
+spring.main.allow-bean-definition-overriding=true
+Customization: 				You might need to override a bean to customize its behavior or configuration.
+Third-Party Integration: 	When integrating with third-party libraries that define beans with the same names as your application's beans.
+
+													Spring Cloud Function | @functional
+													========================
+													========================
+https://github.com/Java-Techie-jt/spring-cloud-function-example
+serverless functional programming
+
+create springboot app and add dependencies, spring-cloud-starter-funtion-web, spring-cloud-function-compiler and spring cloud in dependency management
+
+
+													SpringBoot : Spring Cloud Task
+													========================
+													========================
+https://github.com/Java-Techie-jt/spring-cloud-task-example
+spring cloud task makes it easy to create short lived microservices.it provides capabalities that let short lived jvm processes to be
+executed on demand in production env
+
+create a springboot app with dependency spring cloud task
+annotate @EnableTask
+
+implement CommandLineRunner and TaskExecutionListener
+
+please list some practical usage of Spring Cloud Task in production - 
+
+Data Processing Pipelines: Spring Cloud Task can be used to create short-lived microservices that process data in batches. For example, you can use it to read data from a database, process it, and then write the results back to another database or a data warehouse.
+
+ETL (Extract, Transform, Load) Jobs: It is ideal for ETL tasks where data needs to be extracted from one source, transformed, and then loaded into another system. This is common in data migration projects or data integration tasks.
+
+Scheduled Tasks: You can schedule tasks to run at specific intervals using Spring Cloud Task. This is useful for periodic maintenance tasks, such as cleaning up old data, generating reports, or performing system health checks.
+
+Microservice Orchestration: Spring Cloud Task can be used to orchestrate the execution of multiple microservices. For instance, you can have a task that triggers other microservices to perform specific actions in a defined sequence.
+
+Batch Job Execution: It can be used to execute batch jobs that need to run for a short duration. This is useful in scenarios where you need to process large volumes of data in chunks.
+
+Event-Driven Processing: Spring Cloud Task can be integrated with messaging systems like Kafka or RabbitMQ to process events. For example, you can have a task that listens for messages on a queue and processes them as they arrive.
+
+Resource Management: It allows for dynamic allocation of resources, ensuring that tasks only consume resources when they are running. This is beneficial in cloud environments where resource optimization is crucial.
+
+Integration with Spring Cloud Data Flow: Spring Cloud Task can be used in conjunction with Spring Cloud Data Flow to create complex data processing workflows. This allows for better management and monitoring of tasks.
+
+
+										Microservice - Spring Cloud Consul | Service Discovery
+										========================
+										========================
+issues in eureka set up,
+	we must have a eureka server
+	we must manually register clients by configuring some properties in yaml file of every client
+	
+HashiCorp 
+	1. inbuilt consul server
+	2. automatically register and unregister services
+
+download consul and start it using command
+Check IP : ipconfig
+bootstrap consul : consul agent -server -bootstrap-expect=1 -data-dir=consul-data -ui -bind=YOUR_IP_ADDRESS
+
+open consul using localhost:8500 //default port
+
+create two services with dependencies web and consul disovery
+
+in consumer server annotate app class with org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+
+autowire org.springframework.cloud.client.discovery.DiscoveryClient client
+
+in endpoint access other service as below
+string url = client.genIntsances("spring.application.name").stream().map(s->s.geturi()).findFirst().map(s->s.resolve("/endpoint")).get();
+restTemplate.getForObject(url, type.class)
+
+
+										Microservice -Circuit breaker | Hystrix
+										========================
+										========================
+Hystrix - fault tolerance library provided by netflix. stop delagtion of filure from one service to another. 
+			hystrix internally follows circuit breaker design pattern.
+circuit breaker - can be used to check availability of external services like db conn, web service call. 
+					detects the failure and prevents the app from trying to perform action until it is safe to re try
+					
+create a service called email service with web dependency
+create a service called paytm service with web dependency
+create a service called booking service with web dependency, hystrix, hystrix dashboard
+
+email service - @requestmapping(/emailservice) create endpoint /send
+paytm service - @requestmapping(/paymentservice) create endpoint /pay
+
+bookMyShow service - annotate app class with @EnableHystrix
+
+on endpoint which calls more than one service annotate it with
+@HystrixCommand(groupKey="xxx", commandKey="xxx", fallBackMethod="methodName")
+
+public string methodName(){
+	return "";   //return must be same as endpoint return
+}
+
+										Microservice -Circuit breaker | Hystrix | Pivotal Cloud Foundry
+										========================
+										========================
+create a service with dependency web, circuit breaker client (PCF), security (PCF will by default enable security so we can disable in our app)
+annotate app class with @EnableCircuitBreaker
+on endpoint which calls a service annotate it with
+@HystrixCommand(fallBackMethod="methodName")
+public string methodName(){
+	return "";   //return must be same as endpoint return
+}
+
+create springsecurityconfig class extending websecurityconfigureradapter. annotate with @configuration
+override configure and add below lines to disable security which is by default enabled by PCF
+http.csrf().disable();
+http.authorizerequests().anyrequests().permitall()
+
+login to PCF and searc in marketplace for circuitbeaker (circuit breaker dashboard for spring cloud applications)
+create jar of our app
+add manifest.yml
+applications:
+- name: microservice1
+path: target/circuit-breaker-pcf.jar
+domain: cfapps.io
+memory: 1G
+instances: 1
+services:
+- circuit-breaker
+
+cf push manifest.yml
+
+in PCF bind our service and circitbreaker
+
+
+										Microservice - Cloud Config Server in Pivotal Cloud Foundry

@@ -1,0 +1,35 @@
+constructor injection - makes sure the dependencies are initialized before constructing the object so in runtime we will not face issue
+use constuctor or lombok fetaure like @AllArgConstructors or @RequiredArgConstructors
+
+Generic Response Object
+====================================================
+@AllArg
+@NoArg
+@Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class APIResponse<T>{
+	private String status;
+	private List<ErrorDTO> errors;
+	private T results
+}
+
+Optional
+==================
+if any method retuns just a plain object then wrap it with Optional.offNullable(obj) to avoid NPE
+
+Caching
+==============
+default spring(@EnableCaching), redis, m2
+
+Pagination
+======================
+spring data jpa provides PageRequest.of(page,size)
+
+SonarLint/SonarQube
+======================
+for code smells, circular dependency
+generally sonarlint will be integrated with jenkins or other build tools and it will give report
+
+Jasypt(Encryption in springboot apps)
+======================================
+https://javatechie4u.medium.com/spring-boot-password-encryption-using-jasypt-9ee731701e70

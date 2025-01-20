@@ -50,3 +50,5 @@ Source: Conversation with Copilot, 7/25/2024
 (2) Angular 8 + Spring Boot Microservices and Spring Cloud | Udemy. https://www.udemy.com/course/angular-8-spring-boot-microservices-and-spring-cloud/.
 (3) Exploring the Power of Spring Boot Microservices: A Practical Guide .... https://medium.com/@clistastech/exploring-the-power-of-spring-boot-microservices-a-practical-guide-4ae5d4b09755.
 (4) Angular Spring Boot Microservices Example - Java Guides. https://www.javaguides.net/2024/05/angular-spring-boot-microservices.html.
+
+https://github.com/Buzzardo/spring-docs

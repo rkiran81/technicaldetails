@@ -1,0 +1,92 @@
+3M
+==================================================================================
+How can we retrieve child records up to four levels deep using SQL queries?
+
+To retrieve child records up to four levels deep in SQL, you can use a recursive Common Table Expression (CTE). Here's an example using a table named Employees with columns EmployeeID, EmployeeName, and ManagerID:
+
+WITH RecursiveCTE AS (
+    -- Anchor member: select the top-level manager
+    SELECT EmployeeID, EmployeeName, ManagerID, 1 AS Level
+    FROM Employees
+    WHERE ManagerID IS NULL
+
+    UNION ALL
+
+    -- Recursive member: select employees reporting to the previous level
+    SELECT e.EmployeeID, e.EmployeeName, e.ManagerID, r.Level + 1
+    FROM Employees e
+    INNER JOIN RecursiveCTE r ON e.ManagerID = r.EmployeeID
+    WHERE r.Level < 4
+)
+SELECT EmployeeID, EmployeeName, ManagerID, Level
+FROM RecursiveCTE
+ORDER BY Level, ManagerID, EmployeeID;
+Explanation:
+Anchor member: This part of the CTE selects the top-level manager(s) (where ManagerID is NULL).
+Recursive member: This part joins the Employees table with the CTE itself to find employees reporting to the current level. It continues to do this until the level reaches 4.
+Final SELECT: This retrieves all records from the CTE, showing the hierarchy up to four levels deep.
+This approach ensures you get all child records up to the specified depth in a hierarchical structure
+
+Certainly! Here are some SQL features similar to Recursive Common Table Expressions (CTEs) that can help you manage and query hierarchical or complex data structures:
+
+1. Non-Recursive Common Table Expressions (CTEs)
+Definition: A temporary result set defined within the execution scope of a single SELECT, INSERT, UPDATE, or DELETE statement.
+Usage: Simplifies complex queries by breaking them into more manageable parts.
+Example:
+WITH Sales_CTE AS (
+    SELECT salesperson_id, SUM(sales_amount) AS total_sales
+    FROM sales
+    GROUP BY salesperson_id
+)
+SELECT salesperson_id, total_sales
+FROM Sales_CTE;
+2. Hierarchical Queries (Oracle)
+Definition: Special SQL syntax in Oracle to query hierarchical data.
+Usage: Uses CONNECT BY and START WITH clauses to traverse hierarchical data.
+Example:
+SELECT employee_id, manager_id, LEVEL
+FROM employees
+START WITH manager_id IS NULL
+CONNECT BY PRIOR employee_id = manager_id;
+3. Window Functions
+Definition: Functions that perform calculations across a set of table rows related to the current row.
+Usage: Useful for running totals, moving averages, and ranking.
+Example:
+SELECT employee_id, salary,
+       RANK() OVER (ORDER BY salary DESC) AS salary_rank
+FROM employees;
+4. Self-Joins
+Definition: A join where a table is joined with itself.
+Usage: Useful for hierarchical data where each row references another row in the same table.
+Example:
+SELECT e1.employee_id, e1.employee_name, e2.employee_name AS manager_name
+FROM employees e1
+LEFT JOIN employees e2 ON e1.manager_id = e2.employee_id;
+5. Nested Subqueries
+Definition: A subquery within another SQL query.
+Usage: Used to perform operations that require multiple steps.
+Example:
+SELECT employee_id, employee_name
+FROM employees
+WHERE department_id = (
+    SELECT department_id
+    FROM departments
+    WHERE department_name = 'Sales'
+);
+6. Materialized Views
+Definition: A database object that contains the results of a query.
+Usage: Improves performance by storing the result set of a query.
+Example:
+CREATE MATERIALIZED VIEW SalesSummary AS
+SELECT salesperson_id, SUM(sales_amount) AS total_sales
+FROM sales
+GROUP BY salesperson_id;
+7. Temporary Tables
+Definition: Tables that exist temporarily during a session.
+Usage: Stores intermediate results for complex queries.
+Example:
+CREATE TEMPORARY TABLE TempSales AS
+SELECT salesperson_id, SUM(sales_amount) AS total_sales
+FROM sales
+GROUP BY salesperson_id;
+These features can help you manage and query complex data structures effectively, similar to how recursive CTEs are used123.

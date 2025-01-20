@@ -1,0 +1,96 @@
+what is KAFKA
+open source distributed EVENT STREAMING platform
+	EVENT STREAMING
+		create real time stream
+			eg - sending millions/billions of paytm events to kafka every second/milli second is called creating/generating real time stream
+		process real time stream
+
+
+PUB/SUB model
+Publisher	->		message broker	->	subscriber
+
+Kafka architecture and components
+Producer			-	produce events
+consumer			-	consume events
+broker/server		-	events are published to broker/kafka server by producer
+cluster				-	group of computers/servers that working for a common purpose. there can be 1/more kafka servers/brokers in a kafka cluster
+
+
+topic				-	is inside a broker. paytm sends different type of events like payment(upi,card,insurance), train booking, mobile recharge.
+						topic helps to categorize different types of events. payment topic, booking topic, insurance topic.
+						now consumers can subscribe to related topic. topic is like a db table where we have respective tables for specific data.
+partitions			-	break kafka topics into multiple parts and distribute those parts in different machines. each part is called topic partition
+						during kafka topic creation we can define the number of partitions. any event sent to kafka it will go and sit in a partition
+						on which we don't have control.
+offset				-	as soon as an event arrives in a partition a number is assigned which is called offset. 
+						to keep track of which message is already been consumed by consumer.
+						if a partition has 7 msgs (0-6). consumer consumed msg upto offset 3 and then goes down. 
+						now after it is up it must start consuming from offset 4.
+consumer groups		-	to avoid one consumer consuming msgs from multiple partition consumers are grouped in consumer group. consumer group
+						assigns each consumer to a partition.
+zookeeper			-	kafka distributed system using zookeeper for cordination and track status of kafka cluster nodes. 
+						it also keeps track of topis, partitions, offsets, etc...
+						
+consumer rebalancing-	say we have 3 partitions and we have a consumer group with 4 consumers. each consumer is attached to one partition 
+						so the remaining one consume will be idle. now if any consumer goes down then this idle consumer takes over.
+						
+Apache Kaka		- open source
+Confluent KAFKA	- community confluent is free for use
+managed aws
+
+kafka offset explorer - GUI to manage apache kafka
+
+												Producer
+create spring boot app with dependencies web and spring for apache kafka
+start zookeeper
+start kafka server
+
+now tell spring app about kafka server in app yaml file
+
+spring.kafka.produce.bootsrap-servres=localhost:9092,........
+
+to publish message create a service class say kafkamsgpublisher
+to talk to kafka server we need kafkatemplate
+@autowire
+public KafkaTemplate<String, Object> template;
+
+public void sendMsgToTopic(String msg){
+
+		completablefurure fut = template.send("topicname1", msg); //kafka will automatically create this topic and 1 partition
+		fut.whenComplete(result -> {
+		
+			if(ex == null){}
+			else{}
+			result.getRecordMetaData().offset();
+			result.getRecordMetaData().partition();
+		});
+
+}
+
+create controller
+kafkamsgpublisher.sendMsgToTopic(msg);
+
+create topic and partition
+@configuration
+puclic class kafkaconfig{
+
+	@bean
+	public NewTopic createTopic(){
+		return new NewTopic(ourtopicname, noOfPartitions, replicationfactor);
+	}
+}
+
+now use completablefurure fut = template.send("ourtopicname", msg); //kafka will automatically create this topic and 1 partition
+
+
+													RETRY
+https://medium.com/naukri-engineering/retry-mechanism-and-delay-queues-in-apache-kafka-528a6524f722#:~:text=A%20better%20approach%20would%20be,failed)%20after%20a%20certain%20delay.
+
+@retryabletopic(atempts,backoff(delay,multiplier,max),exclide{exception.classes})
+@dlttopic()
+
+													AVRO SCHEMA REGISTRY
+when producer changes the input structure then consumer too needs this change propogated. 
+to solve this congluent kfka provides avro schema and avro schema registry. its a contract between your producer and consumer
+eg employee.avsc - avro tool plugin or maven
+kafka avro serializer and deserializer. this connectes to schema registry to validate the schema and data object
