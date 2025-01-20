@@ -1,0 +1,85 @@
+Query Mapping, Mutation Mapping, Subscription Mapping
+
+															Server side
+Annotate the controller calss with just @Controller															
+
+graphqlfile.graphqls
+type Product{
+
+	id:ID,
+	name:String
+	category:String,
+	stock:Float,
+	proce:Int
+}
+
+type Query{
+	getAllProducts:[Products]   //no params, returns list of products. annotate this method with @QueryMappping
+	getProducsByCategory(category:String):[Products]   //takes category as input and returns list of products. 
+														 annotate this method with @QueryMappping and @Argument for input
+}
+
+type Mutation{
+	updateProductByIdAndName(id:ID,name:String):Product			//annotate this method with @MutationMappping
+	updateProductByIdAndCategory(id:ID,category:String):Product	//annotate this method with @MutationMappping and @Argument for input
+}
+
+															Client side
+															
+															Query mapping
+Query GetProducts{
+	getAllProducts{
+		name
+		category
+	}
+}
+
+Query GetProductsByCategory{
+	getProducsByCategory(category:"Electronics"){
+		name
+		category
+	}
+}
+
+Mutation UpdateProduct{
+	updateProductByIdAndName(id:1,name:"xxxx"){
+		name
+		category
+	}
+}
+
+Mutation UpdateProduct{
+	updateProductByIdAndCategory(id:1,category:"yyyy"){
+		name
+		category
+	}
+}
+
+															GraphQL springboot client
+@Configuration
+public class GraphQLClientConfig {
+	
+	@Bean
+	public WebClient webClient() {
+		return WebClient.builder().baseUrl("http://localhost:8080/graphql").build();
+	}
+	
+	@Bean
+	public HttpGraphQlClient httpGraphQlClient() {
+		return HttpGraphQlClient.builder(webClient()).build();
+	}
+}
+
+public List<Item> getProducts(){
+		System.out.println("getProducts");
+		String graphQLQuery = "query getAllProducts{\r\n"
+				+ "  getAllProducts {\r\n"
+				+ "    id,\r\n"
+				+ "    productCode,\r\n"
+				+ "    productName,\r\n"
+				+ "    category\r\n"
+				+ "  }\r\n"
+				+ "}";
+		
+		return httpGraphQlClient.document(graphQLQuery).retrieve("getAllProducts").toEntityList(Item.class).block();
+	}
