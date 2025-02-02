@@ -1,0 +1,42 @@
+IS-A Relationship
+	Definition: The "is-a" relationship represents inheritance. It indicates that one class is a subtype of another class. 
+	This relationship is established using the extends keyword for classes and the implements keyword for interfaces.
+	Example: Consider a Car class and a Honda class. The Honda class is a specific type of Car, so it inherits from the Car class.
+
+HAS-A Relationship
+	Definition: The "has-a" relationship represents composition or aggregation. It indicates that one class contains a reference to another class. 
+	This relationship is established by including an instance of one class as a member variable in another class.
+	Example: Consider an Engine class and a Car class. A Car has an Engine, so the Car class contains an instance of the Engine class.
+
+Interface
+	Aggregation  - Aggregation represents a "has-a" relationship where one class contains a reference to another class. 
+				   It is a form of association with a weaker relationship compared to composition.
+				   Example: An Employee class having a reference to an Address class. The Address can exist independently of the Employee
+	Composition  - Composition is a stronger form of aggregation where the contained object cannot exist independently of the container. 
+				   It represents a "part-of" relationship.
+				   Example: A Building class containing Room objects. If the Building is destroyed, the Room objects are also destroyed.
+	Relationship - Relationships in Java (and UML) describe how classes and objects interact with each other. 
+				   Common types include association, dependency, generalization, and realization.
+				   Association: A Student class associated with a Course class.
+				   Dependency: A Service class depends on a Repository class.
+				   Generalization: A Dog class inheriting from an Animal class.
+				   Realization: A Service class implementing an Interface.
+	Cardinality  - Cardinality defines the number of instances of one class that can be associated with one instance of another class. 
+				   It specifies the numerical relationship between classes.
+				   One-to-One: A Person has one Passport.
+				   One-to-Many: A Teacher can teach many Students.
+				   Many-to-Many: A Student can enroll in many Courses, and a Course can have many Students.
+				   
+Entity Relationship diagram
+Class diagram
+	+		public attributes or operations
+	-		private attributes or operations
+	#		protected attributes or operations
+	in		passed to operation by caller
+	out		not set by caller but passed to caller
+	inout	passed to operation by caller and possibly modifed by operation and passed back to caller
+	1		Exactly One
+	0..1	Zero or One
+	*		Zero or More
+	1..*	One or More
+	(ordered)

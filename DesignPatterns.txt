@@ -1,0 +1,80 @@
+																Singleton
+========================================================================================================================================
+Only one instance craeated
+Lazily Loaded
+	Runtime, Spring Beans,
+	
+	Runtime
+	
+
+																Builder
+========================================================================================================================================
+CONCEPT
+Handle complex constructors
+large number of parameters
+Immutability
+Java API ex: StringBuilder, DocumentBuilder
+
+DESIGN
+what constructors to use?
+Creating multiple constructors with each parameter variation is called TELESCOPIC constructor
+Builder is usually written with STATIC INNER CLASS
+Calls appropriate constructor
+Negates the need for exposed setters
+
+
+																Prototype
+========================================================================================================================================
+In a document management system, the Prototype Design Pattern can be used to efficiently clone documents, 
+allowing users to create new documents based on existing ones without the overhead of creating them from scratch. 
+This pattern can also be applied to other scenarios, such as cloning configuration objects, creating copies of complex objects in simulations, and more.
+
+One typical usuage is say we have a site where we can select a base laptop model and customize it by topping it with additional hardware and software components 
+and get a final cost
+Now wants to choose and another base laptop model and top it with same additional components above and see final price.
+Here we can clone above object itself and get final price for this base model 
+
+CONCEPT
+Avoid costly creation
+Avoids subclassing
+Typically doesn't use keyword "new". creator may usebut after thatit is cloned
+often utilizes interface
+usually implemented with a registry - Object created and kept in registry and when required the object is cloned
+
+DESIGN
+IPrototype
++clone()
++deepCopy()
+
+PITFALLS
+often not used
+used with other patterns 
+
+																Factory
+========================================================================================================================================
+CONCEPTS when choosing a factory
+Doesn't expose instantiation logic. client will not even know the type of object that is created 
+by deferring instantiation to subclasses
+client only knows about the common interface that factory exposes
+specified by architecture,implemented by user
+Java API ex: Calendar,ResourceBundle, NumberFormat
+
+ResourceBundle (I18n and L10n)
+Message_en.properties
+greeting=Hello
+farewell=Goodbye
+-------------------------
+Message_fr.properties
+greeting=Bonjour
+farewell=Au revoir
+ResourceBundle bundle = ResourceBundle.getBundle("Messages", Locale.ENGLISH);
+ResourceBundle bundle = ResourceBundle.getBundle("Messages", Locale.FRENCH);
+
+NumberFormat
+double number = 1234567.89;
+NumberFormat defaultFormat = NumberFormat.getInstance();
+System.out.println("Default Locale: " + defaultFormat.format(number));
+NumberFormat usFormat = NumberFormat.getInstance(Locale.US);
+NumberFormat usFormat = NumberFormat.getInstance(Locale.GERMANY);
+
+DESIGN consideration

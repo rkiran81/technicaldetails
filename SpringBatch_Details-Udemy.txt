@@ -1,0 +1,25 @@
+Job and Step
+
+Job - transafer money
+Step - contact other bank and debit money and send notification
+
+Step types
+-------------
+tasklet and chunk oriented
+
+Tasklet - contact other bank and debit money and send notification
+Chunk oriented - item reader, item processor and item writer in chunks of say 3 out of 10000 records
+
+Architecture
+-------------
+Job Launcher - Job - Step
+	Job Repo
+	Database
+	
+JobBuilderFactory
+StepBuilderFactory
+	
+Job -> Job Execution -> Job Execution Context		stored in DB details/status
+step -> Step Execution -> Step Execution Context	stored in DB details/status
+
+https://stackoverflow.com/questions/63035702/spring-batch-mongo-db-to-csv-to-email

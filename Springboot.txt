@@ -33,3 +33,384 @@ generally sonarlint will be integrated with jenkins or other build tools and it 
 Jasypt(Encryption in springboot apps)
 ======================================
 https://javatechie4u.medium.com/spring-boot-password-encryption-using-jasypt-9ee731701e70
+
+
+
+
+
+											why springboot over spring framework
+											======================================
+dependency resolution/avoid version conflict
+	before spring boot to develop a crud web based app we had to add, 
+	spring core, spring context, spring orm, spring tx, spring web, spring webmvc,hibernate core, hibernate validator, mysql connector, jackson
+	with versions
+	
+	after spring boot spring web, spring data jpa, mysql connector dependency will mamanged through parent version
+avoid additional configuration
+	before spring boot 
+	application-context.xml,
+		define datasource with db connection props, sessionfactory passing ds and entites to scan, hibernate properties, create transaction manager
+	springrest-servlet,xml
+		define scan base packages, mvc annotation driven, tx annotation diven
+	web.xml
+		provide applictaion-context.xml
+		define dispatcher servlet
+		servlet mapping
+	after spring boot
+		in applictaion yml define datasource and hibernate properties, dialect
+	
+emmbedded servers like tomcat, undertow, jetty
+producion ready features like, monitoring, metrics, health checks
+	add actuator dependency we get /bean, /health, /metrics, /default
+
+												what all starters/modules you have used
+												======================================
+starter web, spring data jpa, spring data mongodb, spring cloud, spring aop, spring security, spring apache kafka, spring graphql, spring thymleaf,
+starter undertow	
+
+												how will you run your springboot application
+												======================================
+mvn spring-boot:run
+during development it will directly go to target/classes and main class and run main method. in prod build we genrate jar file or docker files
+mvn install will create jar	which contains 
+BOOT-INF
+	classes, lib
+META-INF
+	manifest.mf cotains, main class, starter class, lib path, classes path etc...
+org	
+		
+												what is the purpose of @springbootapplictaion
+												======================================
+@enableautoconfiguraion - scan dependencies/classpath and load other required dependencies/jars
+@componentscan	-	 scan for beans the package where we have main class and sub packages. if any package defined outside using scanBasepackages property
+@configuration										
+
+												what is the auto configuration in spring boot
+												======================================
+in properties add "debug=true" or @springbbotapplication(debug=true) to see positive/negative matches
+configues applictaion based on dependency/property configurations/classpath
+1. example if we do not add spring data jpa or any embedded db dependency then datasourceautoconfiguration comes under negative matches. 
+   when added it comes under positive matches but we need to provide spring.datasource properties
+2. spring.aop.auto.true will be true by default because in AopAutoConfiguration class @ConditionalOnProperty has matchIfMissing = true
+   so it comes under postivitive matches and if its set to true it moves to negative match. this conf is used to enableautoconfiguraion
+   JdkDynamicAutoProxyConfiguration and CglibAutoProxyConfiguration
+   
+   spring-boot-autoconfigure.jar/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports 
+   contains all default postive/negative matches
+   
+   
+												How to customize default auto configuration in spring boot
+												======================================
+1. @SpringBootApplication(exclude={DataSourceAutoConfiguration.class,AopAutoConfiguration.class})
+   in console these will show under Exclusions if debug=true is set	
+   spring.autoconfigure.excluse=org.springframework.boot.autoconfigure.aop.AopAutoConfiguration,
+2. default port is 8080 but change it using property server.port=9898											
+												
+												How spring boot run method works internally
+												======================================
+1. prepareEnvironment - load properties/yaml, configureProfile
+2. print banner
+3. Create application context	-	scan all @Bean/@Compoenents/scanBasePackages and register beans
+4. start server
+5. return configurableapplicationcontext		
+
+												what is commandline runner in spring boot
+												======================================
+helps to run/execute any pre processing logic during server application up like DB connection, load some data to db etc...	
+commandlinerunner run method executes after springbootapplication run method	
+
+												explain the purpose of sterotypes annotations in spring boot
+												============================================================
+they define role/purpose of a class. 
+@component			parent
+@service			inherited from component
+@repository			inherited from component
+@controller			inherited from component
+@restcontroller		inherited from controller. combines @Controller and @ResponseBody. 
+					it indicates that the class is a controller where every method returns a domain object instead of a view.	
+@configurationproperties	//This is just a configuration properties class that binds externalized config properties to bean variables. 
+							not instantiated by spring context
+@enableconfigurationproperties	this allows to register @configurationproperties as beans
+
+these class are scanned as part of component scan and used to segregate class. 
+like business layer with @service, @reporitory for db layer, @restcontroller for web related etc...	
+can we shuffle annotations, YES. we can have @restcontroller on repository	
+
+												How to define bean in spring framework
+												============================================================
+@component, @service, @repository, @restcontroller, @bean (created through @configuration)				
+
+												what is dependency injection
+												============================================================
+OrderServiceImpl service = new OrderServiceImpl();
+IOrderService service = new OrderServiceImpl();
+IOrderService service = OrderServiceFactory.getIntsnace();
+is used to achive lossing coupling between objects where we declare an interface and @autowired(field level) then spring will inject
+the implementation at runtime which is run time polymorphism. entire life cycle of bean will be managed by springframework
+this can be also achieved through settter injection or constructor injection	
+
+setter		-		optional dependency injection.
+					not immutable
+					can resolve circular dependency. provide @lazy. until object is created or accessed first time don't bother
+constructor	-		if a dependency is mandatory. ensures all dependecies are set before object creation else throw error
+					immutable in nature, cannot be modified after object creation
+					cannot resolve circular dependency
+					
+												real world example of @PostConstruct
+												============================================================
+initializing a database connection pool or preloading data into a cache when the application starts.
+we can also use commandLinerunner	
+
+												Load values dynamically i spring boot
+												============================================================
+@value(${""})
+
+@Autowired
+Environment env;	env.getProperty()
+
+@ConfigurationProperties(prefix="spring.datasource")	
+
+												Prefer application properties or yml
+											============================================================
+props
+	myList=list1, list2, list3		//can read as string and split
+yaml
+	syntax and structure
+	Hierarchy
+	List and Arrays
+		myList:
+		 - list1
+		 - list2
+		 - list3
+	complex data types or structure
+	readability
+	
+											if I configure same key/value pair in both application properties or yml file which one will take precedence
+											============================================================
+In Spring Boot, if you configure the same key/value pair in both application.properties and application.yml, 
+the value from application.properties will take precedence over the value from application.yml. 
+This is because Spring Boot processes .properties files before .yml files when loading configuration.	
+
+
+											How to load external properties in spring boot
+											============================================================
+spring.config.import=files://users/xxxx/desktop/test.properties
+
+											How to map/bind config properties to java object
+											============================================================
+@ConfigurationProperties(prefix="spring.datasource")		
+	//This is just a configuration properties class that binds externalized config properties to bean variables.not instantiated by spring context
+	
+@enableconfigurationproperties	this allows to register @configurationproperties as beans or else provide @configuration along with @ConfigurationProperties
+Why Use @EnableConfigurationProperties?
+Separation of Concerns: It allows you to keep your configuration properties class as a plain POJO, separating it from the configuration logic.
+Flexibility: You can enable multiple @ConfigurationProperties classes in a single configuration class.
+
+											How will you resolve bean dependency ambiguity
+											============================================================
+if we have two implementations of same interface we get error "required a single bean but 2 were found"
+we can use @Qualifier("camelCaseBeanName") along with @autowired	
+
+											can we avoid dependency ambiguity without using @Qualifier
+											============================================================
+@Resource(name = "camelCaseBeanName") this is from jakartna.annotation and its by name
+@Qualifier is from spring and its by type
+we can use either of them
+
+											explain bean scopes
+											============================================================
+this determines how long bean will be alaive or destoryed or how many instances will be available
+@Scope("singleton")
+
+singleton
+prototype
+request			- Applicable for web based apps
+session			- Applicable for web based apps.	beans stays until user logsout or server.session.time is expired
+applictaion		- Applicable for web based apps
+websocket
+
+@Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
+ProxyMode: When the Spring application context is initialized, there may not be an active HTTP request or session.
+			This attribute is used to create a proxy for the bean, which acts as a placeholder until the actual scoped bean instance is available.
+			
+											define custom bean scope
+											============================================================
+say we want to create a bean for each thread. we can created a custombeanscope class implementing Scope interface, override get, remove, registerDestructioncallback
+register the scope using context.getBeanFactory().registerScope(giveaname, customscopeclass)
+
+1. cretae a runnable and instantiate the class annoted with custombeanscope
+2. instantiate the class annoted with custombeanscope in main thread and both objects hash
+			
+			
+											Real time usecases for singleton and prototype beans
+											============================================================
+singleton		-	database conf, application conf, stateless service layer
+
+prototype		-	threadsafety, user sessions
+
+											can we inject prototype bean into singleton bean. what happens.
+											============================================================
+if a prototype bean is injected into singleton bean it behaves as singleton
+1. create a class with prototype scope
+2. create a class with singleton scope and autowire a private vaibale of prototype bean type and provide get method for it.
+3. call cntxt.getbean(singletonbean.class) twice and get prototypebean and print .hashCode()
+
+now hpw to overcome this
+1. create a instance of ObjectFactory<prototypebeanname> factory;
+2. create a getObject() and return factory.getObject()
+
+1. create a methodnamed getInstance. annotate with @Lookup and return null;
+2. from above getObject method call getInstance. spring will take care of return the proxy
+
+											difference between spring singleton and plain singleton
+											============================================================
+1. spring singleton scope is within applicationcotext. if I createa two application context and get this singleton bean we get two instances
+2. plain singleton scope is within jvm
+
+											what is beanpostprocessor interface and how can we use to customize bean initialization and destruction
+											============================================================
+provides hooks to provide custom action before and after bean instantiation
+provides two methods postProcessBeforeInitialization(Object bean, String beanName) and postProcessAfterInitialization
+says we have a User class which I am instantiating with username and password and before instatntiating I need to validate password length then in 
+postProcessBeforeInitialization I can provide this validation and throw exception if not satisfied
+
+											have you worked on restfull webservice and what all http methods you have used
+											============================================================
+											
+											
+											difference between pathvariable and requestparam
+											============================================================
+PATHVARIABLE is MANDATORY. else we get 404 not found
+@GetMapping("/search/{productName}")
+public Products getProductsByName(@PathVariable String productName){
+	Products products = service.getProductsByName(productName);
+	ResponseEntity.ok(products);
+}
+
+@GetMapping("/filter")
+public Products getProductsByProductName(@RequestParam(name="productName", required=false) String name){
+	Products products = service.getProductsByName(name);
+	ResponseEntity.ok(products);
+}
+
+											why restcontroller not controller
+											============================================================
+restcontroller return type is anything
+controller by default expects returntype as modelanndview. if we need to change this then add Produces=media_type.plantext or application/json and add @responsebody
+The @ResponseBody annotation in Spring MVC is used to indicate that the return value of a method should be written directly to the HTTP response body. 
+This is typically used in RESTful web services to return data in formats like JSON or XML.
+
+											how to deserialize json payload into an object in spring mnv controller
+											============================================================
+											
+											
+											difference between post and put
+											============================================================
+In HTTP, idempotence refers to the property of certain HTTP methods where multiple identical requests have the same effect as a single request. 
+This means that making the same request multiple times will not change the result											
+idempotent - no resource is created on server
+POST is non idempotent
+PUT is idempotent
+									Idempotent HTTP Methods
+GET: Retrieves data from the server without causing any side effects.
+PUT: Updates or creates a resource on the server. Multiple identical PUT requests will result in the same resource state.
+DELETE: Removes a resource from the server. Multiple identical DELETE requests will have the same effect as a single request.
+HEAD: Similar to GET, but only retrieves the headers without the response body.
+OPTIONS: Retrieves the supported HTTP methods for a resource without causing any side effects.
+
+									Non-Idempotent HTTP Methods
+POST: Creates a new resource on the server. Multiple identical POST requests can result in multiple resources being created.
+PATCH: Partially updates a resource on the server. The effect of multiple identical PATCH requests can vary depending on the implementation.
+
+									Importance of Idempotence
+Reliability: Idempotent methods ensure that repeated requests do not cause unintended side effects, making the system more reliable.
+Error Handling: In case of network failures or timeouts, clients can safely retry idempotent requests without worrying about duplicating actions.
+Caching: Idempotent methods are easier to cache, as the response to identical requests will be the same.
+
+											can we send requestbody in get method
+											============================================================
+technically its possible
+
+											how to perform content negotiation (xml/json) in rest endpoint
+											============================================================
+1. include jackson dataformat xml dependency
+2. add spring mvn contentnegotiation properties
+	spring.mvc.contentnegotiation.favor-path-extension=true
+	spring.mvc.contentnegotiation.favor-parameter=true
+	spring.mvc.contentnegotiation.defaultContentType=application/xml
+3. in endpoint @GetMapping(produces = {"application/json, application/xml"})
+4. in calling endpint add ?format=xml or ?format=json at the end
+
+											what all staus code you have observed
+											============================================================
+400		bad request								
+401		authentican error
+402		
+403		unauthorized
+405		method not allowed
+415		unsupported media type
+404		not found, url/rsource not availble
+500		internal server error
+502		bad gateway
+503		server unavailable
+200		Ok
+201		Created
+
+											how to customize staus code of your application
+											============================================================
+@ResponseStatus(HttpStatus.CREATED) for POST
+@ResponseStatus(HttpStatus.NO_CONTENT) for PUT
+
+											how to cross origin
+											============================================================
+cross origin is securitty feature to not allow requests from other domains but we can configure what all domains can access using
+@CrossOrigin(origins="http://localhost:4200")
+
+@EnablewebMvc
+implemenet WebMvcConfigurer override addCorsMapping(corsregistry){
+	registry.addmapping(path).allowedOrigins().allowedMethods(get, post,).allowedHeaders(origin, accept, authorization, contenttype)
+}
+
+											how to upload a file in springboot
+											============================================================
+@PostMapping
+public String uploadFile(@RequestParam("firstfile") MultipartFile file)
+
+											how do you maintain versioning in rest api
+											============================================================
+1. /v1/endpoint and /v2/endpoint
+2. @RequestParam(name = "version" int version)
+3. @requestHeader(name = "api-version" int version)
+
+											how will you document your rest api
+											============================================================
+1. swagger
+2. openapi from spring  - springdoc-openapi-starter-webmvc-ui
+		
+path/swagger-ui/index.html		full documentation
+/v3/api-docs					api description only
+/v3/api-docs.yaml				will download the api doc
+
+
+											how to hide certain rest endpoints
+											============================================================
+@Hidden from io.swaggqe.v3.oas.annotations
+provide description about a endpoint @Opeartion(description = "description")
+
+											how will you consume endpoints
+											============================================================
+resttemplate
+	template.getForObject(url, responsetypeclass.class);
+	template.postForObject();
+feign client
+	declarative web service client developed by netflix. by default enables loadBalancing. testing is easy. integrates with service discovey like eureka by name
+	
+	@feignclient(url="", name="USER_CLIENT")
+	public interface UserClient{
+		
+		@GetMapping("/users")
+		public List<Users> getAllUsers();
+	}
+webclient
+	is used for reactive programming to achieve asynchronous and non blocking programs
+advanced rest client	springboot 3.2

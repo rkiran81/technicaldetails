@@ -1,0 +1,147 @@
+Atlas
+kiranrkumar
+WTlgikV1XQNEZHbC
+
+// Simulate an asynchronous operation using a promise
+function fetchData() {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve("Data fetched successfully!");
+        }, 2000);
+    });
+}
+
+// Async function to use await
+async function getData() {
+    try {
+        const result = await fetchData();
+        console.log(result); // Output: Data fetched successfully!
+    } catch (error) {
+        console.error("Error:", error);
+    }
+}
+
+getData();
+==
+async function fetchDataFromAPI() {
+    try {
+        const response = await fetch("https://api.example.com/data");
+        const data = await response.json();
+        console.log(data);
+    } catch (error) {
+        console.error("Error fetching data:", error);
+    }
+}
+
+fetchDataFromAPI();
+
+callback hell
+============
+function fetchUser(userId, callback) {
+    setTimeout(() => {
+        callback(null, { id: userId, name: "John Doe" });
+    }, 1000);
+}
+
+function fetchPosts(userId, callback) {
+    setTimeout(() => {
+        callback(null, [{ id: 1, title: "Post 1" }, { id: 2, title: "Post 2" }]);
+    }, 1000);
+}
+
+function fetchComments(postId, callback) {
+    setTimeout(() => {
+        callback(null, [{ id: 1, text: "Comment 1" }, { id: 2, text: "Comment 2" }]);
+    }, 1000);
+}
+
+fetchUser(1, (err, user) => {
+    if (err) return console.error(err);
+    fetchPosts(user.id, (err, posts) => {
+        if (err) return console.error(err);
+        posts.forEach(post => {
+            fetchComments(post.id, (err, comments) => {
+                if (err) return console.error(err);
+                console.log(`Post: ${post.title}, Comments:`, comments);
+            });
+        });
+    });
+});
+=====
+function fetchUser(userId) {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve({ id: userId, name: "John Doe" });
+        }, 1000);
+    });
+}
+
+function fetchPosts(userId) {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve([{ id: 1, title: "Post 1" }, { id: 2, title: "Post 2" }]);
+        }, 1000);
+    });
+}
+
+function fetchComments(postId) {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve([{ id: 1, text: "Comment 1" }, { id: 2, text: "Comment 2" }]);
+        }, 1000);
+    });
+}
+
+async function getUserData(userId) {
+    try {
+        const user = await fetchUser(userId);
+        const posts = await fetchPosts(user.id);
+        for (const post of posts) {
+            const comments = await fetchComments(post.id);
+            console.log(`Post: ${post.title}, Comments:`, comments);
+        }
+    } catch (error) {
+        console.error("Error:", error);
+    }
+}
+
+getUserData(1);
+=====
+Using async/await with try/catch
+This approach is more modern and makes asynchronous code look more like synchronous code
+For simple, single-step asynchronous operations, using .then and .catch is perfectly fine.
+
+
+mongoose
+mongodb+srv://kiranrkumar:WTlgikV1XQNEZHbC@learningnode.wll5o.mongodb.net/?retryWrites=true&w=majority&appName=LearningNode
+Java
+mongodb+srv://kiranrkumar:WTlgikV1XQNEZHbC@learningnode.wll5o.mongodb.net/?retryWrites=true&w=majority&appName=LearningNode
+
+npm init --yes  //creates package.json with defaults 
+
+if yoy get below error follow steps methioned below
+"npm : File C:\Program Files\nodejs\npm.ps1 cannot be loaded because running scripts is disabled on this system. For more information, see about_Execution_Policies at https:/go.microsoft.com/fwlink/?LinkID=135170."
+
+
+STEPS
+=====
+PS C:\Windows\system32> Get-ExecutionPolicy
+Restricted
+PS C:\Windows\system32> Set-ExecutionPolicy Unrestricted
+
+Execution Policy Change
+The execution policy helps protect you from scripts that you do not trust. Changing the execution policy might expose
+you to the security risks described in the about_Execution_Policies help topic at
+https:/go.microsoft.com/fwlink/?LinkID=135170. Do you want to change the execution policy?
+[Y] Yes  [A] Yes to All  [N] No  [L] No to All  [S] Suspend  [?] Help (default is "N"): y
+PS C:\Windows\system32> Get-ExecutionPolicy
+Unrestricted
+
+
+
+																		Jasmine
+																		==========================
+npm install --save --dev jasmine
+.\node_modules\.bin\jasmine init	//will create spec folder	
+npm install --save-dev request 
+																

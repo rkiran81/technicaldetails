@@ -6,8 +6,10 @@ Propagation.REQUIRES_NEW - suspend existing transaction, create new transaction 
 	suspended transaction which gets rolled back
 	
 Propagation.MANDATORY - Requires existing transaction if not available it will throw exception
+					    Inventory update service is annotated with this. Order srevice call Inventory service without transaction then error is thrown
 
 PROPAGATION_SUPPORTS: The current method will join an existing transaction if one exists. If there isn't one, it will execute non-transactionally.
+					  getOrder read Service doesn't need a transaction but if there is no one it will run within that
 
 PROPAGATION_NOT_SUPPORTED: The method will always execute non-transactionally, and any existing transaction will be suspended.
 

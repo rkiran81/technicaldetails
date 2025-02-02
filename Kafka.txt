@@ -32,7 +32,7 @@ zookeeper			-	kafka distributed system using zookeeper for cordination and track
 						it also keeps track of topis, partitions, offsets, etc...
 						
 consumer rebalancing-	say we have 3 partitions and we have a consumer group with 4 consumers. each consumer is attached to one partition 
-						so the remaining one consume will be idle. now if any consumer goes down then this idle consumer takes over.
+						so the remaining one consumer will be idle. now if any consumer goes down then this idle consumer takes over.
 						
 Apache Kaka		- open source
 Confluent KAFKA	- community confluent is free for use
@@ -82,6 +82,67 @@ puclic class kafkaconfig{
 
 now use completablefurure fut = template.send("ourtopicname", msg); //kafka will automatically create this topic and 1 partition
 
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.StringSerializer;
+
+import java.util.Properties;
+
+public class KafkaProducerExample {
+    public static void main(String[] args) {
+        Properties props = new Properties();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+
+        KafkaProducer<String, String> producer = new KafkaProducer<>(props);
+
+        String topic = "your_topic";
+        String key = "your_key";
+        String value = "your_value";
+        int partition = 1; // Specify the partition number
+
+        ProducerRecord<String, String> record = new ProducerRecord<>(topic, partition, key, value);
+        producer.send(record);
+
+        producer.close();
+    }
+}
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.serialization.StringDeserializer;
+
+import java.util.Collections;
+import java.util.Properties;
+
+public class KafkaConsumerExample {
+    public static void main(String[] args) {
+        Properties props = new Properties();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "your_group_id");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+
+        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
+
+        String topic = "your_topic";
+        int partition = 1; // Specify the partition number
+        TopicPartition topicPartition = new TopicPartition(topic, partition);
+
+        consumer.assign(Collections.singletonList(topicPartition));
+
+        while (true) {
+            ConsumerRecords<String, String> records = consumer.poll(100);
+            for (ConsumerRecord<String, String> record : records) {
+                System.out.printf("offset = %d, key = %s, value = %s%n", record.offset(), record.key(), record.value());
+            }
+        }
+    }
+}
 
 													RETRY
 https://medium.com/naukri-engineering/retry-mechanism-and-delay-queues-in-apache-kafka-528a6524f722#:~:text=A%20better%20approach%20would%20be,failed)%20after%20a%20certain%20delay.
@@ -94,3 +155,14 @@ when producer changes the input structure then consumer too needs this change pr
 to solve this congluent kfka provides avro schema and avro schema registry. its a contract between your producer and consumer
 eg employee.avsc - avro tool plugin or maven
 kafka avro serializer and deserializer. this connectes to schema registry to validate the schema and data object
+
+
+Purpose of Offset
+Tracking Consumption: Offsets allow consumers to keep track of which messages have been consumed. Each consumer maintains its own offset for each 
+						partition it reads from, ensuring that it knows where to resume consumption in case of a restart or failure.
+
+Fault Tolerance: By storing offsets, Kafka ensures that consumers can recover from failures without losing track of their progress. 
+				When a consumer restarts, it can read the last committed offset and continue processing from that point.
+
+Load Balancing: In a consumer group, each consumer is assigned specific partitions. Offsets help in balancing the load among consumers by ensuring 
+				that each consumer processes a distinct set of messages

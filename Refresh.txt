@@ -32,6 +32,7 @@ define a class extending SpringBootRequestHandler<String, String>
 How to handle multiple beans of same type
 =============================================
 @Qualifier
+@Resource
 @Primary
 
 How to avoid a dependency auto-configured by AutoConfiguration

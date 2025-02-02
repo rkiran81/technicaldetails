@@ -1,0 +1,142 @@
+https://docs.spring.io/spring-security/site/docs/3.0.x/reference/security-filter-chain.html
+https://docs.spring.io/spring-security/reference/servlet/architecture.html
+https://medium.com/@rasheed99/introduction-on-spring-security-architecture-eb5d7de75a4f#:~:text=Spring%20Security%20acts%20as%20a,your%20data%20from%20unauthorized%20access.
+
+
+default login page
+username :	user
+password :	c1e7f461-07d6-487f-8c7e-4a13c69adaba (generated in console)
+
+@EnableWebSecurity(debug=true)- this will enable the logging of security details.
+Enable logging of the details by adding the below property in application.properties.
+logging.level.org.springframework.security.web.FilterChainProxy=true
+
+
+Spring Security Filters
+A series of Spring Security filters intercept each request & work together to identify if Authentication is required or not. If authentication is
+required, accordingly navigate the user to login page or use the existing details stored during initial authentication.
+
+Authentication : Filters like UsernamePasswordAuthenticationFilter will extract username/ password from HTTP request & prepare Authentication type object
+Because Authentication is the core standard of storing authenticated user details insdie Spring Security framework.
+AuthenticationManager : Once received request from filter, it delegates the validating of the user details to the authentication providers available. Since there can be
+multiple providers inside an app, it is the responsibility of the AuthenticationManager to manage all the authentication providers available.
+AuthenticationProvider : AuthenticationProviders has all the core logic of validating user details for authentication
+UserDetailsManager/UserDetailsService : It helps in retrieving, creating, updating, deleting the User Details from the DB/storage systems.
+PasswordEncoder : Service interface that helps in encoding & hashing passwords. Otherwise we may have to live with plain text passwords &
+SecurityContext : Once the request has been authenticated, the Authentication will usually be stored in a thread-local SecurityContext managed by the SecurityContextHolder. This helps during the upcoming requests from the same user.
+
+
+
+DelegatingFilterProxy
+
+Authentication
+
+AuthenticationManager
+
+Provider Manager
+
+Authentication Providers
+
+UsersDetailsService
+
+UserDetails
+
+Provider Manager
+
+DelegatingFilterProxy
+
+SecurityContext
+
+									SSL
+									===========================================
+implement SSL
+1. create or get ssl certificate from CA providers
+2. application.yml
+	server
+	 port: 8443
+	 ssl:
+	  key-store: mykeystorefile.p12
+	  key-store-password: xxxxxx
+	  key-store-type: PKSC12
+	  key-store-alias: mykeystorefile
+
+To redirect HTTP to HTTPS
+
+@Configuration
+@Order(1)
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+            .requiresChannel()
+            .anyRequest()
+            .requiresSecure();
+    }
+}
+
+
+
+									Database authentication
+									=================================================							
+
+1. Create users table with columns username, password,Authorities
+2. create entity class and jpa repo <User. Integer>
+3. create customeuserdetailsservice extending userdetailsservice from security core package and override loadUserByUsername(userName). 
+	autowire user jparepo. fetch user from db and return spring security User object passing username, passowrd and authorities
+4. create a class @enablewebsecurity and extends websecurityconfigurer adapter
+5. override configure method which takes Authenticationmanagerbuilder and set authBuilder.userDetailsService(customeuserdetailsservice)
+6. add passwordencoder bean
+   for	Bcrypt password hashing function 
+   @Bean
+	public BCryptPasswordEncoder bCryptPasswordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+	if you have multiple password hashing algorithms because you have some legacy users whose passwords were stored with MD5 (don’t do this), 
+	and newer ones with Bcrypt or even a third algorithm like SHA-256?
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+	}
+	How does this delegating encoder work? It will look at the UserDetail’s hashed password (coming from e.g. your database table), 
+	which now has to start with a {prefix}. That prefix, is your hashing method! Your database table would then look like this:
+	
+	Spring Security will:
+
+	Read in those passwords and strip off the prefix ( {bcrypt} or {sha256} ).
+
+	Depending on the prefix value, use the correct PasswordEncoder (i.e. a BCryptEncoder, or a SHA256Encoder)
+
+	Hash the incoming, raw password with that PasswordEncoder and compare it with the stored one.
+
+	That’s all there is to PasswordEncoders.
+
+This will enable database authentication but it will show login page for every request. Now we will add jwt on top of this
+
+7. add jsonwebtoekn dependency
+8. write a jwtutil class to,
+	generateToken - input username. using jwt.builder.subject(username).setissuedate(today).setexpiry(10hrs).sign(HS256,secret).compact()
+	extractusername - extractclaims.getsubject
+	extractclaims - input token. jwt.parser.setsign(secret).parseclaim(token).getbody
+	istokenexpired - extractexpiration.before  10days
+	validateToken - input (token, userdetails) -> extractClaim from token and getsubject. match suject with userdetails.getusername 
+					and then check istokenexpired 
+9. in controller create endpoint "/authenticate". autowire authenticationmanger. authenticationmanager.authenticate(username,password)
+	username and password is extracted from custom AuthRequest object having two fields username and password
+	define bean authenticationmanager in config class returning sure.authenticationmanagerbean
+	if authenticationmanager is success call jwtutils.generateaccesstoken and return to client
+10. now do not apply security to "/authenticate" url so in config override configure method
+	http.authorizationrequests.antmathers("/authenticate").permitall.anyrequests.authenticated
+11. now hit "/authenticate" with post {username:xxxxxx, password:yyyyy}, we get token. now use this token (add in header as Auathorization:Bearer token) 
+	and access other url we get 403 access denied because spring did not understand Auathorization header
+11.jwtfilter extends oneperrequestfilter
+	autowire jwtutils and customuserdetailsservice
+	override doFilterInternal
+	get Authorization from reuqest. ertract token excluding Bearer. jwtutil.extractusername
+	customuserdetailsservice.loadUserByUsername. getUserDetails
+	jwtutils.validatetoken(token, userdetails)
+	create usernamepasswordauthenticationtoken object and set securitycontexthlder.getcontext.setauthorization
+	chain.dofilter(httpservletrequest, httpservletresponse)
+12. http.authorizationrequests.antmathers("/authenticate").permitall.anyrequests.authenticated
+	.session.sessionpolicy.stateless
+	http.addfilterbefore(jwtfilter, usernamepasswordauthenticationfilter.class);
+	

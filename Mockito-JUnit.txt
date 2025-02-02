@@ -1,0 +1,155 @@
+Mockito follows Behavioural Driven Development so we need to follow 3 components
+
+Given	what exactly is your input
+
+When	the methodwhich you are executing
+
+Then	what result you are expecting
+
+Test Service class
+====================
+													CONTROLLER METHODS MOCK
+@RunWith(SpringRunner)
+@SpringBootTest
+Class
+
+private MockMvc mockmvc;
+
+@Autowired
+private WebApplicationContext context;
+
+ObjectMapper mapper = new ObjectMapper();	//controllerdon't receive objectbut json string
+
+@Before				//provideby Junit
+public void init(){
+	mockmvc = MockMvcBuilders.webAppContextSetup(context).build();
+}
+
+@Test	//Post
+Employee =new Employee("","","");
+
+String reqString = mapper.writeValueAsString(employee);
+
+MvcResult result = mockmvc.perform(post("/path").content(reqString).contentType(MediaType.APPLICATION_JSON_VALUE))
+					.andExpect(status().isOk()).andReturn();
+String resString = result.getResponse().getContentAsString();
+Response response = mapper.readValue(resString.Response.class);
+assertTrue(response.getStatus==Boolean.TRUE);
+
+@Test	//Get
+MvnResult result = mockmvc.perform(get("/path").contentType(MediaType.APPLICATION_JSON_VALUE))
+					.andExpect(status().isOk()).andReturn();
+String resString = result.getResponse().getContentAsString();
+Response response = mapper.readValue(resString.Response.class);
+assertTrue(response.getStatus==Boolean.TRUE);
+
+
+													SERVICE METHODS MOCK
+@Autowired
+Service service
+
+@Mock
+Repository repo
+
+@Test
+when(repo.getAllUsers).thenreturn(Stream.of(new User(),new User()...).collect(Collectors.toList()));
+assertEquals(2,service.getusers().size());
+
+@Test
+when(repo.findByAddress(address)).thenReturn(Stream.of(new User()).collect(Collectors.toList()));
+assertequals(1,service.getByaddress().size())
+
+@Test
+User user =new User("","","");
+when(repo.save(user)).then(user);
+assert(user,service.addUser(user));
+
+@Test
+User user =new User("","","");
+server.delete(user);
+verify(repo,times(1)).delete(user);	//for returntype void
+
+Mockito(doesnot support mocking static,final,private methods) and PowerMock(we can mock static,final,private methods using reflection)
+====================================================================================================================================
+say we have a NotificationUtils.class with a static method to sendEmails(String email)
+
+													STATIC METHOD MOCK
+@Runwith(PowerMockRunner.class)
+@PrepareForTest(fullyQualifiedNames = "com.xxx.yyy.utils.*") //package where we have classes containing static methods
+class
+
+@InjectMock
+OrderServie service;
+
+@Before
+public void init(){
+	MockitoAnnotations.initMocks(NotificationUtils.class);
+}
+
+@Test
+//Given
+String email="test@email.com";
+PowerMockito.mockStatic(NotificationUtils.class);
+
+//When
+when(NotificationUtils.sendEmail(email)).thenReturn("success");//here call will not got to actual method instead will return success
+
+//Then
+OrderRequest req =new OrderRequest("","","test@email.com","");
+OrderResponse res = service.checkoutOrder(reg); // checkoutOrder method does some daooperation then call NotificationUtils.sendEmail(email)and set the return message to res object
+assert("success", service.checkoutOrder(req))
+
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(YourClass.class)
+public class YourTestClass {
+    @Test
+    public void testStaticMethod() throws Exception {
+        PowerMockito.mockStatic(YourClass.class);
+        PowerMockito.when(YourClass.staticMethod()).thenReturn("Mocked Value");
+
+        // Your test logic here
+    }
+}
+
+
+													PRIVATE METHOD MOCK
+we need spy - spy will first instantiate the object and then inject
+@Test
+
+//When
+OrderServie spy = PowerMockito.spy(service);
+doReturn(1000).when(spy, "addDiscount", ArgumentMathers.any());
+
+//Then
+OrderResponse res = spy.checkoutOrder(req);
+int finalAmout = response.getDiscount();
+assert(9000,finalAmout);
+
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(YourClass.class)
+public class YourTestClass {
+    @Test
+    public void testPrivateMethod() throws Exception {
+        YourClass yourClassMock = PowerMockito.spy(new YourClass());
+        PowerMockito.doReturn("Mocked Value").when(yourClassMock, "privateMethod");
+
+        // Your test logic here
+    }
+}
+
+
+
+																FINAL METHOD MOCK
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(YourClass.class)
+public class YourTestClass {
+    @Test
+    public void testFinalMethod() throws Exception {
+        YourClass yourClassMock = PowerMockito.mock(YourClass.class);
+        PowerMockito.whenNew(YourClass.class).withNoArguments().thenReturn(yourClassMock);
+        PowerMockito.when(yourClassMock.finalMethod()).thenReturn("Mocked Value");
+
+        // Your test logic here
+    }
+}
+																

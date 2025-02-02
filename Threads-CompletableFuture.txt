@@ -1,0 +1,364 @@
+												Thread
+================================================================================================
+Defined at OS level. its is a set of instructions.an application can be composed of several threads. DIFFERENT THREADS CAN BE EXECUTED "AT THE SAME TIME".JVM works with severalthreads (GC,JIT)
+
+"AT THE SAME TIME"
+	write document, spell check, print, send/receive email all happens at same time
+WHAT HAPPENS AT CPU LEVEL
+	1ST CASE (CPU WITH ONE CORE)
+		CORE - All these seems like happeneing AT SAME TIME but no it all happnes in a timeframe of say 10ms so it appears to be happening "AT SAME TIME"
+			write document
+			spell check,
+			write document
+			print
+			spell check
+			receive email
+			write document
+	2ND CASE (CPU WITH TWO CORES)
+		CORE 1- On a multicore cpu things are really happening "AT SAME TIME"
+			1write document
+			3print
+			5spell check
+			6receive email
+		CORE 2- On a multicore cpu things are really happening "AT SAME TIME"
+			2spell check,
+			4write document
+			7print
+												THREAD SCHEDULER
+================================================================================================
+WHO IS RESPONSIBLE FOR THIS CPU SHARING?
+	Thread Scheduler - There are three reasons for a scheduler to pause thread
+		1. The CPU must be shared equally among threads
+		2. A thread is waiting for some data I/O operation
+		3. A thread is waiting for another thread to do something
+
+												RACE CONDITION
+================================================================================================
+Deals with accessing of data concurrently. Concurrently means two threads are trying to READ and WRITE the SAME variable in java class at the SAME time
+
+												SYNCHRONIZATION HELPS PREVENT RACE CONDITION
+================================================================================================
+private final Object key = new Object();
+synchronized(key){
+	data = data + 1;
+}
+when a thread enters synchronized block is asks for lock object and starts processing and any threads have to wait for lock object to be release
+
+LOCK OBJECT/MONITOR - 
+	if synchronization is applied on a static method then jvm uses the class as lock object
+	if synchronization is applied on a non static method then that object instance will be used a lock object
+its good to use dedicated lock object as "private final Object key = new Object();"
+
+
+Class MyClass
+
+Object1
+	methodA()
+	methodB()
+
+No explict lock object defined here. So if thread T1 enters methodA() it acquired default lock object which is Object1 instance itself and 
+now if another thread T2 wants to access methodB() its not possible. so better to have two lock objects defined explicitly for each method
+
+Class MyClass
+
+Object1						Object2
+	methodA()					methodA()
+	methodB()					methodB()
+
+No explict lock object defined here. Now T1 can acquire Object1 instance lock object and run Object1.methodA(). T2 can acquire Object2 instance lock object and run Object2.methodA() 
+"AT SAME TIME"
+
+												ReentarantLock
+================================================================================================
+A thread trying to access an instance method trying to acquire lock on it which is held by same thread then it can enter that method. This is called reentarant
+This case is very frequently met in inheritance
+
+import java.util.concurrent.locks.ReentrantLock;
+
+class SuperClass {
+    protected final ReentrantLock lock = new ReentrantLock();
+
+    public void doSomething() {
+        lock.lock();
+        try {
+            System.out.println("SuperClass: Lock acquired by " + Thread.currentThread().getName());
+            // Perform some work
+        } finally {
+            lock.unlock();
+            System.out.println("SuperClass: Lock released by " + Thread.currentThread().getName());
+        }
+    }
+}
+
+class SubClass extends SuperClass {
+    @Override
+    public void doSomething() {
+        lock.lock();
+        try {
+            System.out.println("SubClass: Lock acquired by " + Thread.currentThread().getName());
+            super.doSomething(); // Call superclass method
+            // Perform additional work
+        } finally {
+            lock.unlock();
+            System.out.println("SubClass: Lock released by " + Thread.currentThread().getName());
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        SubClass subClass = new SubClass();
+        Thread t1 = new Thread(subClass::doSomething, "Thread-1");
+        Thread t2 = new Thread(subClass::doSomething, "Thread-2");
+
+        t1.start();
+        t2.start();
+    }
+}
+
+
+Class MyClass
+
+Object1						Object2
+	methodA()					methodA()
+	methodB()					methodB()
+Thread T has acquired lock object on Object1.methodA() and wants to run Object2.method(). Since object instance have same lock held by thread T it can enter Object2.method().
+
+
+												Dead Lock
+================================================================================================
+A dead lock is a situation where T1 holds a key needed for T2 and T2 holds a key needed by T1.
+
+
+Class MyClass
+
+Object1						Object2
+	methodA()					methodA()
+	methodB()					methodB()
+
+LockObject1					LockObject2
+
+T1 acquires LockObject1 and runs Object1.methodA()
+T1 acquires LockObject2 and runs Object2.methodB()
+
+Object1.methodA() calls Object2.methodB()	-	T1 waits for LockObject2 held by T2
+Object2.methodB() calls Object1.methodB()	-	T2 waits for LockObject1 held by T1
+
+
+JVM can detect dead lock and can log trace tohelp debug the situation
+
+
+
+												PRODUCER/CONSUMER PATTERN USING WAIT/NOTIFY
+================================================================================================
+Implement it using synchronization and wait/notify pattern
+The model for a task is RUNNABLE interface which takesno arguments and does not return anything.thus a functional interface
+
+How to stop athread	-	stop() method - must never be used.kept for backward compatibility
+						interrupt() method - just signals the thread to stop but the running taslk must have used isInterrupted() method
+						while(!Thread.currentThread().isInterrupted()){} clean all resourcesand stop
+						if the threadis blockedor waiting then the corresponding method willthrow InterruptedException
+						the methods wait()/notify(),join() throws InterruptedException
+						
+WAIT/NOTIFY	-	are two methods of Object class.They are invoked on given object. The thread executing the invocation should hold the key of that object
+				and wait/notify cannot be invoked outside synchronized block
+				
+				calling wait() release the key/lock held by this thread and put that thread in WAIT state and only way to release a thread from WAIT state is to NOTIFY it which puts
+				that threadin RUNNABLE state. The release thread by notify is choosed randomy.
+				notifyAll() method notifies all threads that are waiting
+				This WAIT state is not the same as a thread waiting at synchronized block
+				
+private Object lock;
+
+PRODUCER
+public class Producer{
+	public void produce(){
+		synchronized(lock){
+			while(isFull(buffer)){}
+			buffer[count++] = 1;
+		}
+	}
+}																			
+public class Producer{
+	public void produce(){
+		synchronized(lock){
+			if(isFull(buffer)){
+				lock.wait();
+			}
+			buffer[count++] = 1;
+			lock.notifyAll();
+		}
+	}
+}
+
+CONSUMER
+public class Consumer{
+	public void consume(){
+		synchronized(lock){
+			while(isEmpty(buffer)){}
+			buffer[count--] = 0;
+		}
+	}
+}
+public class Consumer{
+	public void consume(){
+		synchronized(lock){
+			if(isEmpty(buffer)){
+				lock.wait();
+			}
+			buffer[count--] = 0;
+			lock.notifyAll();
+		}
+	}
+}
+
+
+												STATES OF A THREAD
+================================================================================================
+a thread can be running or not
+can thread scheduler give a hand to a thread that is not running?	NO if it is in WAIT list
+
+NEW	-	when we create a new Thread()								Running -	when we start thread									When task is completed. scheduler does not give a hand
+NEW									->								RUNNING								->								TERMINATED									
+																	
+																	BLOCKED - waiting at synchronized block
+																	WAIT - parked using a wait call
+																	TIME_WAITING - parked  using sleep(timeout)/wait(timeout) call
+
+Thread scheduler can run the threads that arein RUNNABLE state
+A BLOCKED thread can be run after the key is released by synchronized block
+A WAITING thread can run when it is notified
+
+Thread.State = t.getState();
+
+
+												ORDERING READ/WRITE ON A MULTICORE - VISIBILITY/HAPPENS BOFORE/VOLATILE/FALSE SHARING
+=========================================================================================================================================
+Synchronization - is to protect a method or block of code guranteeing only thread executes at a given time. 
+This is to prevent RACE CONDITION(two threads are trying to READ and WRITE the SAME variable in java class at the SAME time)
+
+																		CPU Architecture
+																		|------------------|
+																		|	Main Memory	   |
+																		--------------------
+										
+										
+										
+										
+										
+												L2				L2					L2					L2
+												L1				L1					L1					L1
+										
+												CORE1			CORE2				CORE3				CORE4
+												
+Main Memory - connected to CPU via bus. Time taken toaccess 70ns. 	serveral GB
+L2			- time taken 7ns										256kB
+L1			- time taken 0.5ns										32kB	
+
+Read and write can really happen at same time compared with mono core
+variables can be stored in multiple places like in main memory, L1 cache of more than one core etc....
+
+VISIBILITY		-	A variable is said to be visible if the writes made on it are visible. all SYNCHRONIZED writes are visible	
+					"READ OPERATION SHOULD RESTURN THE VALUE SET BY LAST WRITE"
+HAPPENS BEFORE	-	Happens Before link exists between all synchronized or volatile WRITE operations and synchronized or volatile READ operations that follow 	
+
+T1	-	int x = 1
+T2	-	int r = x, if x = 1 HAPPENS BEFORE r = x then value of r is 1 else it is unknown	
+
+int index;
+		
+void increment(){
+	index++;
+}
+
+void print(){
+	SOP(index);
+}	
+
+What does this code print in multithread program?
+NO SYNCHRONIZATION NO VOLATILITY - IMPOSSIBLE TO SAY
+----------------------------------------------------------
+int index;
+		
+SYNCHRONIZED void increment(){
+	index++;
+}
+
+SYNCHRONIZED void print(){
+	SOP(index);
+}
+
+What does this code print in multithread program?
+SYNCHRONIZATION - correct value is always printed
+----------------------------------------------------------
+VOLATILE int index;
+		
+public void increment(){
+	index++;
+}
+
+public void print(){
+	SOP(index);
+}
+
+What does this code print in multithread program?
+the variable is VOLATILE - correct value is always printed
+----------------------------------------------------------
+int x, y, r1, r2;
+Object lock = new Object();
+
+void firstMethod(){
+	x = 1;
+	synchronized(lock){
+		y = 2;
+	}
+}
+
+void secondMethod(){
+	synchronized(lock){
+		r1 = y;
+	}
+	r2 = x;
+}
+
+what is the value of r2?
+r1 = 1 and r2 Impossible to say
+
+
+ALL SHARED VARIABLES MUST BE ACCESS IN A SYNCHRONIZED WAY OR A VOLATILE WAY
+
+
+FALSE SHARING	-	false sharing happens because of the way CPU cache works,
+					The cache is organized in lines of data
+					each line can hold 8 longs (64 bytes)
+					when a visible variable is modified in L1 cache, all the line is marked dirty for other caches
+					a read on the dirty line triggers a refresh on this line
+					
+					False sharing can be fixed by variable padding
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Virtual threads - https://openjdk.org/jeps/444
+
+CombineCompletableFuture
+	//combine two dependent future - use thenCompose because thenApply returns nested completablefuture objects
+	
+	//combine two independent future (2) - use thenCombine
+	
+	//combine multiple independent future (more than 2) - 
+									wait for all task to complete use allOf (this will not block main thread but will wait until all tasks completed). asyn non blocking
+	
+		//combine multiple independent future (more than 2) - use anyOf

@@ -40,11 +40,14 @@ Event Sourcing
 	KAFKA
 	Partitions: Kafka topics are divided into multiple partitions. Each partition is an ordered, immutable sequence of records that is continually appended to—a structured commit log1.
 
-	Consumer Groups: Consumers in Kafka are part of a consumer group. Each consumer in the group reads data from one or more partitions exclusively. This ensures that each record is processed by only one consumer within the group1.
+	Consumer Groups: Consumers in Kafka are part of a consumer group. Each consumer in the group reads data from one or more partitions exclusively. 
+					This ensures that each record is processed by only one consumer within the group1.
 
-	Load Balancing: Kafka's partitioning mechanism allows for load balancing among consumers. When a consumer joins or leaves the group, Kafka reassigns the partitions among the remaining consumers to balance the load1.
+	Load Balancing: Kafka's partitioning mechanism allows for load balancing among consumers. When a consumer joins or leaves the group, Kafka reassigns the partitions 
+					among the remaining consumers to balance the load1.
 
-	Scalability: By adding more partitions to a topic, you can increase the number of consumers that can process messages concurrently. This makes Kafka highly scalable and capable of handling high-throughput use case
+	Scalability: By adding more partitions to a topic, you can increase the number of consumers that can process messages concurrently. This makes Kafka highly scalable and capable 
+					of handling high-throughput use case
 		
 	RABBITMQ
 	Uses prefetch count
@@ -215,12 +218,12 @@ String url = http://somename/path/path?xyh=asd
 use this url in restTemplate
 
 IPing:
-
 Purpose: IPing is used to determine the availability of servers in real-time.
-Function: It periodically pings the servers to check if they are up and running. If a server does not respond to the ping, it is marked as unavailable and will not receive traffic until it becomes responsive again1.
+Function: It periodically pings the servers to check if they are up and running. If a server does not respond to the ping, it is marked as unavailable and will not receive traffic until 
+			it becomes responsive again1.
 Example: A common implementation is PingUrl, which sends an HTTP request to a specified URL to check the server's health1.
-IRule:
 
+IRule:
 Purpose: IRule defines the load balancing strategy or rule that Ribbon uses to distribute requests among available servers.
 Function: It determines which server should handle a given request based on the chosen load balancing algorithm1.
 Examples:
@@ -385,17 +388,22 @@ implement CommandLineRunner and TaskExecutionListener
 
 please list some practical usage of Spring Cloud Task in production - 
 
-Data Processing Pipelines: Spring Cloud Task can be used to create short-lived microservices that process data in batches. For example, you can use it to read data from a database, process it, and then write the results back to another database or a data warehouse.
+Data Processing Pipelines: Spring Cloud Task can be used to create short-lived microservices that process data in batches. For example, you can use it to read data from a database, 
+process it, and then write the results back to another database or a data warehouse.
 
-ETL (Extract, Transform, Load) Jobs: It is ideal for ETL tasks where data needs to be extracted from one source, transformed, and then loaded into another system. This is common in data migration projects or data integration tasks.
+ETL (Extract, Transform, Load) Jobs: It is ideal for ETL tasks where data needs to be extracted from one source, transformed, and then loaded into another system. 
+This is common in data migration projects or data integration tasks.
 
-Scheduled Tasks: You can schedule tasks to run at specific intervals using Spring Cloud Task. This is useful for periodic maintenance tasks, such as cleaning up old data, generating reports, or performing system health checks.
+Scheduled Tasks: You can schedule tasks to run at specific intervals using Spring Cloud Task. This is useful for periodic maintenance tasks, such as cleaning up old data, generating reports,
+ or performing system health checks.
 
-Microservice Orchestration: Spring Cloud Task can be used to orchestrate the execution of multiple microservices. For instance, you can have a task that triggers other microservices to perform specific actions in a defined sequence.
+Microservice Orchestration: Spring Cloud Task can be used to orchestrate the execution of multiple microservices. For instance, you can have a task that triggers other microservices 
+to perform specific actions in a defined sequence.
 
 Batch Job Execution: It can be used to execute batch jobs that need to run for a short duration. This is useful in scenarios where you need to process large volumes of data in chunks.
 
-Event-Driven Processing: Spring Cloud Task can be integrated with messaging systems like Kafka or RabbitMQ to process events. For example, you can have a task that listens for messages on a queue and processes them as they arrive.
+Event-Driven Processing: Spring Cloud Task can be integrated with messaging systems like Kafka or RabbitMQ to process events. For example, you can have a task that listens 
+for messages on a queue and processes them as they arrive.
 
 Resource Management: It allows for dynamic allocation of resources, ensuring that tasks only consume resources when they are running. This is beneficial in cloud environments where resource optimization is crucial.
 

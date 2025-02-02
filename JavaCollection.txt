@@ -2,6 +2,7 @@
                             |
         -------------------------------------
         |                   |               |
+        |                   |               |
        List                Set             Queue
         |                   |               |
   -----------------   --------------   --------------
@@ -18,7 +19,7 @@ Collection Interface: The root interface of the collection hierarchy.
 
 List Interface: Ordered collection (sequence) that allows duplicate elements.
 
-ArrayList: Resizable array implementation.
+ArrayList: Resizable array implementation. Vector is similar to ArrayList but it is synchronized. better to use ArrayList/CopyOnWriteArrayList
 LinkedList: Doubly-linked list implementation.
 Vector: Synchronized resizable array.
 Stack: Last-in, first-out (LIFO) stack.	Primarily used for LIFO operations like reversing data, parsing expressions, and backtracking algorithms.
@@ -48,7 +49,7 @@ LinkedList						LinkedHashSet						LinkedHashMap
 								TreeSet								TreeMap
 
 java.util.concurrent.*
-CopyOnWriteArrayList CopyOnWriteArraySet ConcurrentHashMap
+CopyOnWriteArrayList 			CopyOnWriteArraySet 				ConcurrentHashMap
 
 fail fast - when iterating a collection if we modifiy same collection we get concurrentmodification exception. this is fail fast
 fail safe - iterator that allows us to modify in middle of iterating a collection is fail safe (CopyOnWriteArrayList CopyOnWriteArraySet ConcurrentHashMap)
@@ -61,7 +62,45 @@ Hashmap/Hashtable/Collections.synchronizedMap - applies lock on entire map objec
 ConcurrentHashMap - applies lock on segment level (segment/bucket locking)
 
 HashMap - in java 8 internally it uses balanced tree instead of linkedlist after some threshold
+1.	default hashmap creates 16 buckets (0-15)
+2. each bucket internally uses bucket
+3. Linked linked contains Node - Key- Value - Hash - Next
+4. when we put a object internally it calls hash function passing KEY and get an index = hash & (n - 1) modular operation
+5. stores that entry in the index returned
+5. now when an another entry hash returns same index then equals method will be called checking 
+	if reference of two objects are same if so it will replace existing value in that bucket for that index
+	if not it will add that entry as next node
+5. If a Key is null then that entry directly placed in bucket 0
+			
 
+order object with id and date. no hash and equals impl. how it will work in hashmap
+Default hashCode(): 
+	The default hashCode() method in the Object class returns a unique integer based on the object's memory address. 
+	This means that each Order object will have a different hash code, even if their id and date are the same.
+
+Default equals(): 
+	The default equals() method in the Object class checks for reference equality, meaning it will only return true if both references point to the same object 
+	in memory.
+	
+Inconsistent Behavior: 
+	Since the hashCode() and equals() methods are not overridden, two Order objects with the same id and date will be treated as different keys. 
+	This can lead to unexpected behavior, such as duplicate keys and incorrect retrieval of values.
+Inefficient Lookups: 
+	The HashMap relies on the hashCode() method to determine the bucket location for storing key-value pairs. If the hash codes are not consistent, 
+	it can lead to poor performance due to increased collisions and inefficient lookups.
+
+@Override
+public int hashCode() {
+    return Objects.hash(id, date);
+}
+
+@Override
+public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null || getClass() != obj.getClass()) return false;
+    Order order = (Order) obj;
+    return id == order.id && Objects.equals(date, order.date);
+}
 
 													Collections.synchronizedList
 Synchronization: It wraps a regular list (like ArrayList) with synchronized methods, ensuring that all operations on the list are thread-safe by acquiring a lock on the entire list.

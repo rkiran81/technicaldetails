@@ -1,0 +1,35 @@
+INDEX
+CREATE INDEX <index name> ON tablename(columnname);
+
+When to Index
+Primary Keys: Always index primary key columns, as they uniquely identify each row.
+Foreign Keys: Index foreign key columns to improve JOIN operations.
+Frequently Queried Columns: Index columns that are frequently used in WHERE clauses, JOIN conditions, and ORDER BY clauses.
+Selective Columns: Index columns with high selectivity, meaning they have a large number of unique values.
+
+When Not to Index
+Low Selectivity Columns: Avoid indexing columns with low selectivity, such as boolean columns or columns with a small range of values.
+Rarely Queried Columns: Avoid indexing columns that are rarely used in queries.
+Columns with Frequent Updates: Avoid indexing columns that are frequently updated, as this can lead to significant overhead.
+
+What are clustered and non-clustered indexes in databases?
+
+
+
+
+
+
+try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+	String sql = "INSERT INTO records (field1, field2, field3) VALUES (?, ?, ?)";
+	try (PreparedStatement statement = connection.prepareStatement(sql)) {
+		for (Record record : records) {
+			statement.setString(1, record.field1);
+			statement.setString(2, record.field2);
+			statement.setInt(3, record.field3);
+			statement.addBatch();
+		}
+		statement.executeBatch();
+	}
+} catch (SQLException e) {
+	e.printStackTrace();
+}

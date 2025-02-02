@@ -1,0 +1,97 @@
+Oauth2 - Authenticate Server Authorization Server, Resource Server
+
+RFC-7519	-	JWT specification
+
+Session tokens		Reference tokens because they are a refrecnce to a stored token data at server side
+JSON web tokens		Value tokens because they contain the value/data within
+
+Structure of JWT
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+			HEADER					.								PAYLOAD									   .					SIGNATURE
+
+HEADER:ALGORITHM & TOKEN TYPE (THIS IS BASE64 ENCODED AND ANYBODY CAN DECODE)
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+
+PAYLOAD:DATA (THIS IS BASE64 ENCODED AND ANYBODY CAN DECODE)
+{
+  "sub": "1234567890",
+  "name": "John Doe",
+  "iat": 1516239022
+}
+
+VERIFY SIGNATURE (THIS IS ENCRYPTED USING ALGORITHM IN HEADER(HS256) WITH VALUES IN HEADER,PAYLOAD AND A SECRET KEY)
+HMACSHA256(
+  base64UrlEncode(header) + "." +
+  base64UrlEncode(payload),
+  your-256-bit-secret
+) 
+
+=====================
+The token was issued in a past date "iat" < NOW				ISSUED AT 		(iat)
+The token hasn't expired yet "exp" > NOW					EXPIRATION TIME	(exp)
+The token can already be used. "nbf" < NOW					NOT BEFORE 		(nbf)
+
+JWT: Indicates that the token is a JSON Web Token
+	{
+	  "alg": "HS256",
+	  "typ": "JWT"
+	}
+JWS: Indicates that the token is a JSON Web Signature, which is a signed JWT.
+	{
+	  "alg": "RS256",
+	  "typ": "JWS"
+	}
+JWE: Indicates that the token is a JSON Web Encryption, which is an encrypted JWT.
+	{
+	  "alg": "RSA-OAEP",
+	  "enc": "A256GCM",
+	  "typ": "JWE"
+	}
+
+																OAUTH TOKEN
+JWT token that can be verified but cannot be modified
+
+Oauth2 delegates the authentication to other service that hosts your account	
+
+You are already an authenticated person by say google, facebook, github etc.... 
+so another service will only Authorize you and fetch some data like username, email etc...		
+
+three main parts - 
+	External Service	(client)
+	Resource
+	Resource owner
+	Resource Server	(example Google drive)
+	Authorization server (Google, GitGub,FB)	Anuthorization holds burden of security. who ever is trying to access the resource is legitamate
+												Google,FB etc.. implements OAuth2,the authorization server.It could be a saperate server
+												This is the server that issues access token
+AUTH TOKEN
+ACCESS TOKEN
+
+Authorization code flow
+	1. I, RESOURCE OWNER tell print service (CLIENT) to use photos from my google drive
+	2. Print service goes to AUTH SERVER
+	3. AUTH SERVER comes to me telling who asking for what permission
+	4. As a RESOURCE OWNER I provide permission to AUTH SERVER
+	5. AUTH SERVER gives AUTH TOKEN to Print service
+	6. Print service using this AUTH TOKEN goes to AUTH SERVER again and gets ACCESS TOKEN
+	7. Print service now goes to google drive to fetch photos using this ACCESS TOKEN
+
+
+Implicit Flow
+	Is exactly same as above steps except there will be no STEP 5 i.e no AUTH TOKEN involved but Auth Server directly gives ACCESS TOKEN
+	This flow is not so secured and is primarily used with short lived access tokens.
+
+The Client Credentials Flow
+	OAuth is for Authorization between service so this is good for Authorization between MICROSERVICES
+	This flow is used when CLIENT is WELL TRUSTED (CONFIDENTIAL CLIENTS)
+	When you writing the client yourself
+
+In real world
+External Service	-	your angular app
+Authorization server (Google, GitGub,FB)
+
+
+													

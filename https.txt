@@ -20,7 +20,40 @@ now the client is unware of this. This is where SSL certificates come into pictu
 SSL Issuer/Let's Encrypt
 1. server shares its public key and sever url to issuer and asks for certificates
 2. issuer also has a private and public key.
-3. issuer creates a certificate using the server url and creates certificate and using a signature equal to server pub key + issuer pub key
+3. issuer creates a certificate using the server url and creates certificate, using a signature equal to server pub key + issuer pub key
 4. now during client server interaction server shares its asymmetric public and certificate to client.
 5. client contacts issuer and receives its public key and client verfies that public key is same as in certificate.
 6. if same then its assured that server aymmetric public key is not changed by any hacker.
+
+													Springboot
+													===========================
+You can either use a self-signed certificate for development or obtain one from a Certificate Authority (CA) for production.
+
+Using Keytool to Generate a Self-Signed Certificate:
+keytool -genkeypair -alias springboot -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore springboot.p12 -validity 3650
+
+This command generates a PKCS12 keystore named springboot.p12 with a validity of 10 years.
+
+
+server:
+  port: 8443
+  ssl:
+    key-store: classpath:springboot.p12
+    key-store-password: your_password
+    key-store-type: PKCS12
+    key-alias: springboot
+
+Redirect HTTP to HTTPS (Optional)
+To ensure all traffic uses HTTPS, you can configure a redirect from HTTP to HTTPS.
+
+@Configuration
+@Order(1)
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+            .requiresChannel()
+            .anyRequest()
+            .requiresSecure();
+    }
+}
