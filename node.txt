@@ -2,6 +2,65 @@ Atlas
 kiranrkumar
 WTlgikV1XQNEZHbC
 
+
+Node.jsis a powerful, open-source, cross-platform runtime environment that allows you to run JavaScript code outside of a web browser. 
+It uses the V8 JavaScript engine, which is the same engine that powers Google Chrome, to execute code. 
+Node.js is designed to build scalable network applications and is particularly well-suited for developing server-side and networking applications.
+
+Key Features of Node.js
+Asynchronous and Event-Driven: 
+	Node.jsuses an event-driven, non-blocking I/O model, which makes it efficient and suitable for real-time applications.
+
+Single-Threaded: 
+	Although Node.jsoperates on a single thread, it can handle multiple connections concurrently using event-driven architecture.
+
+NPM (Node Package Manager): 
+	Node.jscomes with NPM, which is the largest ecosystem of open-source libraries and packages, making it easy to add functionality to your applications.
+
+Uses of Node.js
+Web Servers: 
+	Node.jsis commonly used to create web servers and handle HTTP requests and responses. Its non-blocking nature makes it ideal for handling multiple requests simultaneously.
+
+APIs: 
+	Node.jsis often used to build RESTful APIs and microservices, allowing different parts of an application to communicate with each other.
+
+Real-Time Applications: 
+	Node.jsis perfect for real-time applications like chat applications, online gaming, and collaborative tools due to its event-driven architecture.
+
+Single Page Applications (SPAs): 
+	Node.jscan be used to build SPAs, where the entire application runs on a single web page, providing a seamless user experience.
+
+Command-Line Tools: 
+	Node.jscan be used to create command-line tools and scripts, automating repetitive tasks and improving productivity.
+
+Data Streaming: 
+	Node.jsis well-suited for handling data streaming applications, such as video streaming services and real-time data processing.
+
+app.use(bodyParser.json())
+Purpose: 
+	This line of code tells the Express application to use the body-parser middleware to parse incoming request bodies that are in JSON format.
+Functionality: 
+	When a request with a JSON payload is received, body-parser will parse the JSON data and make it available in req.body.
+
+app.use(bodyParser.urlencoded({ extended: false }))
+Purpose: 
+	This line of code tells the Express application to use the body-parser middleware to parse incoming request bodies that are URL-encoded.
+
+Functionality: 
+	When a request with URL-encoded data is received, body-parser will parse the data and make it available in req.body.
+Options:
+	extended: false: Uses the querystring library to parse URL-encoded data, which does not support nested objects.
+	extended: true: Uses the qs library to parse URL-encoded data, which supports nested objects.
+	name=John&address[city]=New+York&address[state]=NY
+	{
+		"name": "John",
+		"address": {
+			"city": "New York",
+			"state": "NY"
+		}
+	}
+
+
 // Simulate an asynchronous operation using a promise
 function fetchData() {
     return new Promise((resolve, reject) => {

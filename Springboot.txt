@@ -1,4 +1,5 @@
-constructor injection - makes sure the dependencies are initialized before constructing the object so in runtime we will not face issue
+constructor injection - makes sure the dependencies are initialized before constructing the object so in runtime we will 
+not face issue
 use constuctor or lombok fetaure like @AllArgConstructors or @RequiredArgConstructors
 
 Generic Response Object
@@ -42,15 +43,17 @@ https://javatechie4u.medium.com/spring-boot-password-encryption-using-jasypt-9ee
 											======================================
 dependency resolution/avoid version conflict
 	before spring boot to develop a crud web based app we had to add, 
-	spring core, spring context, spring orm, spring tx, spring web, spring webmvc,hibernate core, hibernate validator, mysql connector, jackson
+	spring core, spring context, spring orm, spring tx, spring web, spring webmvc,hibernate core, hibernate validator, 
+	mysql connector, jackson
 	with versions
 	
 	after spring boot spring web, spring data jpa, mysql connector dependency will mamanged through parent version
 avoid additional configuration
 	before spring boot 
 	application-context.xml,
-		define datasource with db connection props, sessionfactory passing ds and entites to scan, hibernate properties, create transaction manager
-	springrest-servlet,xml
+		define datasource with db connection props, sessionfactory passing ds and entites to scan, hibernate properties, 
+		create transaction manager
+	spring-rest-servlet,xml
 		define scan base packages, mvc annotation driven, tx annotation diven
 	web.xml
 		provide applictaion-context.xml
@@ -71,7 +74,8 @@ starter undertow
 												how will you run your springboot application
 												======================================
 mvn spring-boot:run
-during development it will directly go to target/classes and main class and run main method. in prod build we genrate jar file or docker files
+during development it will directly go to target/classes and main class and run main method. 
+in prod build we genrate jar file or docker files
 mvn install will create jar	which contains 
 BOOT-INF
 	classes, lib
@@ -82,18 +86,21 @@ org
 												what is the purpose of @springbootapplictaion
 												======================================
 @enableautoconfiguraion - scan dependencies/classpath and load other required dependencies/jars
-@componentscan	-	 scan for beans the package where we have main class and sub packages. if any package defined outside using scanBasepackages property
+@componentscan	-	 scan for beans the package where we have main class and sub packages. if any package defined 
+					outside using scanBasepackages property
 @configuration										
 
 												what is the auto configuration in spring boot
 												======================================
 in properties add "debug=true" or @springbbotapplication(debug=true) to see positive/negative matches
 configues applictaion based on dependency/property configurations/classpath
-1. example if we do not add spring data jpa or any embedded db dependency then datasourceautoconfiguration comes under negative matches. 
+1. example if we do not add spring data jpa or any embedded db dependency then datasourceautoconfiguration comes 
+	under negative matches. 
    when added it comes under positive matches but we need to provide spring.datasource properties
-2. spring.aop.auto.true will be true by default because in AopAutoConfiguration class @ConditionalOnProperty has matchIfMissing = true
-   so it comes under postivitive matches and if its set to true it moves to negative match. this conf is used to enableautoconfiguraion
-   JdkDynamicAutoProxyConfiguration and CglibAutoProxyConfiguration
+2. spring.aop.auto.true will be true by default because in AopAutoConfiguration class @ConditionalOnProperty 
+	has matchIfMissing = true
+   so it comes under postivitive matches and if its set to false it moves to negative match. 
+   this conf is used to enableautoconfiguraion JdkDynamicAutoProxyConfiguration and CglibAutoProxyConfiguration
    
    spring-boot-autoconfigure.jar/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports 
    contains all default postive/negative matches
@@ -108,11 +115,14 @@ configues applictaion based on dependency/property configurations/classpath
 												
 												How spring boot run method works internally
 												======================================
-1. prepareEnvironment - load properties/yaml, configureProfile
-2. print banner
-3. Create application context	-	scan all @Bean/@Compoenents/scanBasePackages and register beans
-4. start server
-5. return configurableapplicationcontext		
+	1. prepareEnvironment - load properties/yaml, configureProfile
+	2. print banner
+	3. Create application context	-	scan all @Bean/@Components/scanBasePackages and register beans
+		Enable Auto-Configuration
+		Run Application Context Initializers
+	4. start server
+		Run CommandLineRunner and ApplicationRunner Beans
+	5. return configurableapplicationcontext		
 
 												what is commandline runner in spring boot
 												======================================
@@ -341,11 +351,15 @@ technically its possible
 3. in endpoint @GetMapping(produces = {"application/json, application/xml"})
 4. in calling endpint add ?format=xml or ?format=json at the end
 
+GET /api/data HTTP/1.1		GET /api/data.json		GET /api/data?format=json		POST /api/data HTTP/1.1
+Host: localhost:8080		GET /api/data.xml		GET /api/data?format=xml		Host: localhost:8080
+Accept: application/json															Content-Type: application/json
+
 											what all staus code you have observed
 											============================================================
 400		bad request								
 401		authentican error
-402		
+402		Payment Required
 403		unauthorized
 405		method not allowed
 415		unsupported media type
@@ -355,6 +369,8 @@ technically its possible
 503		server unavailable
 200		Ok
 201		Created
+301		permanent redirect
+302		temporary redirect toprovided Location
 
 											how to customize staus code of your application
 											============================================================
@@ -396,6 +412,19 @@ path/swagger-ui/index.html		full documentation
 											============================================================
 @Hidden from io.swaggqe.v3.oas.annotations
 provide description about a endpoint @Opeartion(description = "description")
+
+management.endpoints.web.exposure.exclude=hidden-endpoint
+Using a Filter
+@Configuration
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+            .authorizeRequests()
+            .antMatchers("/hidden-endpoint").denyAll()
+            .anyRequest().permitAll();
+    }
+}
 
 											how will you consume endpoints
 											============================================================

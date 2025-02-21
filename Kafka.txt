@@ -1,3 +1,5 @@
+https://app.pluralsight.com/ilx/video-courses/c05073a8-ef54-4354-a895-e561fdb428b3/40bac18e-2dc9-44e3-9b06-6e9deb5a28ba/5e790eb1-313f-4b0b-bbdd-7445220827ac
+
 what is KAFKA
 open source distributed EVENT STREAMING platform
 	EVENT STREAMING
@@ -5,6 +7,15 @@ open source distributed EVENT STREAMING platform
 			eg - sending millions/billions of paytm events to kafka every second/milli second is called creating/generating real time stream
 		process real time stream
 
+use kafka-connect-datagen to generate mock events/data into topics to test say slow consumers and demos
+
+Messaging System
+Activity Tracking
+Gather metrics from many different locations
+Application Logs gathering
+Stream processing (with the Kafka Streams API for example)
+De-coupling of system dependencies
+Integration with Spark, Flink, Storm, Hadoop, and many other Big Data technologies Micro-services pub/sub
 
 PUB/SUB model
 Publisher	->		message broker	->	subscriber
@@ -40,6 +51,94 @@ managed aws
 
 kafka offset explorer - GUI to manage apache kafka
 
+												BROKERS
+To run two brokers locally
+	1. make a copy of config/server.properties as config/server-1.properties
+	2. change broker.id = 0 to broker.id = 1 because each broker must have a unique id
+	3. change listener=PLAINTEXT://:9082 to listener=PLAINTEXT://:9083
+	4.change log.dirs=/tmp/kafka-logs to log.dirs=/tmp/kafka-logs-1
+												
+												
+												RECORD
+KEY			VAUE		TIMESTAMP
+String		  ''
+Integer		  ''
+Anything	  ''
+												TOPIC
+												
+DELETE		if Topic size set to 20KB. we publish 4 msgs of size 5KB. now when new msgs are published old msgs are deleted 
+			by default a broker holds msgs for 7 days. we can set retention time to say 1 day
+
+COMPACT		Compaction Topis - Msgs in topis are K1-V1,	K1,V3,K2-V1. kafka uses upsert here.if a msgs arrives with same key then exsting one is deleted		
+
+When creating topic we provide topic name,number of partitions and their replicationset count
+it is possible to have partitions of a Kafka topic distributed across multiple brokers. 
+these replicas/partitions constantly sync data from their leader
+In fact, Kafka is designed to handle this kind of setup to ensure scalability, fault tolerance, and high availability
+If one broker fails, the replicas on other brokers ensure that data is still accessible and processing can continue 
+without interruption
+data is only written to leader but consumers can consume from replicas
+
+												KAFKA RECORD
+What a record consists of,
+Value		- actual data to be transferred
+Key			- decides to what partion a record is sent to. 
+			  if null the record is stored in partitions in a round robin fashion. first to partition 0, then 1 and 2, so on
+			  if not null it will define what partition a record will go to.
+			  hash of key + mod n (no of partitions) = index of partition
+Header		- meta data we want to include with the record
+Timestamp	- when the record was stored in kafka or when a record was created by the producer											
+
+					
+												PARTITIONS
+Each partition stores different messages unless same messages are produced	
+partitions are replictaed within brokers. so msg received in a broker to a particluar partition is copied to respective 
+partition in other brokers
+A partition can be a leader for other partitions and a follower can be a leader for other partitions in other brokers	
+
+												READING RECORDS FROM TOPIC
+if there is one topic with two partitions and two consumer groups then both consumer groups consume records from
+both partitions and keeps track of from which partition which offset record is processed which helps in fault
+tolerance and reliability
+
+												CONSUMER GROUP
+Set of consumers consuming records from same topic having same logic but parallely
+if you need to process data/records in same topic with different logic then create another consumer group
+
+in queue one message can be consumed by only one consumer but here it is not the case
+
+
+												ORDER OF RECORDS IN KAFKA
+Kafka maintains order per partition
+records are in the order they were produced
+if we select meaningful key e.g. userId
+	this has an important implication when a user visits a website
+		all records/information will end up in same partition
+		and consumer consuming it will have history of pages visited or events by that user
+ this kind of order is not guranteed in a queue
+ 
+ 
+KAFKA 										VS 	QUEUE
+Very scalable									Depends (Amazon SQS and RabbitMQ)
+Consumer tracks its position					Queue tracks unprocessed messages
+Order per partition								Depends (FIFO or no order)
+Each consumer group processes all messages		A message is processedby only one consumer because its removed after consumed
+												
+											
+												KAFKA LOG/IMMUTABLE LOGS
+Immutable logs are array of binary records.each record has a position in the log called offset starting 0 
+and increasing as records arrive. 
+producer producing a record sits at the end of the array. cannot be added in between and cannot be removed.		
+consumer can consume records in their own pace and in any order.
+processed records are not removed from the log. they can be read and processed multiple times.
+we can set an expiration policy when it can be removed. default is 7 days
+
+retention.ms: The retention time in milliseconds. Messages older than this time are eligible for deletion.
+retention.bytes: The maximum size of the log before old messages are deleted. This works alongside retention.ms.
+At broker level
+# Default retention policy for all topics (e.g., 7 days)
+log.retention.hours=168								
+												
 												Producer
 create spring boot app with dependencies web and spring for apache kafka
 start zookeeper
@@ -47,7 +146,7 @@ start kafka server
 
 now tell spring app about kafka server in app yaml file
 
-spring.kafka.produce.bootsrap-servres=localhost:9092,........
+spring.kafka.producer.bootsrap-servres=localhost:9092,........
 
 to publish message create a service class say kafkamsgpublisher
 to talk to kafka server we need kafkatemplate
@@ -95,6 +194,7 @@ public class KafkaProducerExample {
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+		props.put("retries", 3);
 
         KafkaProducer<String, String> producer = new KafkaProducer<>(props);
 
@@ -102,10 +202,12 @@ public class KafkaProducerExample {
         String key = "your_key";
         String value = "your_value";
         int partition = 1; // Specify the partition number
-
+		
+		// if value is a object then convert to string and pass
         ProducerRecord<String, String> record = new ProducerRecord<>(topic, partition, key, value);
         producer.send(record);
-
+		
+		producer.flush()
         producer.close();
     }
 }
@@ -123,10 +225,68 @@ public class KafkaConsumerExample {
     public static void main(String[] args) {
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "your_group_id");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+		
+		//So if we start multiple instances of this application and they will have the same value for the group.id, 
+		//these applications together will form a single consumer group, and they will divide partitions in a topic among 
+		//themselves, processed in parallel. 
+		//If we replicate instances with a different consumer group, then we will be processing the same records independently.
+		props.put(ConsumerConfig.GROUP_ID_CONFIG, "your_group_id");
+		
+		//in kafka commit is an operation that specifies that a consumer has consumed all records in a partition 
+		//upto some specific offset
+		//And we can either control when to commit an offset manually, or a consumer can do it periodically for us. 
+		//So we'll set it to false because we will be doing this ourselves.
+		//true: The consumer will automatically commit offsets periodically at the interval set by 
+		//auto.commit.interval.ms (default is 5 seconds). This is the default behavior.
+		//false: The consumer will not automatically commit offsets. You will need to manually commit offsets using 
+		//the commitSync() or commitAsync() methods.
+		//Offset Committing: Consumers commit offsets to keep track of processed messages.
+		//Storage: Offsets are stored in the __consumer_offsets topic.
+		//Usage: Offsets are used to determine where to start reading from in the partition.
+		//Default Creation: __consumer_offsets is created automatically by Kafka.
+		//Configuration: No specific configuration needed for __consumer_offsets.
+		//Internal Topic: __consumer_offsets
+		//So, regardless of your topic name ("orders_placed"), the committed offsets will be stored in the __consumer_offsets topic.
+		//Consumer Group: Offsets are partitioned based on consumer group ID, not the individual topic name.
+		//This topic is shared across all consumers and stores offsets for every consumer group in the cluster.
+		//Replication: Managed by the replication factor of the Kafka cluster.
+		//enable.auto.commit=true
+		//auto.commit.interval.ms=5000
+		props.put("enable.auto.commit", false);
+		
+		//determines what to do when there is no initial offset in Kafka or if the current offset does not exist anymore 
+		//(e.g., because that data has been deleted).
+		//This parameter specifies where this consumer should start reading records from Kafka. 
+		//Should it start from the very beginning and start with the earliest available record, or 
+		//should it ignore all the records in a topic and start from new records that will be added after it starts?
+		//earliest: Start reading from the beginning of the partition.
+		//latest: Start reading from the end of the partition (new messages).
+		//none: Throw an exception if no previous offset is found.
+		props.put("auto.offset.reset", "earliest");
 
+commitSync
+		Synchronous: This method commits the offsets synchronously, meaning it waits for the offset commit request to complete before continuing with the next line of code.
+		Blocking: The call blocks until the offset commit is acknowledged by the Kafka broker.
+		Reliability: It's more reliable because it ensures that the offsets are committed before proceeding, but it can cause delays if the broker is slow to respond.
+		Error Handling: Throws an exception if the commit fails, which you can handle in your code to retry or take other actions.
+
+commitAsync	
+		Asynchronous: This method commits the offsets asynchronously, meaning it does not wait for the commit request to complete. Instead, it immediately returns control to the next line of code.
+		Non-Blocking: The call is non-blocking, which means it allows your application to continue processing without waiting for the commit to complete.
+		Performance: It's generally more performant since it doesn't block the consumer, but there's a risk that the commit might not complete successfully.
+		Error Handling: You can provide a callback to handle commit failures, but the application doesn't wait for the result.
+		consumer.commitAsync((offsets, exception) -> {
+			if (exception != null) {
+				System.err.println("Commit failed: " + exception);
+			} else {
+				System.out.println("Commit succeeded");
+			}
+		});
+
+		
+		
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
 
         String topic = "your_topic";
@@ -134,16 +294,677 @@ public class KafkaConsumerExample {
         TopicPartition topicPartition = new TopicPartition(topic, partition);
 
         consumer.assign(Collections.singletonList(topicPartition));
-
-        while (true) {
-            ConsumerRecords<String, String> records = consumer.poll(100);
-            for (ConsumerRecord<String, String> record : records) {
-                System.out.printf("offset = %d, key = %s, value = %s%n", record.offset(), record.key(), record.value());
-            }
-        }
+		//consumer.subscribe(Arrays.asList("topic-name"));
+		
+		try{
+			while (true) {
+				ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+				for (ConsumerRecord<String, String> record : records) {
+					System.out.printf("Partition = %d, offset = %d, key = %s, value = %s%n", 
+					record.partition(), record.offset(), record.key(), record.value());
+				}
+				consumer.commitAsync();
+			}
+		}catch(Exception ex){
+			consumer.close();
+		}
     }
 }
 
+
+												ADVANCED TOPICS
+Durability - 
+	making sure the messages written to kafka are not lost
+	 a partition can be replicated across multiple brokers, but it turns out that even with this setup, we can lose our data.
+	 When a broker receives a record, when should it notify a producer that it was recorded? It can, for example, 
+	 notify it as soon as the leader broker has persisted the record. But what if a broker mission fails after it 
+	 acknowledges a record, but before this record was replicated to other brokers? If the leader broker fails before it 
+	 has a chance to replicate records to other brokers, the record will be lost. So despite the fact that record would 
+	 eventually be copied to other brokers, we can get unlucky and we can lose our data. Alternatively, 
+	 we can acknowledge a record after it was stored by all replicas. So, in this case, a leader receives a record, 
+	 it then waits until the record is persisted on all three brokers, and then it sends an acknowledgement to a producer. 
+	 So we can configure a number of acknowledgments in Kafka that we want to get from a topic, but we'll always have a 
+	 trade‑off. If we wait for more acknowledgements, our performance will be lower, we will have a higher durability. 
+	 On the contrary, we wait for less acknowledgements, our performance will be higher, but we will have lower durability. 
+	 So what we should do, we should configure the number of acknowledgments on the case‑by‑case basis. 
+	 For example, we can wait for one acknowledgement for a topic that tracks what pages a user has visited because 
+	 if we lose a record about a particular user visiting one page out of hundreds of thousands, it's not a big deal. 
+	 On the other hand, if we store financial transactions in Kafka, it would make sense to go for three acknowledgements 
+	 because we don't want to lose any records. Now to configure a number of acknowledgments a producer should wait for 
+	 until considering a record persisted, we need to set the acks value in the config. We can set this value to either 
+	 
+	 0 where we don't wait for any acknowledgements, 				props.put("acks", "0")
+	 1 where we wait for an acknowledgement from the leader broker, props.put("acks", "1")
+	 or we can set it to all where we will wait for acknowledgements from the number of so‑called in‑sync replicas. 
+	 props.put("acks", "all")
+	 
+	 An in‑sync replica is a replica that keeps up with the leader and doesn't fall too far behind the progress of the leader.
+	 We can configure how many in‑sync replicas we should have in a topic for it to be able to accept incoming records. 
+	 If we have a leader and replica for each partition, a common value will be 1, meaning that there should be at least one 
+	 replica in sync with a leader, or 2, which would mean that there should be two replicas in sync with leader. 
+	 Now, the leader broker will return an error if producer tries to write a record, but there is not enough in‑sync 
+	 replicas.
+
+Idempotent Producers - 
+	adding same two elements in a set is idempotent
+	One interesting issue that we might encounter is a problem with duplicated records produced to a topic. 
+	And here is how this might happen. Say a producer attempts to write a record to a broker. 
+	A broker then saves this record and sends an acknowledgement to notify a producer that the record was saved. 
+	However, it can be that an acknowledgement for this saved record might get lost. 
+	This is a problem since the producer will not know what has happened. It will never be able to distinguish between 
+	a lost record that never made it to a broker and a lost acknowledgment. The producer who tries and sends 
+	the record again, the broker will happily accept it, and it will store this record again. 
+	Now as a result, if we have network issues, we might have duplicated records in our topics. 
+	And when consumers will be processing records in a topic, they will also process both records. 
+	Now this may not be a big issue for some domains. For example, if we have a topic where we store what pages has a user 
+	visited and we have a duplicate record, we will just think that a user has visited the same page twice. 
+	However, it might be a bigger issue if we store, for example, financial transactions in a Kafka topic. 
+	In this case, we can do something like charging an account twice, which is not a good thing. 
+	Now Kafka has a solution for this, which is called an idempotent producer, and it allows to ensure that 
+	each record coded exactly once. If idempotent producer is enabled, Kafka producer will assign a sequence number, 
+	each batch of records it tries to store. Every producer has a unique ID, and the broker will keep track of what 
+	sequence number it expects next from each producer. If it receives a correct sequence number, it will save a record. 
+	Otherwise, if we sent a duplicated record and it sees that the sequence number is incorrect, it is lower than it expects,
+	it will ignore it and won't write a record again. A great thing about idempotent producer is that enabling idempotent 
+	producer is very straightforward. All we need to do is insert value 1 for the enable.idempotentence parameter in the 
+	config to enable idempotent producer. Notice that if we enable idempotence, we also need to set acks value in the 
+	config to all. And just to remind you that as we've discussed before, if we enable this acks equal to all, 
+	a producer will wait for acknowledgements from a leader broker and a certain number of follower brokers. 
+	Enabling idempotent producer has a very low performance impact if you already have acks set to all. 
+	Another bonus point is that enabling idempotence has a very low performance impact if you already have acks set to all. 
+	However, if you change acks from say, 0 or 1 to all, then this change by itself will have a significant performance 
+	impact. The other benefit of enabling idempotence is that it will guarantee that records will be stored in Kafka 
+	in the same order they are produced, which may not be the case if we use the default producer config.
+	props.put("enable.idempotence","1") then this is a must props.put("acks", "all")
+	
+	When enable.idempotence is set to true, each Kafka producer is assigned a unique Producer ID (PID). 
+	Every message sent by the producer includes this PID along with a monotonically increasing sequence number1. 
+	The broker keeps track of the highest sequence number for each topic partition. 
+	If a message with a lower sequence number is received, it is discarded, ensuring that duplicates are not introduced
+	
+	enable.idempotence=true
+	acks=all
+	retries=MAX_RETRIES		//retries: The number of times the producer will retry sending a message.
+	retry.backoff.ms=100	//retry.backoff.ms: The time interval between retry attempts.
+	
+	Transient errors, also known as transient faults, are temporary issues that typically resolve themselves 
+	after a short period of time. These errors are often caused by momentary network interruptions, resource contention, 
+	or temporary service unavailability.
+
+
+Transactions - 	
+	similar to transactions in db's
+	Imagine we have an online shop and we have a consumer that reads the records from the orders topic that contains 
+	information about all orders placed by our users. Now after processing an order record, the consumer should create 
+	a record with a notification that should be sent to a user and writes it to our topic, and it should create another 
+	record with delivery information that should be processed by another consumer, and it puts it into another topic. 
+	Now with this, we want to generate two records; however, it can be the case that consumer only produces one message 
+	and fails before it produces another one. In this case, for example, we might only get a delivery without a notification,
+	or it can be the other way around where we only receive a notification about the official delivery, 
+	but the user will not receive an ordered item. To avoid this, Kafka provides a transactions API. 
+	It is very similar to transactions in regular databases. First of all, we need to call the beginTransaction method 
+	using the producer API, and then we can send records to multiple topics. We can also, as a part of this transaction, 
+	commit offsets in the topic a consumer is reading from. Now once we commit a transaction using the commitTransaction 
+	method, it will commit the offset to the special topic in Kafka that stores the latest offset for a consumer, 
+	and it will record the result records, and these records will become visible for the consumers of the other two 
+	topics we are writing to. Now with the transactions, we get either all or nothing. 
+	We either commit both, a new offset and all records, or no changes in Kafka topics are made. 
+	But keep in mind that using transactions have a visible performance impact, so you should only use them when you 
+	need them.
+	
+	producer.initTransactions();
+	producer.beginTransaction();
+	producer.send(new ProducerRecord<>("Notification-topic",.....))
+	producer.send(new ProducerRecord<>("Delivery-topic",.....))
+	//if consuming as well, consume-transform-produce pattern
+	//This sends the offsets to the transaction manager handling the transaction. 
+	//It will commit the offsets only if the entire transactions—consuming and producing—succeeds
+	//val offsetAndMetadata = new OffsetAndMetadata(this.context().offset() + 1)
+	//The offsets you commit are the offsets of the messages you want to read next (not the offsets of the messages you did read last).
+	producer.sendOffsetsToTransaction(consumerOffsets, "my-consumer-group"); 
+	
+	producer.commitTransaction();
+
+__transaction_state topic	
+	
+												EVENTS PROCESSING
+Stateless
+	each events are processed individually
+	filter, map, flatMap
+Statefull
+	Depends on current state
+	aggregators, joins
+	
+kafka can be treated like
+	persistent storage for events
+	can be processed multiple times
+	events are ordered per partition
+	can be processed in almost real time
+	
+	
+												KAFKA STREAMS
+Java library
+no need a complex cluster
+easy to scale out
+supports stateless/statefull stream processing
+topology process the incoming events
+kafka stream can also have internal storage												
+												KAFKA STREAMS Topology
+In Kafka Streams, a Topology represents the computational logic of your stream processing application. It is essentially a directed acyclic graph (DAG) that consists of nodes (processors) and edges (streams) that define the flow and transformation of data.
+
+Key Concepts in Kafka Streams Topology:
+Nodes:
+
+	Source Nodes: 
+		Represent the input topics from which records are consumed.
+	Processor Nodes: 
+		Represent the processing logic that transforms the data. These nodes apply functions 
+		like filtering, mapping, aggregating, and joining.
+	Sink Nodes: 
+		Represent the output topics to which records are produced after processing.
+
+Edges:
+	Streams: 
+		The connections between nodes that represent the flow of records from one processor to another.												
+												
+												
+												KAFKA STREAM Example
+Properties props = new Properties();
+props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+PROPS.PUT("application.id","my-stream-app"); // same as consumer group		
+
+In Kafka Streams, the application.id property is a unique identifier for a Kafka Streams application. 
+This ID is used to distinguish different instances of a Kafka Streams application and is crucial for managing the 
+application's state, offsets, and tasks.
+
+Usage:
+State Management: 
+	application.id is used to create and manage state stores. 
+	Each state store associated with the application will have this ID as part of its naming convention.
+	State Stores: Key-value stores for maintaining stateful information during stream processing.
+	Use Cases: Aggregations, windowing, joins, and more.
+	Configuration: Defined using Kafka Streams' DSL or processor API.
+Offset Management: 
+	Kafka Streams uses application.id to track the offsets of the topics it consumes. 
+	This ensures that each instance of the application knows where it left off in the stream processing.
+Task Distribution: 
+	When running multiple instances of a Kafka Streams application, 
+	application.id helps in distributing tasks across the instances to ensure load balancing and fault tolerance.										
+												
+
+we can query like get all job applications for a user, 
+find all job postings from a company. we can't query this directly on topics
+for this we need to store this data some where else
+This has a name CQRS pattern.Command Query Seggregation Pattern
+Updates - command
+Reads   - queries
+
+here's how it will look. We will have two separate components in our application, 
+one receiving commands that are going to change the state of our system, and these commands will be stored to later be 
+processed by a second component. The second component will be processing these commands and update the state of the system 
+that can be queried. Here is a more detailed view of how this will work with Kafka. 
+A user would send updates that should be performed via an API, and this API would write events to a particular input topic. 
+Then, a stream processing application would read events from one or multiple topics and would update a 
+so‑called materialized state in a database. It might be as simple as just storing events as they arrive, 
+or it can update a state in a database using complex logic. 
+The created state will be available for querying via an API that a user can use to access data from this database. 
+Now, also keep in mind that the stream processing application is not limited to processing data from a single topic, 
+it can process multiple event streams and combine them together.
+
+
+												WRITE AHEAD LOG
+MySQL		binary log
+Postgress	write ahead log
+Mongo		change streams	
+
+database does not store state changes.say we inserted an user, updated it and then deleted it. Now if we query for this user
+in users table we will not know the above state changes. database uses WAL to manage state updates into tables and indexs.
+we can get these states from WALs. Not all DBs support WAL. but reading WAL is hard to implement by ourself.
+
+The leader broker for a partition writes the message to its local log (WAL) and waits for acknowledgment from the follower 
+brokers that they have replicated the message to their local logs.
+
+												KAFKA CONNECT
+Connects kafka with external systems
+send data from kafka to external systems
+copy data from external systems to kafka
+kafka connect provides various sinks and sources
+scalable and extendable
+no need to write code in most cases where kafka connect is available
+
+DB -> Kafka Connect ->				1. Read			 KAFKA				3. write			-> Kafka Connect -> DB 	
+													
+													2.process
+											
+											kafka			kafka
+											streams			streams
+											
+											EVENT-CARRIED STATE TRANSFER
+what information should we store in an event generated from a database update. 
+One option would be to simply store an ID of a changed item, and maybe together with an operation that was performed on 
+it in a database like create, update, or delete. Another option, however, would be to store at the current state of an 
+updated row in a database and on each change, just write the whole object that we have in a database to a Kafka topic. 
+
+Here is how it would look like. With the first approach, we would store IDs of changed records, 
+and if a stream processor would need to get current state of each record, it would have to perform a database query. 
+In this case, it would increase the load on our database, but we would reduce the amount of data we store in a stream. 
+
+With the second approach, if the record is updated or created, we would copy the whole record from a database to a 
+Kafka topic. There is no longer need to query the original database when a record is being processed since all data is 
+already available in a stream. This approach is called event‑carried state transfer, 
+all events are carrying current state of data records. 
+Now, this approach allows all processors to get access to current state as soon as they read records and they don't need 
+to query a database to get current state. With this approach, we'd reduce the load on the database holding data, 
+but we would have to store more data in Kafka topics; however, this might not be an issue because we are in the age of 
+abundant storage and getting access to more storage is usually not a problem.	
+
+
+											EVENT OUTBOX PATTERN
+The first one is called Events Outbox table, and it allows us to disassociate the format of data stored in tables of our 
+databases from the format of events written to Kafka. The second topic that we will discuss is how we can implement 
+continuous data migration using Kafka. First, let's talk about the Events Outbox Pattern. The problem that this pattern 
+is trying to solve is that one logical operation can generate multiple updates in a database, and it would be hard for a 
+stream processing application to make sense out of separate events and figure out what single logical operation caused all 
+these updates. Another problem that we might encounter is that we might want to provide different data in an event stream, 
+compared to what we have in a database. So instead of just copying whatever data we have in a row when a row was created 
+or updated, we might want to provide different data. And we can use the same solution for both problems, and it is called 
+Events Outbox Pattern. So just to give you a visual representation of this problem, when we are performing a single 
+operation on a database, our microservice might need to update multiple tables and then our stream processor would need 
+to process, update, or create events from multiple tables. Now the point of the Events Outbox Pattern is that in addition 
+to updating data in actual tables storing data, we would add a record to a separate events table when we perform a single 
+logical operation on our data. And this table would contain all information about performed operations. Now, in this case, 
+a stream processor would not need to read data from all tables updated by an operation and would be able to read data from 
+a single table containing information about what operations were performed. Now the problem is to ensure that all tables 
+are updated at once and we can do this by using database transactions. Let's talk about the benefits of this approach. 
+First of all, it separates events data model from how data is stored in a database. Now this separation makes it easier 
+for a stream processor to process database updates. It also has downsides. To use this pattern, you would need to use 
+database transactions to update your data and store events in a separate events table. Now this will have a performance 
+impact on the database, but the other problem is that not all datastores support transactions. 
+For example,not all NoSQL databases support transactions.
+
+												LOG COMPACTION
+Now we will talk about another way of keeping databases in sync using Kafka. If we want to keep two data stores in sync, 
+we could, of course, justify to all events into Kafka topic and let the other process to read a stream of updates. 
+The problem with this is what if we start the second process much later then we started storing events to Kafka? 
+As you remember from the previous module, by default, Kafka only stores events for the specified duration of time. 
+After this, it starts removing old events. If we start the second process after some events are removed, it won't have 
+access to the whole data. For example, in this case, a record for user, Peter, has been removed, and it is gone from the 
+stream. The consumer starting reading events after it was removed won't have any information about it. 
+To work around this problem, Kafka has another mode that changes how it removes all the records. 
+It is called log compaction, and when it's enabled, Kafka will only store the most recent value per key. 
+If log compaction is enabled, an old record with a particular key is only removed when we write a new record with the same 
+key. The latest value was a particular key stored indefinitely until it is replaced within your value. 
+Now if a consumer starts reading data from a topic, first of all, it will read all latest values per key, and 
+it will also receive updates as they arrive. Notice that log compaction is per topic configuration, 
+so we can only enable it for specific topics. Now if we have enabled log compaction for our topic, 
+we'll see a different picture. Now, instead of removing records that are older than some threshold, 
+Kafka will instead will be removing previous values for each key. Now in this example, a record key will be a user ID. 
+If Joe updates his email, we'll get a new record in the log. But the previous record with the same key for the same user 
+will be removed. If the user makes another change to his profile, we will receive another record, and Kafka will again 
+remove the previous record with the same key. Whenever a stream processor joins, it will read all latest values from the 
+database we're trying to replicate and will always be able to read the latest values. Now I would like to pause here and 
+briefly talk about a good mental concept to keep in mind that is called STREAM‑TABLE DUALITY. What this means is that we 
+can convert a table into a stream of records where each record in a stream would be an update operation performed on a 
+table. We have already talked about this example when we were discussing write‑ahead log. Essentially, you can think about a 
+write‑ahead log as a stream of updates performed on a table. We can also do the opposite. 
+We can convert a stream to a table. Like in previous examples in this and previous modules, we're able to take a stream 
+of records and build a table from a stream of records. Now this is a powerful mental model, especially when we are working 
+with Kafka where we can store a stream of data into a table and convert a table back into a stream.
+
+# Topic configuration
+topic.name=orders_placed
+cleanup.policy=compact			//Set this to compact to enable log compaction on the topic
+cleanup.policy=delete			//This is the default cleanup policy. When set to delete, Kafka will delete old log segments based on the retention configuration (retention.ms and retention.bytes)
+min.compaction.lag.ms=3600000	//This property specifies the minimum time a message will remain uncompacted in the log
+delete.retention.ms=86400000	//This property specifies the time Kafka will retain delete tombstone markers for log compacted topics after compaction											
+												
+												STATEFUL STREAM PROCESSING
+say our company started messaging system where users can send messages to each other. also we need to make sure to block
+messages from abusive users. so we create a abusive users list and store in a db. Now stream processors receives msgs from 
+a topic connect to external db to find if user is abusive and if so mark that msg as abusive and send to destination topic.
+this makes high latency and reduced throughput. to solve this we can use LOCAL STORAGE												
+												
+												LOCAL STORAGE
+RocksDB(file based key-value store)
+The solution to our previous problem, surprisingly, is that instead of using an external database, we would use a local 
+data store. Local storage will be just a file‑based database that just stores data per consumer locally. In this case, 
+each consumer instance will have its own local database, and it only accesses its own local database for processing incoming 
+messages. Kafka streams is using RocksDB for this, which is a file‑based key‑value store. And if you're wondering if this is 
+durable or reliable to store data in a file locally, this is a great question, and we will discuss it later. 
+The main benefit of using local storage is that there is no need to send a network request to fetch data to process each 
+message, which means that we can process incoming records much, much faster. One thing that we need to keep in mind, 
+though, is that local storage is partitioned. Each consumer is only storing data associated with a subset of keys it is 
+processing in a Kafka topic, and it only can access its local storage. Essentially, data is partitioned across consumers 
+just as records are divided across partitions of a single topic, which means that every consumer stores only a subset of 
+data. Here's how this would work. Each consumer in a Kafka streams application processes one of the partitions and stores 
+data it needs later in its local data store. It can use this data store to process new incoming records. 
+Now, instead of using an external database and incurring a network round trip latency, our stream processor can keep all 
+the data locally. This data is then used to process incoming records and to create outgoing records. For example, 
+in our case, a stream processor could be processing a stream of events where each event represents that a particular user 
+was blocked. For each block user it encounters, it will store a blocked user information into its local database. 
+It can then process a stream of messages where each event represents a single message sent from one user to the other. 
+A stream processor can then check in its local storage if a user is blocked when it's processing each next message. 
+One thing you should keep in mind is that if a single stream processor is processing two Kafka topics and tries to match 
+records from both topics, these topics should be what is known as CO‑PARTITIONED. Now, let's spend some time to understand 
+what this means. First of all, notice that each consumer only has access to each portion of local data. 
+If they're forced to process records from one stream and manage them with records from another stream, it needs to process 
+the same subset of keys in both partitions it is assigned to. In our case, for example, each consumer will only see a 
+subset of blocked users. So when it processes incoming messages, we should guarantee that it will see messages for the 
+subset of blocked users it received. Now, how do we ensure this? Well, first of all, both topics that our consumer is 
+processing should have the same number of partitions, and second, the records in these topics should be partitioned in the 
+same way, for example, by using the same partition key. Now, this will ensure that if a consumer has processed a 
+record about a particular user being blocked, it will then see all messages from this blocked user from the messages topic.	
+
+If you have two topics, orders and customers, and you want to join these two topics on the customer ID, 
+you should ensure that both topics use the customer ID as the partition key. This way, records related to the same 
+customer are co-located in the same partition.	
+// Example for producing records with the same partition key
+ProducerRecord<String, Order> orderRecord = new ProducerRecord<>("orders", customerId, order);
+ProducerRecord<String, Customer> customerRecord = new ProducerRecord<>("customers", customerId, customer);
+
+Why It's Necessary:
+	Data Co-location: 
+		Consistent partitioning ensures that related records from different topics are stored in the same partition. 
+		This is crucial for operations like joins, aggregations, and windowing in Kafka Streams 
+		where related records need to be processed together.
+
+	Parallel Processing: 
+		By partitioning records consistently, you enable parallel processing of records without shuffling data between 
+		partitions, which improves performance and reduces latency.
+
+	Stateful Operations: 
+		For stateful operations in Kafka Streams, maintaining consistent partitioning is essential to ensure that the state 
+		stores are accessed correctly and efficiently.
+
+	Fault Tolerance: 
+		Consistent partitioning allows Kafka to replicate partitions accurately across different brokers, 
+		ensuring data durability and fault tolerance.									
+												
+												
+												CHANGE LOG TOPICS
+what if a consumer fails and what happens to local storage.
+kafka automatically creates a changelog topic to store the change log for this local storage	
+
+To work around this problem, there should be a mechanism that would allow to access local storage data from another machine 
+if a machine fails. If there's no such mechanism, then lack of persistence for local storage might be a huge problem, 
+for example, if we store block users in a local storage and we might lose this data if something happens with a particular 
+consumer. Fortunately, Kafka Streams supports persistence by storing a changelog for local storage, and it uses Kafka to 
+do this. It stores them in so‑called changelog topics. And these topics are created automatically by Kafka Streams when we 
+use local storage. And notice that these topics are compacted topics, and we have discussed how these compacted topics 
+work earlier in this module. Now having this changelog topic that will contain all operations performed with our local 
+storage, we can restore a local storage if we need to if our consumer fails. To do this, Kafka Streams will automatically 
+reprocess a changelog to restore a local storage state. Here's how it works. We have a single Kafka consumer, and it will 
+write records to two topics. The output topic that will contain events produced by this Kafka stream, and it will contain 
+a changelog for its local storage. Now writing to a changelog in Kafka is a source of truth for values in this local storage.
+ It contains all records that should be in the local storage. If we need to restore local storage on another machine, 
+ it can read data from the changelog and start processing incoming messages. At this stage, you might be wondering what 
+ would happen if we have intermediate network issues or if our consumer hosts crash? Can we have issues like duplicated 
+ writes to an output topic if an acknowledgement from an output topic was lost? Or can it happen such that we update a local 
+ storage device if a consumer crashed before committing an offset to an input topic? This may or may not be an issue, 
+ depending on the use case. But what is great about Kafka Streams is that it allows to implement a so‑called exactly‑once 
+ processing. If we enable it, each record from an incoming topic is processed exactly once, and it doesn't cause duplicated 
+ writes or duplicated storage updates. With it, we will have all or nothing with the following changes. 
+ We will update storage changelog, write output record to an output topic, and we'll commit offsets in input topics. 
+ And all these operations will be performed together, either all of them will be performed or none of them will be performed.
+ Now the good news is that with Kafka Streams, all we need to do is just make a single configuration change. We just need 
+ to set processing.guarantee to exactly_once in the Kafka Streams configuration. And the default value is at_least_once. 
+ And with a default value, we can have the issues we've discussed. Now, enabling this will have a low overhead. It will 
+ reduce the throughput of Kafka Streams by 15 to 30%. But for some use cases, it gives tremendous advantages. Now keep in 
+ mind that this only works for records within Kafka Streams, so it won't help you with delegated writes to external systems. 
+ So it's only for changes within Kafka Streams to change this to its local storage and it changes to its topics.											
+
+props.put("processing.gurantee", "exactly_once");	//Default is at_least_once
+PRODUCER
+bootstrap.servers=localhost:9092
+enable.idempotence=true				//Ensures exactly-once message delivery by the producer.
+transactional.id=example-producer	//Enables atomic message production and offset commits.
+CONSUMER
+bootstrap.servers=localhost:9092
+processing.guarantee=exactly_once	//Instructs Kafka Streams to process records exactly once.
+
+Exactly-Once Semantics (EOS)
+# Producer Configuration
+enable.idempotence=true
+acks=all							//Ensures messages are durably stored and replicated.
+transactional.id=my-transactional-producer
+
+__transaction_state
+	This topic is automatically created by Kafka Streams when you enable transactions in your application. 
+	You don't need to manually create this topic; it is managed by Kafka Streams itself
+
+This topic stores metadata related to transactions. 
+This includes information about the state of ongoing transactions, such as:
+	Transaction IDs: 
+		Unique identifiers for each transaction.
+	Offsets:
+		Information about which records have been processed as part of the transaction.
+	State Stores:
+		Metadata about the state stores used in the transaction.
+
+The primary purpose of the __transaction_state topic is to ensure exactly-once processing semantics. 
+By maintaining transaction metadata, Kafka Streams can guarantee that each record is processed exactly once, 
+even in the event of failures or retries1. 
+This is crucial for applications where data consistency and integrity are critical, such as financial transactions or event 
+sourcing systems.
+
+How These Work Together:
+	Begin Transaction: 
+		The producer starts a new transaction and is assigned a Transaction ID.
+	Produce Messages: 
+		Messages are produced and assigned the Transaction ID. The offsets of consumed messages and updates to state stores 
+		are tracked.
+	Commit Transaction: 
+		The producer commits the transaction. This involves writing the metadata (Transaction ID, offsets, and state changes)
+		to the __transaction_state topic.
+	Recovery and Consistency: 
+		If a failure occurs, Kafka uses the data in the __transaction_state topic to determine the state of the transaction 
+		and either commit or roll back the changes. This ensures that all messages, offsets, and state updates are processed 
+		exactly once.
+
+												KAFKA STREAMS LOCAL STORAGE OPTIONS
+State store		-	low level key-value store
+Table			-	High level construct.internally uses state store
+					store latest values for each key
+					aggregate
+					count
+					join
+Global Store	-	Each consumer processes all records. All consumers endup with same state												
+												
+												TABLE OPERATIONS
+KTable<String,String> table = streamBuilder.table("blocked_users");	//create table from "blocked_users" - topic name										
+
+store latest value for each key
+if kafka receives a nullvalue then that record will be deleted for that key
+
+												USING KAFKA TABLES
+we can use local storage as a distributed database -this is an advanced topic												
+
+												JOIN TABLES WITH STREAMS
+Join Types
+	Table-stream join (Table to stream join)
+		inner JOIN
+		- we get result only if match found
+		outer JOIN
+		- Result even if match not found. here we can take decisiion and append a status based on match found/not found
+		
+	There are other joins as well
+		stream-stream join - we will match records in a stream without converting them into tables
+		table-table join	- match records from two kafka stream tables
+
+
+KTable<String,String> blockedUsersTable = streamBuilder.table("blocked_users", ...);
+KStream<String,Message> orders = streamBuilder.stream("messages");	
+
+orders
+	.leftJoin(blockedUsersTable,
+		(message,blockedUser) -> {				// blockedUser will be null for a non blocked user
+			return new FilteredMessage(.....);
+		}
+	)
+	.to("processed_messages");	
+	
+								
+												COMPLEX TRANSACTIONS
+Orchestration
+Choreography
+
+												ANALYTICS WITH AN EVENT LOG/KAPPA ARCHITECTURE
+Analytics with Kafka
+Windows
+Time in stream processing		there is more than one way of defining time for events	
+
+Importanat approaches for building data processing	systems							
+Lambda architecture	-	older approach
+Kappa Architecture	-	newer approach
+
+Tiered storage							
+
+												ANALYTICS WITH EVENTS
+How many messages posted by a user each day by hour or minute
+Find top 10 companies posting job postings every day
+	
+implement analytics queries
+	ANALYTICS ON READ and ANALYTICS ON WRITE
+		One approach is called analytics on read. With this approach, we just store raw data. 
+		We store individual events from Kafka into a separate system that allows to perform ad hoc analytical queries, 
+		usually using SQL. Another approach, which is called analytics on write, in this case, would decide what questions 
+		do you want to answer, and we'll implement a stream processing application that will calculate the answers in real 
+		time. We can use various systems to do this. But in this course, we'll be using Kafka Streams. Here is how analytics 
+		on read would work. We will have our events stored in Kafka, and we'll have Kafka Connect reading events from 
+		Kafka and storing them into a data warehouse like Redshift or BigQuery or into a distributed filesystem 
+		like S3 or HDFS. These data stores allow us to store massive amounts of data very cheaply. 
+		Then a user can perform analytical queries using SQL to perform data analysis. And since we store raw events, 
+		a user can pretty much use arbitrary queries to perform data analysis. In the analytics on write case, 
+		we will have a different approach. In this case, instead of just storing raw events, will have a stream processing 
+		application reading events and calculating answers to our analytical questions on the fly in real time, 
+		and this data will be written into a regular database like MongoDB or Postgres. Notice that in this case, 
+		instead of storing a raw data that should be processed by a query, we will store pre‑calculated answers, 
+		so getting them is much faster and easier. So, what are the differences between these two approaches? 
+		The main difference is that with analytics on read, we store raw data into data store and can then crunch data 
+		using arbitrary queries. Instead with the analytics on write, we're storing derived data. With the first approach, 
+		we store data into the data warehouse or a data lake, and we would need to store raw data to allow users to query it.
+		In the second approach, we're writing data into a normal database, and it would only write results of the analytical 
+		processing in real time. With analytics on read, we allow data analysts to perform ad hoc queries. 
+		While in the second approach, the queries are predefined by a stream processing application that calculates results 
+		on the fly. The downside of the analytics on read is that it would have a high latency when performing queries since 
+		in the worst case, a data store would need to go through all the data to perform a query. On the contrary, 
+		in the analytics on write, the user will just need to fetch answers from a database, and this would have a much 
+		lower latency. The first approach is much more suitable for the ad hoc queries while the second approach is much 
+		more useful for things like real‑time dashboards.
+		
+
+													WINDOWS WITH KAFKA STREAMS
+how we can calculate analytics with Kafka Streams. 
+To do this, we need to cover a new concept called windows. Windows are implemented by most stream‑processing frameworks, 
+not just by Kafka Streams. What they allow us to do is to group elements in time and perform aggregations on each group. 
+Kafka Streams implements a few types of windows, and we will discuss them in just a minute. 
+Windows, as other Kafka Streams operations, produce a new stream, and then we can either implement additional processing 
+of the stream, or we can store the stream to another system, like a database. 
+The first window type that we will discuss is called a 
+	tumbling window. 
+		For the tumbling window, we need to define a size of a tumbling window, and if we define a size of window 
+		as 3 minutes, Kafka Streams will group events in a topic produced during the first 3 minutes, 
+		and allow us to implement an aggregation operation on these elements. And in this case, we just sum the values from 
+		elements in the first 3 minutes. Then, it will take records from the next 3 minutes and will apply the same 
+		operations on the next batch of elements. Notice that the tumbling windows are non‑overlapping, 
+		so each element only belongs to a single window. 
+The other option is called 
+	hopping windows, 
+		and if you're familiar with other streaming systems, then you might know it by other name called sliding windows. 
+		In this case, windows are overlapping. We now need to define two parameters, the window size, which is, again, 
+		3 minutes in our case, and a step, which is by how much a window moves on every step. In this case, 
+		Kafka Streams will divide records into overlapping groups. As you can see, each window moves by 1 minute on every 
+		step in this case, and it again calculates aggregation function for every group. One thing these windows are 
+		useful for is to compute something like moving averages. 
+The last type of window is called a 
+	session window, 
+		and in this case, we don't define a window size. Instead, we define a period of inactivity between two windows. 
+		All events with time gaps between them that are less than inactivity gap will be grouped together. 
+		This is useful for things like analyzing user sessions that come from user going to the website, interacting with 
+		the website, that is followed by a period of inactivity when user does not use the website, and then interacting 
+		with it again. 
+		
+Here is an example of how using a tumbling window with Kafka Streams and other windows are very Similar to this example. 
+Let's assume that we have a stream of messages where a user ID is key. First of all, we need to read a stream of messages. 
+Then, before we apply windows, we need to first group elements in our stream by some key. In this case, we group them by a 
+records key, but we group them by a custom value. Then we need to specify the size of our window, and here we will define 
+5‑minute windows. And then we specify how to aggregate records in each window, and here we just want to count a number of 
+records in each window. So in this case, records will be grouped by user ID, and then records for each user will be 
+separated into 5‑minute windows, and then we will get a number of messages per user and per window. And then once we have 
+this, we can write the result as a stream, and to do this, we use the toStream method.
+
+//Stream of messages where userId is the key
+builder.stream("messages")
+	.groupByKey()
+	.windowedBy(TimeWindows.of(Duration.ofMinutes(5)))
+	.count()
+	.toStream()
+
+
+
+												TIME IN STREAM PROCESSING
+What do we consider as time in an event
+	can assign different timestamps to one event
+	this will produce different results
+
+Lifecycle of an event from its generation to processing
+
+event generated on mobile, IoT etc....
+User		->  		API   ->   		Producer   ->    		Kafka      	->      		Stream processing
+Event Time													Ingestion Time					Processing Time
+
+depending on which window we define we get different results
+
+Processing Time
+	Less meaningfull - stream processing could be turned off for maintenance and events procssed later in time
+
+Ingestion Time
+	More meaningful - Because it is written to Kafka almost immediately after it was generated. Still inaccurate
+
+Event Time
+	Event generated time and most accurate. Shouldn't we be using this time. 
+	Timestamps are not ordered as a result of network issue or something else and so received later
+
+This concept is called late events		
+
+Late Events
+	This concept is called late events, and here's an example. Let's say we have a topic with messages, 
+	and we want to calculate how many messages we received each minute. First, we receive messages that were created at 16:30,
+	and then we start receiving messages that were created at 16:31. But then out of the blue, we can receive a message from 
+	the past that was created before the message at 16:31, but we received it later. It could happen because a particular 
+	device sending this message lost network connectivity and couldn't send an event on time. In this case, instead of 
+	grouping events like this to calculate our aggregation function, we should group them differently. 
+	We should group all events from 16:30 in one group and the events from 16:31 into the other group. 
+	Now processing late events may be challenging, but they are an inevitable part of stream processing. 
+	Events can be delayed by an arbitrary length of time. To handle late events, Kafka Streams store results of each window, 
+	and it will update results for each window if a late event arrives. When a new event arrives and a window result is 
+	updated, Kafka Streams will emit a new event. We also need to specify for how long to accept late events or for how 
+	long to keep the final state of a window so it could be updated when a late event arrives. 
+	If a late event arrives after the specified time period, Kafka Streams will ignore late events.
+	
+	
+	
+													CALCULATE ANALYTICS FROM A STREAM OF MESSAGES
+												
+
+LAMBDA ARCHITECTURE
+	Building a system around Batch and Stream processing
+	
+	Stream processing processes messages from Kafka and and stores in DB which can then be used by users to query.
+	
+	Lambda architecture assumes stream processing output is inaccurate so we write another Batch process to process same
+	messages fromKafka and update the results from stream processing stored in db.
+	
+	cons are we need to write same algorithm twice
+	
+KAPPA ARCHITECTURE												
+	Building a system only around Stream processing
+	
+	In Kappa architecture Stream processing processes messages from Kafka and and stores in DB which can then be used by users to query.
+	if we need feel results are inaccurate then write abother version of stream processing and store processed results
+	in another Db for users to query
 													RETRY
 https://medium.com/naukri-engineering/retry-mechanism-and-delay-queues-in-apache-kafka-528a6524f722#:~:text=A%20better%20approach%20would%20be,failed)%20after%20a%20certain%20delay.
 
@@ -152,12 +973,129 @@ https://medium.com/naukri-engineering/retry-mechanism-and-delay-queues-in-apache
 
 													AVRO SCHEMA REGISTRY
 when producer changes the input structure then consumer too needs this change propogated. 
-to solve this congluent kfka provides avro schema and avro schema registry. its a contract between your producer and consumer
+to solve this confluent kafka provides avro schema and avro schema registry. its a contract between your producer and consumer
 eg employee.avsc - avro tool plugin or maven
 kafka avro serializer and deserializer. this connectes to schema registry to validate the schema and data object
 
 
-Purpose of Offset
+user_schema.avsc												◄ JSON
+{
+	"type": "record",											◄ Defines a complex type 
+	"namespace": "com.pluralsight",								◄ Prefix the full name
+	"name": "User",												◄ Name of the schema		
+	
+	"fields": [													◄ Declaring fields contained by the record
+	{
+		"name": "userId",										◄ e.g: "ABC123"
+		"type": "string"
+	}, 
+	{
+		"name": "username",										◄ Plain string
+		"type": "string"
+	}, 
+	{
+		"name": "dateOfBirth", 
+		"type": "int",
+		"logicalType": "date"									◄ Special type
+	}
+]
+
+we can generate java class using avro-tools-xxxx.jar
+java -jar avro-tools-xxxx.jar compile schema path/schenmafilename.avsc .
+
+														Schema Registry 
+Schema Registry stores schemas in topics
+we would never want a car object to be persisted as the key in our user-tracking topic
+
+Subject Name strategy
+	Subject name strategy is achieving that by categorizing the schemas based on the topic that they belong to. 
+	The subject name will be the topic that we want schemas for, -key or -value. In this example, we would have the user-tracking-key 
+	and the user-tracking-value.
+														
+Schema Registry by default stored schemas in inmemory. So we can leverage in built producer to store the schemas in a topic.
+so in case of Schema Registry failure once it is up the in built producer can load back the schemas from the topic
+
+we can use confluent schemma registry from https://github.com/confluentinc/schema-registry and clone it locally
+git checkout <versionnum> to get latest
+mvn package
+
+															AVRO Types
+
+Primitives																Complex
+
+null: no value															records
+boolean: a binary value 												enums - { "symbols": [ "BLUE", "GREEN"]}
+int: 32-bit signed integer 												arrays
+long: 64-bit signed integer 											maps { "values": "long"}
+float: (32-bit) floating-point number 									unions - { ["null", "string"]}  //va;lue can be null/string
+double: (64-bit) floating-point number 									fixed - { "size": "6" }
+bytes: sequence of 8-bit unsigned bytes
+string: unicode character sequence
+
+
+
+															KAFKA STREAMS
+Example consider a payment service sends payment event to a kafka cluster
+we have another kafka fraudlent detection system cluster with consumer who consumes these events and validates
+then producer publishes this events to kafka cluster as validated payment
+
+In kafka fraudlent detection system cluster We have a consumer and we have a producer.the sequence of events between them is topology
+topology - acylic graph of sources, processors, and sinks
+
+															Stream Topology
+In a graph we have node and edges
+nodes	-	processors
+edges	-	link between them allowings msgs to go from one processor to the other while the previous processor has finished.
+acylic	-	because we don't want to process the same msg again and again
+												
+CONSUMER --------->    NODE		----------->	NODE	-------------->		NODE	----------->		PRODUCER
+Source									Stream Processors												Sink
+
+
+Source is a already know special kind of processor. It specifies where the stream will extract the data from in order to process. number Atlest 1
+
+Sink processor will send all data to the speciified locatio. number of sink processors can vary 
+
+Stream Processors - number of Stream Processors can vary 
+
+
+															DUALITY OF STREAMS
+
+															PROCESSORS
+Stateless
+	Branch,filter,inverseFilter,Map,flatMap,foreach,groupBy,merge
+Statefull
+	aggregation,count,joins,windowing,custom processors
+	
+	
+															KSQL
+Now, ksqlDB is actually a stream processing engine. ksqlDB extends the Kafka Streams API by allowing you to query and 
+analyze streams using just SQL queries. ksqlDB actually runs on top of Kafka streams and it allows you to build applications
+that can consume, process, and produce data streams in real-time.															
+
+CREATE STREAM pineapple_pizza AS
+	SELECT crust, size, toppings
+	FROM pizza
+	WHERE type = 'pineapple';
+
+			KSQL													Kafka Streams
+
+CREATE STREAM pineapple_pizza AS 									.stream("pizza")
+	SELECT crust, size, toppings									.filter(pizza -> pizza.getType().equals("pineapple))
+	FROM pizza
+	WHERE type = 'pineapple';										.mapValues( pizza ->
+																			pizza.getCrust() + "," +
+																			pizza.getSize() +"," +
+																			pizza.getToppings())
+																	.to("pineapple_pizzas")	
+
+
+															Windowing
+Tumbling														
+Hopping
+
+															
+													Purpose of Offset
 Tracking Consumption: Offsets allow consumers to keep track of which messages have been consumed. Each consumer maintains its own offset for each 
 						partition it reads from, ensuring that it knows where to resume consumption in case of a restart or failure.
 
@@ -166,3 +1104,7 @@ Fault Tolerance: By storing offsets, Kafka ensures that consumers can recover fr
 
 Load Balancing: In a consumer group, each consumer is assigned specific partitions. Offsets help in balancing the load among consumers by ensuring 
 				that each consumer processes a distinct set of messages
+				
+				
+												EVENT LOG WITH KAFKA - STREAMS
+													

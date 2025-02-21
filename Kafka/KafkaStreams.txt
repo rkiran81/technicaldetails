@@ -1,0 +1,40 @@
+Here are some common Kafka Streams interview questions along with brief solutions to help you prepare:
+
+### Basic Questions:
+1. **What is Kafka Streams?**
+   - **Solution**: Kafka Streams is a lightweight, scalable stream processing library built on Apache Kafka. It enables real-time data processing and transformation within applications without requiring separate clusters or infrastructure.
+
+2. **What are the key components of Kafka Streams?**
+   - **Solution**: Key components include Streams, KStream/KTable, Topology, Processor API, DSL, State Stores, and Time Windows.
+
+3. **Explain the difference between KStream and KTable.**
+   - **Solution**: KStream represents a record stream (unbounded), while KTable represents a changelog stream (bounded) and is used for stateful operations.
+
+### Intermediate Questions:
+4. **How does Kafka Streams handle fault tolerance?**
+   - **Solution**: Kafka Streams uses local state stores with changelog topics to replicate state information, ensuring fault tolerance and recovery in case of failures.
+
+5. **What is a topology in Kafka Streams?**
+   - **Solution**: A topology is a directed acyclic graph (DAG) that describes the processing logic, consisting of nodes (processors) and edges (streams).
+
+6. **How do you perform windowed aggregations in Kafka Streams?**
+   - **Solution**: Use the DSL method `windowedBy` to define time windows and perform aggregations over these windows.
+
+### Advanced Questions:
+7. **What is the role of the Processor API in Kafka Streams?**
+   - **Solution**: The Processor API allows developers to define custom processors and manipulate streams directly, providing low-level control over stream processing.
+
+8. **How do you handle out-of-order events in Kafka Streams?**
+   - **Solution**: Use time windows and watermarking to handle out-of-order events, ensuring correct processing based on event time or processing time.
+
+9. **Explain the concept of interactive queries in Kafka Streams.**
+   - **Solution**: Interactive queries allow applications to query the state stores directly, enabling real-time access to state information.
+
+### Practical Questions:
+10. **How do you configure Kafka Streams for exactly-once processing?**
+    - **Solution**: Enable idempotence in the producer, set `acks=all`, and configure the consumer with `processing.guarantee=exactly_once`.
+
+11. **What are some best practices for building scalable Kafka Streams applications?**
+    - **Solution**: Use partitioning and parallelism effectively, manage state stores efficiently, and monitor performance metrics.
+
+These questions and solutions should help you get a good grasp of Kafka Streams and prepare for your interview. Do you have any specific areas you'd like to dive deeper into?

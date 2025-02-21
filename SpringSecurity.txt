@@ -122,7 +122,7 @@ This will enable database authentication but it will show login page for every r
 					and then check istokenexpired 
 9. in controller create endpoint "/authenticate". autowire authenticationmanger. authenticationmanager.authenticate(username,password)
 	username and password is extracted from custom AuthRequest object having two fields username and password
-	define bean authenticationmanager in config class returning sure.authenticationmanagerbean
+	define bean authenticationmanager in config class returning super.authenticationmanagerbean
 	if authenticationmanager is success call jwtutils.generateaccesstoken and return to client
 10. now do not apply security to "/authenticate" url so in config override configure method
 	http.authorizationrequests.antmathers("/authenticate").permitall.anyrequests.authenticated

@@ -1,0 +1,60 @@
+https://www.youtube.com/watch?v=7pee6_Sq3VY&t=407s
+
+														Spart Cluster
+
+A lab of 30 computers together is called cluster. we can keepadding more labs. Horizontal scalling.
+
+these each computers in a cluster is called a NODE
+
+
+														Spark Architecture
+Say we have a cluster of 3 computers
+
+1.Each cluster will have a CLUSTER MANAGER
+2.CLUSTER MANAGER will create a DRIVER PROGRAM (SPARK CONTEXT)
+3.Now we get incoming 1 TB of request data for processing
+4.It will be received by CLUSTER MANAGER and sent to DRIVER PROGRAM
+5.DRIVER PROGRAM will analyze, break them into smaller tasks and INFORM CLUSTER MANAGER saying we need two NODES to process these data
+6.CLUSTER MANAGER will not create two WORKER NODES out of the two computers we had and now the job of CLUSTER MANAGER ends.
+7.Each WORKER NODE will have a EXECUTOR that will execute the task and inform DRIVER PROGRAM
+8.DRIVER PROGRAM will return the processed response							
+
+														What is DATABRICKS
+DATABRICKS manages these SPARK CLUSTERS, all clusters. we do not need to do anything	
+
+Create Azure Account and create
+
+1.Data Lake
+	First create a block storage and then convert to Data Lake. For this select the "Enable hierarchical namespace" checkbox
+	Once Created Open Resource
+	LHS You see Database->expand->Containers. click on containers and create two containers say source and destination
+	
+	
+2.Databricks Workspace
+	Create Azure workspace for that open you Resource Group and search databricks
+	select Azure Databricks provided by Microsoft
+	provide a name and name for managed resource group and create
+	Create a folder "DatabricksMasterclass"
+	
+	To create a CLUSTER hit the Compute link and hit Create compute button
+	Keep Policy Unrestricted
+	Choose Single Node for learning
+	Access Mode as Single User or Phython,Scala, SQL
+	Choose databricks runtime version "14.3LTS scala spark"
+	select Node Type say Standard_DS3_V2 14GB, 4 cores
+	eneter Terminate After minutes value
+	
+	Now go to folder "DatabricksMasterclass"and create a Notebook
+	Click Connect and choose the cluster to connect to
+	
+	
+	now write a dataframe
+		myData = [(1,"aa",40),(2,"bb",1), (3,"cc",40), (4,"dd",1)]
+		mySchema = "id INT, name STRING, marks INT"
+		df = spark.createDataFrame(myData, schema=mySchema)
+		df.display()
+		cntrl+Enter to run. and choose the compute to run on that is your cluster
+		
+		
+														DBFS
+Databricks File System														

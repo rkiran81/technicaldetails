@@ -1,0 +1,79 @@
+Sure, here is a concise document summarizing key Java design patterns. You can print and stick this on your wall for quick reference.
+
+---
+
+## Creational Patterns
+
+### 1. Singleton
+Ensures a class has only one instance and provides a global point of access to it.
+
+### 2. Factory Method
+Defines an interface for creating an object, but lets subclasses decide which class to instantiate.
+
+### 3. Abstract Factory
+Provides an interface for creating families of related or dependent objects without specifying their concrete classes.
+
+### 4. Builder
+Separates the construction of a complex object from its representation, allowing the same construction process to create different representations.
+
+### 5. Prototype
+Creates new objects by copying an existing object, known as the prototype.
+
+---
+
+## Structural Patterns
+
+### 1. Adapter
+Allows incompatible interfaces to work together by wrapping an existing class with a new interface.
+
+### 2. Composite
+Composes objects into tree structures to represent part-whole hierarchies.
+
+### 3. Decorator
+Attaches additional responsibilities to an object dynamically.
+
+### 4. Facade
+Provides a simplified interface to a complex subsystem.
+
+### 5. Flyweight
+Reduces the cost of creating and manipulating a large number of similar objects by sharing common parts.
+
+### 6. Proxy
+Provides a surrogate or placeholder for another object to control access to it.
+
+---
+
+## Behavioral Patterns
+
+### 1. Observer
+Defines a one-to-many dependency between objects so that when one object changes state, all its dependents are notified and updated automatically.
+
+### 2. Strategy
+Enables selecting an algorithm's behavior at runtime by defining a family of algorithms, encapsulating each one, and making them interchangeable.
+
+### 3. Command
+Turns a request into a stand-alone object containing all information about the request, allowing for parameterization and queuing of requests.
+
+### 4. Iterator
+Provides a way to access elements of a collection sequentially without exposing the underlying representation.
+
+### 5. Visitor
+Lets you define a new operation without changing the classes of the elements on which it operates.
+
+### 6. Memento
+Allows an object to be restored to a previous state without revealing the details of its implementation.
+
+### 7. State
+Allows an object to alter its behavior when its internal state changes, appearing to change its class.
+
+### 8. Template Method
+Defines the skeleton of an algorithm in an operation, deferring some steps to subclasses.
+
+### 9. Chain of Responsibility
+Passes a request along a chain of handlers until one of the handlers processes the request.
+
+---
+
+Feel free to print this and stick it on your wall for a handy reference to Java design patterns!
+
+If you have any more questions or need further details, feel free to ask!

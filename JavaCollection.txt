@@ -19,10 +19,12 @@ Collection Interface: The root interface of the collection hierarchy.
 
 List Interface: Ordered collection (sequence) that allows duplicate elements.
 
-ArrayList: Resizable array implementation. Vector is similar to ArrayList but it is synchronized. better to use ArrayList/CopyOnWriteArrayList
+ArrayList: Resizable array implementation. Vector is similar to ArrayList but it is synchronized. 
+			better to use ArrayList/CopyOnWriteArrayList
 LinkedList: Doubly-linked list implementation.
 Vector: Synchronized resizable array.
-Stack: Last-in, first-out (LIFO) stack.	Primarily used for LIFO operations like reversing data, parsing expressions, and backtracking algorithms.
+Stack: Last-in, first-out (LIFO) stack.	Primarily used for LIFO operations like reversing data, 
+parsing expressions, and backtracking algorithms.
 Set Interface: Collection that does not allow duplicate elements.
 
 HashSet: Hash table-based implementation.
@@ -31,8 +33,11 @@ TreeSet: Red-Black tree-based implementation.
 Queue Interface: Collection used to hold multiple elements prior to processing.
 
 
-PriorityQueue: Priority heap-based implementation.
-Deque Interface: Double-ended queue that allows insertion and removal of elements from both ends, supporting both LIFO and FIFO (First-In-First-Out) operations.
+PriorityQueue: 
+	Priority heap-based implementation.
+Deque Interface: 
+	Double-ended queue that allows insertion and removal of elements from both ends, 
+	supporting both LIFO and FIFO (First-In-First-Out) operations.
 ArrayDeque: Resizable array implementation of the Deque interface.
 LinkedList: Also implements Deque interface.
 Map Interface: Not a true collection, but a collection of key-value pairs.
@@ -51,11 +56,21 @@ LinkedList						LinkedHashSet						LinkedHashMap
 java.util.concurrent.*
 CopyOnWriteArrayList 			CopyOnWriteArraySet 				ConcurrentHashMap
 
-fail fast - when iterating a collection if we modifiy same collection we get concurrentmodification exception. this is fail fast
-fail safe - iterator that allows us to modify in middle of iterating a collection is fail safe (CopyOnWriteArrayList CopyOnWriteArraySet ConcurrentHashMap)
+fail fast - when iterating a collection if we modifiy same collection we get concurrentmodification exception. 
+			this is fail fast
+fail safe - iterator that allows us to modify in middle of iterating a collection is fail safe 
+			(CopyOnWriteArrayList CopyOnWriteArraySet ConcurrentHashMap)
 
+HashSet - internally strored data in HashMap with value as a dummy object
+TreeSet - internally strored data in NavigatableMap which internally extends sortedset with value as a dummy object
+	// Creating a TreeSet using the default constructor
+	TreeSet<Integer> treeSet = new TreeSet<>();
+
+	// Creating a TreeSet with a custom comparator
+	TreeSet<Integer> treeSetWithComparator = new TreeSet<>(Comparator.reverseOrder());
 
 CopyOnWriteArrayList - the data added in between the iteration is not printed as it creates a clone
+CopyOnWriteArraySet - It is backed by a CopyOnWriteArrayList, which means that any modification operations (such as add, remove, or clear) result in a new copy of the underlying array being created.
 ConcurrentHashMap - the data added in between the iteration is printed
 
 Hashmap/Hashtable/Collections.synchronizedMap - applies lock on entire map object
@@ -64,7 +79,7 @@ ConcurrentHashMap - applies lock on segment level (segment/bucket locking)
 HashMap - in java 8 internally it uses balanced tree instead of linkedlist after some threshold
 1.	default hashmap creates 16 buckets (0-15)
 2. each bucket internally uses bucket
-3. Linked linked contains Node - Key- Value - Hash - Next
+3. Linked list contains Node = Key - Value - Hash - Next
 4. when we put a object internally it calls hash function passing KEY and get an index = hash & (n - 1) modular operation
 5. stores that entry in the index returned
 5. now when an another entry hash returns same index then equals method will be called checking 
@@ -79,15 +94,15 @@ Default hashCode():
 	This means that each Order object will have a different hash code, even if their id and date are the same.
 
 Default equals(): 
-	The default equals() method in the Object class checks for reference equality, meaning it will only return true if both references point to the same object 
-	in memory.
+	The default equals() method in the Object class checks for reference equality, meaning it will only return true 
+	if both references point to the same object in memory.
 	
 Inconsistent Behavior: 
-	Since the hashCode() and equals() methods are not overridden, two Order objects with the same id and date will be treated as different keys. 
-	This can lead to unexpected behavior, such as duplicate keys and incorrect retrieval of values.
+	Since the hashCode() and equals() methods are not overridden, two Order objects with the same id and date will be 
+	treated as different keys. This can lead to unexpected behavior, such as duplicate keys and incorrect retrieval of values.
 Inefficient Lookups: 
-	The HashMap relies on the hashCode() method to determine the bucket location for storing key-value pairs. If the hash codes are not consistent, 
-	it can lead to poor performance due to increased collisions and inefficient lookups.
+	The HashMap relies on the hashCode() method to determine the bucket location for storing key-value pairs. 
+	If the hash codes are not consistent, it can lead to poor performance due to increased collisions and inefficient lookups.
 
 @Override
 public int hashCode() {
@@ -103,10 +118,18 @@ public boolean equals(Object obj) {
 }
 
 													Collections.synchronizedList
-Synchronization: It wraps a regular list (like ArrayList) with synchronized methods, ensuring that all operations on the list are thread-safe by acquiring a lock on the entire list.
-Performance: Since it locks the entire list for each operation, it can lead to contention and reduced performance in highly concurrent environments.
-Iteration: When iterating over a synchronizedList, you must manually synchronize on the list to avoid ConcurrentModificationException.
-Use Case: Suitable when you have a moderate number of read and write operations and need a simple way to make an existing list thread-safe.
+Synchronization: 
+	It wraps a regular list (like ArrayList) with synchronized methods, ensuring that all operations on the list are 
+	thread-safe by acquiring a lock on the entire list.
+Performance: 
+	Since it locks the entire list for each operation, it can lead to contention and reduced performance in highly 
+	concurrent environments.
+Iteration: 
+	When iterating over a synchronizedList, you must manually synchronize on the list to avoid 
+	ConcurrentModificationException.
+Use Case: 
+	Suitable when you have a moderate number of read and write operations and need a simple way to make an 
+	existing list thread-safe.
 
 List<String> list = Collections.synchronizedList(new ArrayList<>());
 synchronized (list) {
@@ -116,10 +139,17 @@ synchronized (list) {
 }
 
 													CopyOnWriteArrayList
-Synchronization: It creates a new copy of the list for each modification (add, set, remove), ensuring that the original list remains unchanged during iteration.
-Performance: It is optimized for scenarios with many read operations and few write operations. The cost of copying the list on each write can be high, but read operations are very fast and do not require locking.
-Iteration: Iterators are fail-safe and do not throw ConcurrentModificationException because they operate on a snapshot of the list at the time of iteration.
-Use Case: Ideal for situations where read operations vastly outnumber write operations, such as caching and event handling systems.
+Synchronization: 
+	It creates a new copy of the list for each modification (add, set, remove), 
+	ensuring that the original list remains unchanged during iteration.
+Performance: 
+	It is optimized for scenarios with many read operations and few write operations. 
+	The cost of copying the list on each write can be high, but read operations are very fast and do not require locking.
+Iteration: 
+		Iterators are fail-safe and do not throw ConcurrentModificationException because they operate on a snapshot 
+		of the list at the time of iteration.
+Use Case: 
+	Ideal for situations where read operations vastly outnumber write operations, such as caching and event handling systems.
 
 CopyOnWriteArrayList<String> list = new CopyOnWriteArrayList<>();
 for (String item : list) {
@@ -142,3 +172,12 @@ CopyOnWriteArrayList: Iteration is fail-safe and does not require external synch
 ConcurrentModificationException:
 synchronizedList: Can throw ConcurrentModificationException if not properly synchronized during iteration.
 CopyOnWriteArrayList: Does not throw ConcurrentModificationException.
+
+
+https://yogeshkkhichi.medium.com/time-and-space-complexity-of-collections-5a00c7b1d32b
+						Add 			Remove				Get				Contains			Data Structure
+ArrayList				O (1)			O(n)				O (1)			O (n)				Array
+LinkedList				O (1)			O (1)				O(n)			O(n)				Linked List
+CopyonWriteArrayList	O (n)			O (n)				O (1)			O(n)				Array
+
+

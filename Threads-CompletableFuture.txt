@@ -353,6 +353,19 @@ FALSE SHARING	-	false sharing happens because of the way CPU cache works,
 
 Virtual threads - https://openjdk.org/jeps/444
 
+CombineCompletableFuture<Integer> future = new CombineCompletableFuture<Integer>()
+	.thenApply(data -> data *2)
+	.exceptionally(throwable -> handleExp1(throwable))
+	.thenApply(data -> data + 1)
+	.thenApply(data -> syso(data));
+	.exceptionally(throwable -> handleExp2(throwable))
+	.thenAccept(data -> process(data))
+	.thenRun(() -> process())
+
+future.complete(2);
+future.completeOnTimeOut(2, 1, TimeUnit.SECONDS);// T value, long timeout, TimeUnit unit
+future.orTimeOut(2);
+
 CombineCompletableFuture
 	//combine two dependent future - use thenCompose because thenApply returns nested completablefuture objects
 	

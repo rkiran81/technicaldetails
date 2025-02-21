@@ -104,8 +104,8 @@ include starter-eureka
 annotate application class with @EnableEurekaServer
 
 application.yml
-eureka.client.register-with-eureka=false
-eureka.client.fetch-registry=false
+eureka.client.register-with-eureka=false	// to register itself with eureka server and be discoverable to other services
+eureka.client.fetch-registry=false			// to fetch registry to lookup other services if required to consume
 server.port=8761
 spring.app.name=EUREKA-SERVER-NAME
 
@@ -118,12 +118,18 @@ include starter-eureka-discovery
 annotate application class with @EnableEurekaClient
 
 application.yml
-eureka.client.register-with-eureka=true
-eureka.client.fetch-registry=true
+eureka.client.register-with-eureka=true	// to register with eureka server
+eureka.client.fetch-registry=true		// to getch registry of other services if required
 eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka/
 eureka.instance.hostname=localhost
 server.port=9090
 spring.app.name=SOME-SERVICE-NAME
+
+defaultZone - It acts as a fallback URL for any client that does not express a preference for a specific Eureka server
+eureka.client.serviceUrl.defaultZone=http://eureka1:8761/eureka/
+eureka.client.serviceUrl.zone1=http://eureka2:8761/eureka/
+eureka.client.serviceUrl.zone2=http://eureka3:8761/eureka/
+
 
 In services where the above service is to be consumed
 =================================================================
@@ -147,6 +153,8 @@ Spring Cloud Config Server - distributed config server system. centralized place
 Create spring cloud config server
 add dependemcies
 web, dev, starter-config-server, accuator
+<groupId>org.springframework.cloud</groupId>
+<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
 Actuator provides operational information environment properties
 
 annotate application class with @EnableConfigServer
@@ -157,6 +165,7 @@ Create a New File and name it application.properties and define the urls and oth
 in spring boot app application.properties provide github path
 
 spring.cloud.config.server.git.uri=https://github.com/rkiran81/example-config-server
+spring.cloud.config.server.git.uri=${HOME}/etc // if config is in local machine
 management.endpoints.web.exposure.include=*
 server.port=someport
 
@@ -167,14 +176,20 @@ http://locahost:port/actuator/default
 create a service with web dependency and give this service url in app properties created in github
 
 create a client service with dependencies web starter-config-client
+<groupId>org.springframework.cloud</groupId>
+<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
 createa rest template and call template.getForObject(url,List.class);
 add @RefreshScope in controller so any update to github app properties gets reflected
 
-in app properties add
+in app properties add (use either)
 spring.cloud.config.uri=http://localhost:port //url to cloud config server
+spring.config.import=optional:configserver:http://localhost:8888
 
 @RefreshScope - allows beans to be refreshed at runtime without restarting the application. 
 				This is particularly useful for updating configuration properties dynamically.
+
+				
+
 				
 				
 														Load Balancer using Spring Cloud Ribbon
@@ -212,6 +227,12 @@ somename:
    enabled:false
   listOfServers:localhost:8081,localhost:8082,localhost:8083
   ServerListRefreshInterval:2000
+ 
+ServerListRefreshInterval:2000	2 sec
+ServerListRefreshInterval=30000	30 sec
+Purpose:
+Ensures Freshness: Keeps the server list updated by periodically fetching the latest information from the registry.
+Load Balancing: Helps the load balancer distribute traffic based on the most current server status.
   
 controller
 String url = http://somename/path/path?xyh=asd
@@ -222,6 +243,15 @@ Purpose: IPing is used to determine the availability of servers in real-time.
 Function: It periodically pings the servers to check if they are up and running. If a server does not respond to the ping, it is marked as unavailable and will not receive traffic until 
 			it becomes responsive again1.
 Example: A common implementation is PingUrl, which sends an HTTP request to a specified URL to check the server's health1.
+
+when loadbalacers send http request to a service to check if its running what what hhtp method and headers are used and 
+what will be the response
+REQUEST														RESPONSE
+GET /health HTTP/1.1										HTTP/1.1 200 OK
+Host: example-service.com									Content-Length: 0
+User-Agent: AWS-ELB-HealthChecker/1.0
+X-Forwarded-For: 192.0.2.1
+
 
 IRule:
 Purpose: IRule defines the load balancing strategy or rule that Ribbon uses to distribute requests among available servers.
@@ -243,7 +273,8 @@ in the above eureka example add ribbon dependency to the client and automaticall
 											========================
 											========================
 add feign client starter dependency
-add @EnableFeignClient to springboot application class
+spring-cloud-starter-openfeign
+add @EnableFeignClients to springboot application class. scans @FeignClient annotated classes
 
 create an interface
 @FeignClient(url="https://jsonplaceholder.typicode.com", name="USER_CLIENT")
@@ -251,6 +282,26 @@ public interface UserClient{
 	
 	@GetMapping("/users")
 	public List<Users> getUsers();
+}
+
+@FeignClient("guest-service") // defined in eureka
+public interface GuestServiceClient {
+
+    @GetMapping("/guests")
+    List<Guest> getAll();
+
+    @PostMapping("/guests")
+    Guest addGuest(@RequestBody Guest guest);
+
+    @GetMapping("/guests/{id}")
+    Guest getGuest(@PathVariable("id") long id);
+
+    @PutMapping("/guests/{id}")
+    void updateGuest(@PathVariable("id") long id, @RequestBody Guest guest);
+
+    @DeleteMapping("/guests/{id}")
+    void deleteGuest(@PathVariable("id") long id);
+
 }
 
 create a controller
@@ -261,10 +312,31 @@ public List<Users> getAllUsers(){
 	return UserClient.getUsers();
 }
 
+Circuitbreaker with FeignClient
+	spring-cloud-starter-circuitbreaker-resilience4j
+	app properties - feign.circuitbreaker.enabled=true
+	create a class say "GuestServiceFallback" that implements GuestServiceClient and provde fallback implementations
+	and annotate as @Component
+	now back in interface @FeignClient(value = "guest-service", fallback = GuestServiceFallback.class)
 											Distributed Tracing in Microservice with Spring Cloud Sleuth & Zipkin
 											========================
 											========================
 used in distributed tracing by generating unique traceid and spanid
+
+service name		trace id		span id		export flag
+
+export flag
+	Now exporting is very important because very few of us run our own internal observability platform because quite 
+	often it's not worth the expense or the time when you can rely on someone else who has good alerting as well as 
+	visualization of that data. It also provides out-of-the-box ingress and egress behavior across all common patterns. 
+	So you get trace IDs and spans on every form of ingress and every form of egress, regardless of the use case. 
+	Now, Sleuth itself has a wide range of services that it supports. It supports Brave as well as the very popular Zipkin. 
+	It also has some support for OTel.
+	
+Ingress: Manages incoming traffic to services within a cluster.
+Egress: Manages outgoing traffic from services to external endpoints.
+Use Cases: Ingress simplifies routing and load balancing for external requests, while egress policies ensure secure and 
+compliant communication with external systems.
 
 create an application and add starter-sleuth, starter-sleuth-zipkin dependencies
 create a @configurationclass
@@ -284,10 +356,37 @@ puclic class config{
 using resttemplate call the same service again and see how traceid remains same but spanid changes
 
 now see tracing in zipkin server
-create an application say zipkinserver and add web dependency, zipkin-autoconfigure-ui, zipkin-server and spring cloud dependency in 
+create an application say zipkinserver and add web dependency, zipkin-autoconfigure-ui, zipkin-server and 
+spring cloud dependency in 
 dependency management
 annotate application class with @enablezipkinserver
 default port is 9411
+
+logback
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} traceId: %X{trace_id} spanId: %X{span_id} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>
+log4j
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} traceId: %X{trace_id} spanId: %X{span_id} - %msg%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>
+
 
 												(API gateway)How to configure SpringCloud Zuul – Routing and Filtering using SpringBoot
 												========================
@@ -309,6 +408,25 @@ now create 4 filter class extending ZuulFilter for prefilter, routefiler, postfi
 now run all services and zuul gateway server
 hit http://localhost:8080/app2-name/ 		// this will route to http://localhost:8082/endpoint
 
+
+											Spring cloud Gateway
+											===============================
+
+Terminology to Know
+Route: the basic principle of a gateway
+	Defined by an ID, destination URI, predicates, and filters
+	Matching is based on the aggregate of all predicates
+Predicate: based on Java 8 function predicates
+			a predicate is based on a Java 8 function predicate and the input is a server web exchange. 
+			This allows you to match on any part of the HTTP request, including parameters, headers, the body itself. 
+			Anything that fits into a server web exchange can be used as a predicate with the API gateway. 
+Filter: used to modify requests and responses	
+		Filters are what we use to modify the requests or the responses, either incoming or outgoing. 
+		That's where we can apply server it filters that handle the security or the observability of these requests, 
+		as well as truncating data going out if we find it sensitive.
+											
+											
+											
 
 											Microservice - Centralize configuration using spring cloud consul (HashiCorp)
 											========================

@@ -90,3 +90,7 @@ SELECT salesperson_id, SUM(sales_amount) AS total_sales
 FROM sales
 GROUP BY salesperson_id;
 These features can help you manage and query complex data structures effectively, similar to how recursive CTEs are used123.
+
+
+																		Albertsons/safeway
+What is state in React and how is it managed within components?																		

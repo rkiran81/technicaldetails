@@ -1,0 +1,1060 @@
+https://app.pluralsight.com/ilx/video-courses/b113fffa-5c43-4846-a484-949ca8dcb767/d1c638ea-d3c4-48c5-b117-ddb838dfb354/bd9cb552-d832-403a-b3cc-d21fef7482b9
+
+Course Overview	Module Watched	
+Introduction	Module Watched	
+Understanding React Hooks	Module Watched	
+The Built-in Hooks useState, useEffect, and useReducer	Module Watched	
+The Built-in React Hooks useRef, useContext, useMemo, and useCallback	Module Watched	
+Using Context and Custom React Hooks for a Redux-like Experience	Module Watched	
+Leveraging React Hooks and Context for Modal Popup Forms		
+Improving React Performance with useMemo, memo, and useCallback		
+
+
+
+At app start, component in /app/page.js is launched. This page.js contains the root element of our React app
+
+
+React is a library
+	Math - min,max,cieling,floor are unique and related to numbers
+	Next.js is framework and we can use this to build react app. It is a toolchain for building react apps
+	React functional components can only return SINGLE react element soif we have multiple components use ReactFragment <> </>
+What it means to be a single-page app (SPA)
+Create a web app with only native DOM calls
+Convert DOM calls to React without JSX
+	to create a app using Next.js. in VSC open terminal and type "npx create-next-app@latest"
+	npm run dev
+	
+	
+To build the project originally...
+- Install node.js
+run at prompt: "npx create-next-app@latest"
+
+	npx create-next-app@latest
+	What is your project named?... myapp 
+	Would you like to use TypeScript?	No Yes						NO
+	Would you like to use ESLint?... No / Yes						YES
+	Would you like to use Tailwind CSS? No / Yes					NO					
+	Would you like to use `src/ directory?... No / Yes				NO
+	? Would you like to use App Router? (recommended) No / Yes		NO
+	No - implies using "Page Router"
+	Yes - implies using "App Router"	
+	which makes all my components by default server components which by the way cannot manage react state and 
+	dom events like click events
+
+if code is checkout from github then first run npm install and then npm run dev
+
+	
+Convert React JavaScript to use JSX
+
+Explain the meaning of F(G(x)) in a component tree
+	x is the state
+
+useState - is a react hook. Track data chnages over the life time of the component. changing data makes our component reactive
+
+parents pass data to child through attributes
+for child to pass data to parent pass a function to child
+
+export default functio ToDo(props){
+const entries = props.entries
+const deleteItem = props.deleteItem
+}
+export default functio ToDo({entries, deleteItem}){} //using destructuring syntax we can control what exactly we need in this component.
+
+jsx (Javascript Expression) codes is encapsulated with {} whichin return can return more jsx code
+
+react components link together to create a virtual dom
+any updates in react app only changes virtual dom
+later react compares old and new virtual and merges with browser dom (reconsiliation) at once
+
+React
+	used to create react elements to build UI
+	linking components together
+	so React library is same for ReactNative
+ReactDOM
+	is used to render UI on browser DOM
+	
+	
+REACT RECONSILIATION
+	
+	
+Distributed Components
+	
+	
+Suspense and promise
+
+when a child component need to load data from rest call
+wrap the child component within suspense and provide a fallback UI (<div>loading....</div>) which will be shown until the 
+child component data is loaded
+how will suspense know that child component must be loaded?
+inside child component use react hook "use" passing a promise. when the promise has returned with data suspense will get 
+to know to render child
+
+
+														THIS
+const person = {
+  name : 'Kiran',
+  walk(){
+    console.log(this);
+  }
+}
+
+person.walk();
+
+const walk = person.walk.bind(person);// WITHOUT bind to person object we get undefined for this
+walk();
+
+														NAMED AND DEFAULT EXPORT
+
+export function SomeFunction() {}				named
+export default Somecomponent = () => {			default
+
+	return <> </>;
+}
+
+this will be imported as 
+import Somecomponent, {SomeFunction} from './Somefile';
+
+																HOOKS IN REACT
+React hooks are just javascript functions
+Only called from function top level
+must begin with "use"
+Reuse state full logic among components
+decouple code logic from state management and lifecycle events
+better code composition
+
+
+Basic Hooks									Additional Hooks										Library Hooks
+
+useState									useReducer, useCallback,								useSyncExternalStore
+useEffect									useMemo, useRef, uselmperativeHandle,					uselnsertionEffect
+useContext									useLayoutEffect,
+											useDebugValue,
+											useDeferredValue,
+											useTransition, useld														
+													
+
+useState
+	const message = "Hello World";
+	const [message, setMessage] = useState("Hello World");
+	
+all useState execute in the same order as they are defined in code
+
+//here at the end the value will be 43
+function handleClick() {
+  setAge(age + 1); // setAge(42 + 1)
+  setAge(age + 1); // setAge(42 + 1)
+  setAge(age + 1); // setAge(42 + 1)
+}
+
+//multiple useState will be batched to minimize the re-render
+function handleClick() {
+  setAge(a => a + 1); // setAge(42 => 43)
+  setAge(a => a + 1); // setAge(43 => 44)
+  setAge(a => a + 1); // setAge(44 => 45)
+}
+	
+useEffect
+	useEffect(() => {setMessage(message + new Date))}, []);
+
+A functional component is called pure when we pass same set of values will get same results without an effect	
+
+useEffect(() => {
+	//code that executes after component render
+	
+	return () => {
+		// code that executes before component leaves. this runs before the next component rerender not after the end 
+		// of previous render
+		// component cleanup like unsubscribing to events, cancelling timers
+	} 
+	
+}, [] //dependency array);
+
+How often it run depends on dependency array
+undefined - empty means useEffect runs every time component renders or re renders	
+[] - functions run first time component renders
+[a,b,c,...] - runs only when any passed variables change
+
+The three rules of React Hooks	
+	Hooks can only be called inside a React function component //(not inside a class component)
+	
+	Hooks cannot be called conditionally //(inside a if block)
+	
+	Hooks can only be called at the top level of function component 
+	// (return useState() from another function and assign to [a, setA])
+	
+async/await in useEffect
+	useEffect( () => {
+		async function getDataAsync(){
+		  setLoading(true)
+		  const results = await axios.get("/api/speakers")
+		  setSpeakers(results.data)
+		  setLoading(false)
+		  console.log(results)
+		}
+		getDataAsync();
+  },[]);
+  
+  function toggleFavoriteSpeaker(speakerRec) {
+    const speakerRecUpdated = {...speakerRec, favorite : !speakerRec.favorite};
+    updateSpeaker(speakerRecUpdated)
+
+    async function updateAsync(rec){
+      setUpdatingId(rec.id)
+      await axios.post('/api/speakers/${rec.id}', speakerRecUpdated)
+      setUpdatingId(0)
+    };
+    updateAsync(speakerRecUpdated);
+  }
+  
+  
+useReducer - more flexible alternative to useState
+	function reducer(state, action){
+		switch(action.type){
+		  case "speakersloaded":
+			return {...state, loading : false, speakers : action.speakers};
+		  case "setLoadingStatus":
+			return {...state, loading : true};
+		  case "updateSpeaker":
+			const updatedSpeakers = state.speakers.map( (rec) => action.speaker.id == rec.id ? action.speaker : rec);
+			return {...state, speakers : updatedSpeakers };
+		  default :
+			throw new Error('failure');
+		}
+	  }
+	  
+	  const initialState = {
+		speakers : [],
+		loading: true
+	  }
+
+	  // const[speakers, setSpeakers] = useState([]);
+	  // const[loading, setLoading] = useState(0);
+
+	  
+	  const [state, dispatch] = useReducer(reducer, initialState);
+	  
+	  useEffect( () => {
+		async function getDataAsync(){
+		  // setLoading(true)
+		  dispatch({type : "setLoadingStatus"})
+		  const results = await axios.get("/api/speakers");
+		  console.log(results)
+		  // setSpeakers(results.data)
+		  // setLoading(false)
+		  dispatch({type : "speakersloaded", speakers : results.data});
+		}
+		getDataAsync();
+	  },[]);
+	  
+	  return (
+		<div className={darkTheme ? "theme-dark" : "theme-light"}>
+		  {/* <List speakers={speakers} updateSpeaker={updateSpeaker} /> */}
+		  <List state={state} dispatch={dispatch} />
+		</div>
+	  );
+	  
+	  function toggleFavoriteSpeaker(speakerRec) {
+		const speakerRecUpdated = {...speakerRec, favorite : !speakerRec.favorite};
+		// updateSpeaker(speakerRecUpdated)
+		dispatch({type : "updateSpeaker", speaker : speakerRecUpdated})
+		async function updateAsync(rec){
+		  setUpdatingId(rec.id)
+		  await axios.post('/api/speakers/${rec.id}', speakerRecUpdated)
+		  setUpdatingId(0)
+		};
+		updateAsync(speakerRecUpdated);
+	  }
+	  
+	  
+useRef
+	 There are two very specific use cases for the built‑in React hook, useRef. 
+	 The first is it allows us to get a reference directly to the DOM node associated with a component or React element. 
+	 With that reference, we can do any DOM manipulation that we could do from JavaScript without React, 
+	 whether that is things like setting focus to an input field, making some CSS style changes, or pretty much anything 
+	 we want, while keeping in mind that when React rerenders those components, the changes we made may not stick. 
+	 
+	 The second case is it gives us a direct way to associate a JavaScript variable to a function component. 
+	 Unlike React component state, which you also can associate with a component, the return of useRef gives us a variable 
+	 that we can update directly in JavaScript, and that variable persists between component rerenders. 
+	 Also, unlike React component state, those updates do not cause the component to rerender. 
+	 One common use case for this is to track the number of times a component rerenders
+	 
+	 For the first case, let's add an onMouseOver and OnMouseOut event to the image control that colorizes the speaker 
+	 image when the user mouses over and sets it to black and white when the user mouses out. 
+	 since we direct modify the DOM the component does not re-render. we can force one by using useState
+	 
+	 import { useRef, useState } from "react";
+	 const imgRef = useRef();
+	 <img src="/images/Speaker-1124.jpg" 
+        ref={imgRef}
+        style={ {filter : "grayscale(100%)"} }
+        onMouseOver={ () => imgRef.current.style.filter = "grayscale(0%)"; }
+        onMouseOut={ () => imgRef.current.style.filter = "grayscale(100%)" }
+	 />
+	 
+	 For the second case we described, let's implement a counter that counts the number of times a browser user mouses in 
+	 to a given speaker image this counter variable is mutable this counter variable persists its value through 
+	 component re renders
+	 
+	 import { useRef, useState } from "react";
+	 // case #1 reference DOM
+	  const imgRef = useRef();
+	  // case #2 reference value that does not cause re-render
+	  const mouseOverCnt = useRef(0);
+	  const [cnt,setCnt] = useState(0);
+	 <img src="/images/Speaker-1124.jpg" 
+        ref={imgRef}
+        style={ {filter : "grayscale(100%)"} }
+        onMouseOver={ () => 
+          {
+            imgRef.current.style.filter = "grayscale(0%)"; 
+            setCnt(cnt + 1); // we can force re-render
+            mouseOverCnt.current++; 
+          }
+        }
+        onMouseOut={ () => imgRef.current.style.filter = "grayscale(100%)" }
+        />
+		<button onClick={() => { alert("Registered: "+mouseOverCnt.current); } }> Register </button>
+		
+	import { useRef, useState, useEffect } from "react";
+
+	export default function SpeakerImageToggleOnScroll({
+	  imageUrl,
+	  alt,
+	  thumbNail,
+	}) {
+	  const imageRef = useRef();
+	  const [inView, setInView] = useState(false);
+	  const[isLoading, setIsLoading] = useState(false);
+
+	  function isInView(){
+		const rect = imageRef.current.getBoundingClientRect();
+		return rect.top >= 0 && rect.bottom <= window.innerHeight;
+	  }
+
+	  useEffect( () => {
+		setInView(isInView());
+		window.addEventListener("scroll", () => setInView(isInView));
+
+		return ( () =>{
+		  window.removeEventListener("scroll", () => setInView(isInView));
+		})
+	  });
+
+	  // function scrollHandler(){
+	  //   setInView(isInView());
+	  // }
+
+	  const grayScale = inView ? "grayscale(0%)" : "grayscale(100%)";
+
+	  
+	const gif1x1Transparent = "data:image/gif;base64, RØLGODLHAQABAIAAAP///WAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==";
+
+	  return (
+		<img
+		  src={isLoading ? gif1x1Transparent : imageUrl}
+		  alt={alt}
+		  width={thumbNail ? 50 : 200}
+		  height={thumbNail ? 50 : 200}
+		  className={
+			thumbNail
+			  ? "img-fluid rounded-start "
+			  : "img-fluid rounded-start speaker-image"
+		  }
+		  style={{ filter: `${grayScale}` }}
+		  ref={imageRef}
+		/>
+	  );
+	}
+
+
+useContext
+	primarily used to share data between components
+	Has a javascript object assigned to it
+	all components at that and below level will have access to this javascript object
+	
+	The pattern the React Context uses for working with data is often referred to as inversion of control, 
+	because your children components of this context control what is going on in the context itself. 
+	In other words, the inversion is that instead of the parent component, that is where the context is defined, 
+	being in charge and giving the commands, the components down in the component tree give the commands.
+	
+	Another big benefit of using Context is that your app can contain multiple overlapping contexts. 
+	That is, say you have a component hierarchy like this with an App component on the top. 
+	You can easily have one context defined at the app level, meaning that all components will have access to it, 
+	and then have another context defined, in our case Ch2 for child 2, 
+	and only the components directly below that will have access to its assigned context. 
+	This provides a lot of flexibility on how you control your access to data throughout your app.
+	
+	import {createContext} from 'React';
+	import childComponent from ./src/child-component.js
+	
+	export const ThemeContext = createContext();
+	
+	export default function Parent{
+		const [theme, setTheme] = useState("dark");
+		const toggleTheme = () => setTheme(!theme);
+		const value = {
+			theme,
+			toggleTheme
+		}
+		return(
+			<ThemeContext.Provider value = {{theme, setTheme}}
+			<ThemeContext.Provider value = {{value}}				// use either
+				<Ch2><ChildComponent/></Ch2>
+			</ThemeContext.Provider>
+		)
+		
+	}
+	
+	import {useContext} from "React";
+	import {ThemeContext} from ./src/Parent.js;
+	
+	export default function ChildComponent{
+		const {theme, setTheme} = useContext(ThemeContext);
+		const {theme} = useContext(ThemeContext);
+		const {toggleTheme} = useContext(ThemeContext);
+	}
+
+useContext and custom React hooks for a Redux like experience
+
+	import { useState } from "react";
+
+	export default function useTheme() {
+		const [darkTheme, setDarkTheme] = useState(false);
+		const toggleTheme = () => setDarkTheme(!darkTheme);
+		const value = {darkTheme, toggleTheme};
+
+		return value;
+	}
+	====================
+	import { createContext } from "react";
+	import useTheme from "../hooks/useTheme";
+
+	export const ThemeContext = createContext();
+
+	export const ThemeProvider = ({children}) => {
+		const value = useTheme();
+
+		<ThemeContext.Provider value={value}>
+			{children}
+		</ThemeContext.Provider>
+	}
+	=================
+	import Layout from "./components/layout/Layout";
+	const App = ({ url }) => {
+	  
+	  return (
+		  <Layout url={url}/>
+	  );
+	};
+
+	export default App;
+	
+													BEFORE
+import SpeakerDetail from "./SpeakerDetail";
+import { speakerList } from "../../../speakersData";
+import { ThemeContext } from "../context/Themecontext";
+import { useContext } from "react";													
+export default function Speaker({ id }) {
+  const { darkTheme } = useContext(ThemeContext);
+  const speakerRec = speakerList?.find((rec) => rec.id === id);
+
+  return speakerRec ? (
+    <div className={darkTheme ? "theme-dark" : "theme-light"}>
+      <SpeakerDetail speakerRec={speakerRec} showDetails={true} />
+    </div>
+  ) : (
+    <h2 className="text-danger">Speaker {id} not found</h2>
+  );
+}													
+													AFTER
+
+import { useContext } from "react";
+import { ThemeContext } from "../contexts/ThemeContext";
+import SpeakerDetail from "./SpeakerDetail";
+import { SpeakersDataContext, SpeakersDataProvider,} from "../contexts/SpeakersDataContext";
+
+function Inner({ id }) {
+  const { darkTheme } = useContext(ThemeContext);
+  const { speakerList, loadingStatus } = useContext(SpeakersDataContext);
+
+  if (loadingStatus === "loading") return <div>Loading...</div>;
+
+  const speakerRec = speakerList?.find((rec) => rec.id === id);
+
+  return speakerRec ? (
+    <div className={darkTheme ? "theme-dark" : "theme-light"}>
+      <SpeakerDetail speakerRec={speakerRec} showDetails={true} />
+    </div>
+  ) : (
+    <h2 className="text-danger">Speaker {id} not found</h2>
+  );
+}
+
+export default function Speaker(props) {
+  return (
+    <SpeakersDataProvider>
+      <Inner {...props} />
+    </SpeakersDataProvider>
+  );
+}
+	==================
+
+custom react hook for REST calls
+	
+Modal Popup windows in React
+	easier to create popup at app launch,then change its visibility throughout its lifecycle
+	use useContext and hooks
+	
+	
+useMemo
+	requires a pure function to wrap
+	caches/memoizes the result of calculation between renders
+	memoize - react will store a memoized version of our component for every combination props
+	const speakerListJson = JSON.stringify(speakerList);
+	const speakerListFiltered = useMemo(
+		() =>
+		  useSpeakerSortAndFilter(
+			speakerList,
+			speakingSaturday,
+			speakingSunday,
+			searchText
+		  ),
+		[speakingSaturday, speakingSunday, searchText, loadingStatus,
+		  speakerListJson],
+	 );
+	 
+	 
+
+memo
+	keeps components from re-renders when props are unchanged
+	
+	import React from 'react';
+	const MyComponent = React.memo(({ name }) => {
+	  console.log('Rendering MyComponent');
+	  return <div>Hello, {name}!</div>;
+	});
+	export default MyComponent;
+	In this example, MyComponent will only re-render if its name prop changes.
+	when a parent rerenders then child also rerenders.
+	if we wrap child function using memo then react checks if props passed hasn't changed then won't rerender
+
+useCallback
+	caches a function definition between renders
+	say we have a fav icon on every speakerline and togglefacSpeaker is assigned an anonymous function that triggers favourite
+	now when we hit fav icon of one speaker the list is changing so all speakers/child get rerendered
+	so wrap speakerlist variable inside memo and
+	wrap the above anonymous function in useCallback as first arg and second arg (dependency array) as just the fav variable
+	return (
+            <SpeakerLine
+              key={speakerRec.id}
+              speakerRec={speakerRec}
+              updating={updatingId === speakerRec.id ? updatingId : 0}
+              toggleFavoriteSpeaker={useCallback(
+                () => toggleFavoriteSpeaker(speakerRec),
+                [speakerRec.favorite] //only favorite changed for this speaker line so no other speakerline re-renders
+              )}
+              highlight={highlight}
+            />
+          );
+
+
+reducing the amount of work in a render
+reducing the number of re-renders
+
+designed to make react apps more responsive
+they change state update priority
+if there are slow running tasks
+when filtering by typing on textbox we sometimes feelits stick because background tasks are filtering records
+we can solve this by below hooks
+
+useDefferedvalue
+	similar to debouncing
+	for use when your state is managed outside of your app direct control
+	
+	import {useDefferedValue} from React
+	const [searchText,setSearchText] = useState("");
+	const defferedSearchText = useDefferedValue(searchText);
+	// this makes app more responsive by deffering running of background task until the typing slows down
+	
+useTransition
+	for use when you have direct access to react component state
+	
+	const [isPending, startTransition] = useTransaction();
+	
+	startTransition is a function that takes another function.
+	in onChange we all setSearchText(e.target.value)
+	onChange = {e => {startTransition( () => setSearchText(e.target.value))}}
+	
+	when startTransition function finished isPending will be <>
+	
+	const [search, setSearch] = useState("");
+  const [isPending, startTransition] = useTransition();
+  const [currentSearch, setCurrentSearch] = useState("");
+  
+  <>
+      <input value={currentSearch} onChange={(e) => {
+          setCurrentSearch(e.target.value); // this state changes at high priority than the one below within startTransition
+          startTransition(() => {setSearch(e.target.value); 
+          });
+        }}
+      />
+      {isPending ? "refreshing..." : ""} // until the slow prority state in updated
+      <SlowResults query={search} />
+    </>
+	
+	
+														ROUTES
+npm install react-router-dom
+# or
+yarn add react-router-dom
+														
+
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import Home from './Home';
+import About from './About';
+import Contact from './Contact';
+import Team from './Team';
+import Mission from './Mission';
+
+const App = () => {
+  return (
+    <Router>
+      <nav>
+        <Link to="/">Home</Link>
+        <Link to="/about">About</Link>
+        <Link to="/contact">Contact</Link>
+      </nav>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />}>
+          <Route path="team" element={<Team />} />
+          <Route path="mission" element={<Mission />} />
+        </Route>
+        <Route path="/contact" element={<Contact />} />
+      </Routes>
+    </Router>
+  );
+};
+
+export default App;
+
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import Home from './Home';
+import About from './About';
+import Contact from './Contact';
+
+const App = () => {
+  return (
+    <Router>
+      <nav>
+        <Link to="/">Home</Link>
+        <Link to="/about">About</Link>
+        <Link to="/contact">Contact</Link>
+      </nav>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/old-path" element={<Navigate to="/new-path" />} />
+        <Route path="*" element={<h1>404 Not Found</h1>} />
+      </Routes>
+    </Router>
+  );
+};
+
+export default App;
+
+
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const Contact = () => {
+  const navigate = useNavigate();
+
+  const handleSubmit = () => {
+    // Perform some action
+    navigate('/thank-you');
+  };
+
+  return (
+    <div>
+      <h1>Contact Page</h1>
+      <button onClick={handleSubmit}>Submit</button>
+    </div>
+  );
+};
+
+export default Contact;
+
+														
+														
+														
+														
+														
+														
+===============================================================================================================
+Loading a React app involves several steps, starting from the initial request to the final rendering of the components. Let's walk through the process step-by-step:
+
+### 1. Initial Request and HTML File
+
+When a user accesses a React app by entering a URL in the browser, an HTTP request is made to the server hosting the app. The server responds with an `index.html` file, which is the entry point for the React app.
+
+### 2. Loading of `index.html`
+
+The `index.html` file contains the root HTML structure and a `<div>` element with an `id` where the React app will be mounted. It also includes a `<script>` tag to load the JavaScript bundle that contains the React app code.
+
+**Example `index.html`**:
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React App</title>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="bundle.js"></script> <!-- JavaScript bundle -->
+</body>
+</html>
+```
+
+### 3. JavaScript Bundle
+
+The JavaScript bundle (e.g., `bundle.js`) is a minified and optimized file that contains the React app's code, including all the components, libraries, and dependencies. This bundle is generated by a build tool like Webpack.
+
+### 4. ReactDOM Rendering
+
+Once the JavaScript bundle is loaded, it initializes the React app. The entry point for a React app is typically `index.js` or `App.js`. The ReactDOM library is used to render the root component into the `<div id="root">` element in `index.html`.
+
+**Example `index.js`**:
+```javascript
+import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './App';
+
+ReactDOM.render(<App />, document.getElementById('root'));
+```
+
+### 5. Component Hierarchy
+
+The root component (`App`) and its child components are rendered. React follows a component-based architecture where the UI is broken down into reusable components. Each component may have its own state and props, and can include other child components.
+
+### 6. Virtual DOM and Reconciliation
+
+React maintains a virtual DOM, a lightweight copy of the actual DOM. When the state or props of a component change, React updates the virtual DOM first. It then compares the virtual DOM with the actual DOM (a process called reconciliation) and updates only the parts of the actual DOM that have changed. This ensures efficient and optimized rendering.
+
+### 7. User Interaction and State Management
+
+As the user interacts with the app (e.g., clicking buttons, entering data), React updates the state and re-renders the components as needed. State management libraries like Redux or Context API can be used to manage the global state of the app.
+
+### Summary
+
+1. **Initial Request**: Browser requests the `index.html` file from the server.
+2. **Loading `index.html`**: HTML file is loaded, containing a root `<div>` and a `<script>` tag for the JavaScript bundle.
+3. **JavaScript Bundle**: Bundle.js is loaded, containing the React app code.
+4. **ReactDOM Rendering**: ReactDOM renders the root component (`App`) into the root `<div>`.
+5. **Component Hierarchy**: Components are rendered, creating the UI.
+6. **Virtual DOM and Reconciliation**: React efficiently updates the actual DOM based on changes in the virtual DOM.
+7. **User Interaction**: User interactions update the state and re-render components as needed.
+
+This process ensures a smooth loading and rendering experience for React applications. If you have any more questions or need further details, feel free to ask!
+
+
+React does not have an exact equivalent to Angular's `pathMatch: 'prefix'` and `pathMatch: 'full'` directly in its core library. However, similar functionality can be achieved using routing libraries like `react-router-dom`.
+
+In React Router, you can handle path matching using the `exact` prop and more flexible pattern matching.
+
+### React Router Example
+
+1. **Using `exact` Prop**:
+   - The `exact` prop in React Router is used to ensure that the route matches the entire URL path exactly.
+   - Without `exact`, React Router performs partial matching and may match more than one route.
+
+**Example**:
+```jsx
+import React from 'react';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import Home from './Home';
+import About from './About';
+
+function App() {
+  return (
+    <Router>
+      <Switch>
+        <Route path="/" exact component={Home} /> {/* Full match */}
+        <Route path="/about" component={About} /> {/* Prefix match */}
+      </Switch>
+    </Router>
+  );
+}
+
+export default App;
+```
+
+### Handling More Flexible Matching
+For more flexible matching, you can use route parameters and custom logic within the component to handle different path scenarios.
+
+**Example with Route Parameters**:
+```jsx
+import React from 'react';
+import { BrowserRouter as Router, Route, Switch, useParams } from 'react-router-dom';
+
+function UserProfile() {
+  let { userId } = useParams();
+  return <div>User ID: {userId}</div>;
+}
+
+function App() {
+  return (
+    <Router>
+      <Switch>
+        <Route path="/user/:userId" component={UserProfile} />
+      </Switch>
+    </Router>
+  );
+}
+
+export default App;
+```
+
+### Summary
+- **React Router `exact` Prop**: Ensures that the route matches the entire URL path exactly.
+- **Flexible Matching with Route Parameters**: Use route parameters and custom logic to handle different path scenarios.
+
+These features allow you to achieve similar functionality to Angular's `pathMatch` options in React, ensuring that you can handle both full and partial path matches as needed. 
+
+If you have any more questions or need further details, feel free to ask!
+
+
+
+
+Creating a separate HTTP service in React and using it across your application can help you keep your code clean and maintainable. Here's a step-by-step guide on how to achieve this:
+
+### 1. Set Up Axios (or Fetch)
+First, you can use either the built-in Fetch API or a third-party library like Axios for making HTTP requests. For this example, we'll use Axios.
+
+**Install Axios**:
+```sh
+npm install axios
+```
+
+### 2. Create the HTTP Service
+Create a separate JavaScript file for your HTTP service. This file will contain functions for making different types of HTTP requests.
+
+**Example `httpService.js`**:
+```javascript
+import axios from 'axios';
+
+// Create an instance of Axios with default settings
+const http = axios.create({
+  baseURL: 'https://api.example.com', // Replace with your API base URL
+  timeout: 1000, // Optional timeout
+  headers: { 'Content-Type': 'application/json' }
+});
+
+// GET request
+export const get = async (url, params = {}) => {
+  try {
+    const response = await http.get(url, { params });
+    return response.data;
+  } catch (error) {
+    handleError(error);
+  }
+};
+
+// POST request
+export const post = async (url, data) => {
+  try {
+    const response = await http.post(url, data);
+    return response.data;
+  } catch (error) {
+    handleError(error);
+  }
+};
+
+// PUT request
+export const put = async (url, data) => {
+  try {
+    const response = await http.put(url, data);
+    return response.data;
+  } catch (error) {
+    handleError(error);
+  }
+};
+
+// DELETE request
+export const del = async (url) => {
+  try {
+    const response = await http.delete(url);
+    return response.data;
+  } catch (error) {
+    handleError(error);
+  }
+};
+
+// Error handling function
+const handleError = (error) => {
+  if (error.response) {
+    // Server responded with a status other than 200 range
+    console.error('Server Error:', error.response.data);
+  } else if (error.request) {
+    // Request was made but no response received
+    console.error('Network Error:', error.request);
+  } else {
+    // Something else happened
+    console.error('Error:', error.message);
+  }
+  throw error; // Rethrow the error so it can be handled further if needed
+};
+```
+
+### 3. Use the HTTP Service in Components
+Import the HTTP service functions in your React components and use them to make HTTP requests.
+
+**Example Component**:
+```javascript
+import React, { useEffect, useState } from 'react';
+import { get, post, put, del } from './services/httpService';
+
+const MyComponent = () => {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    // Fetch data on component mount
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const result = await get('/endpoint');
+      setData(result);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const createData = async () => {
+    try {
+      const newData = { /* your data here */ };
+      const result = await post('/endpoint', newData);
+      console.log('Data created:', result);
+    } catch (error) {
+      console.error('Error creating data:', error);
+    }
+  };
+
+  const updateData = async () => {
+    try {
+      const updatedData = { /* your data here */ };
+      const result = await put('/endpoint', updatedData);
+      console.log('Data updated:', result);
+    } catch (error) {
+      console.error('Error updating data:', error);
+    }
+  };
+
+  const deleteData = async () => {
+    try {
+      const result = await del('/endpoint');
+      console.log('Data deleted:', result);
+    } catch (error) {
+      console.error('Error deleting data:', error);
+    }
+  };
+
+  return (
+    <div>
+      <h1>My Component</h1>
+      {data ? <pre>{JSON.stringify(data, null, 2)}</pre> : 'Loading...'}
+      <button onClick={createData}>Create Data</button>
+      <button onClick={updateData}>Update Data</button>
+      <button onClick={deleteData}>Delete Data</button>
+    </div>
+  );
+};
+
+export default MyComponent;
+```
+
+### Summary
+
+1. **Set Up Axios**: Install and configure Axios or use the Fetch API.
+2. **Create HTTP Service**: Write a separate JavaScript file with functions for HTTP requests and error handling.
+3. **Use HTTP Service**: Import and use the service functions in your React components.
+
+By following these steps, you can create a reusable HTTP service in React, making your codebase more organized and maintainable. If you have any more questions or need further details, feel free to ask!
+
+
+													REACT TEST
+https://github.com/mosh-hamedani/react-testing-finish													
+Testing components
+Mocking API
+Testing Forms
+Testing state management
+
+download and install latest node
+install git
+						
+Jest - experimental support for ecmascript modules
+vitest - supports esm, typescript and jsx
+						
+npm i -D vitest							// testing framework. others Jest,Mocha, Jasmine
+	in package.json under scripts add "test": "vitest" and "test:ui" : "vitest --ui"
+	install vitest snippets extension in VSCode. type iv we get necessary imports
+	npm run test:ui
+npm i -D @testing-library/react@14.2.0 or latest	// to test react components. allows to render components and interact
+
+npm i -D jsdom@24.0.0			// emulates a browser dom because node env has no idea about browser api like dom. (HappyDom)
+
+now create a conf file to tell vitest to use jsdom as testing env
+vitest.config.ts in root
+import {defineConfig} from 'vitest/config';
+
+export default defineConfig({
+    test:{
+        environment: 'jsdom'
+    }
+})
+
+npm i -D @testing-library/jest-dom		//provides matchers for writing assertions against dom.like if an element is in dom and has red color
+
+npm install --save-dev @testing-library/user-event // user-event is a companion library for Testing Library that simulates user interactions by dispatching the events that would happen if the interaction took place in a browser.
+
+
+
+it("should display an error if price is $scenario", async({ price, errorMessage }) => {
+
+		const { waitForFormToLoad} = renderComponent();
+		const form = await waitForFormToLoad(); 
+		await form.fill({ ...form.validData, price });
+		const error = screen.getByRole("alert"); 
+		expect (error).toBeInTheDocument(); 
+		expect(error).toHaveTextContent(errorMessage);
+	}
+)
+react testing library queries - to find elements on the page for testing
+test library jest dom - provides matchers so import '@testing-library/jest-dom/vitest'
+
+======================
+getByRole - not applicable for div, p, so use getByText
+
+import { it, expect, describe } from 'vitest'
+import {render, screen} from '@testing-library/react';
+import Greet from '../../components/Greet';
+import '@testing-library/jest-dom/vitest'
+
+All these imports can be made global for all test files
+go to vitest config file and turn on globals and globals: true in test
+
+now go to tsconfig.json and add "types": ["vitest/globals"], under compileroptions
+
+=====================
+<button  data-testid="ok-button"  type="submit"  disabled />
+
+expect(button).toHaveAttribute('disabled')
+expect(button).toHaveAttribute('type', 'submit')
+expect(button).not.toHaveAttribute('type', 'button')

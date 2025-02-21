@@ -1,0 +1,89 @@
+MongoTemplate no longer supports com.mongodb.MongoClient and com.mongodb.MongoClientOptions. Please use com.mongodb.client.MongoClient and com.mongodb.MongoClientSettings instead.
+
+BEFORE
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoClientURI;
+
+public class Example {
+    public static void main(String[] args) {
+        MongoClientURI uri = new MongoClientURI("mongodb://localhost:27017");
+        MongoClientOptions options = MongoClientOptions.builder()
+            .connectTimeout(30000)
+            .socketTimeout(30000)
+            .build();
+        MongoClient mongoClient = new MongoClient(uri, options);
+    }
+}
+
+AFTER
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClientSettings;
+import com.mongodb.MongoClientURI;
+
+public class Example {
+    public static void main(String[] args) {
+        MongoClientURI uri = new MongoClientURI("mongodb://localhost:27017");
+        MongoClientSettings settings = MongoClientSettings.builder()
+            .applyConnectionString(uri)
+            .connectTimeout(30000)
+            .socketTimeout(30000)
+            .build();
+        MongoClient mongoClient = MongoClients.create(settings);
+    }
+}
+
+
+
+no longer support com.mongodb.DBObject. Please use org.bson.Document instead
+
+BEFORE
+import com.mongodb.DBObject;
+import com.mongodb.BasicDBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.MongoClientURI;
+
+public class Example {
+    public static void main(String[] args) {
+        MongoClientURI uri = new MongoClientURI("mongodb://localhost:27017");
+        MongoClient mongoClient = new MongoClient(uri);
+        MongoDatabase database = mongoClient.getDatabase("mydatabase");
+        MongoCollection<DBObject> collection = database.getCollection("mycollection", DBObject.class);
+
+        DBObject document = new BasicDBObject();
+        document.put("name", "John Doe");
+        document.put("age", 29);
+        
+        collection.insertOne(document);
+    }
+}
+
+
+AFTER
+import org.bson.Document;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.MongoClientSettings;
+import com.mongodb.MongoClientURI;
+
+public class Example {
+    public static void main(String[] args) {
+        MongoClientURI uri = new MongoClientURI("mongodb://localhost:27017");
+        MongoClientSettings settings = MongoClientSettings.builder()
+            .applyConnectionString(uri)
+            .build();
+        MongoClient mongoClient = MongoClients.create(settings);
+        MongoDatabase database = mongoClient.getDatabase("mydatabase");
+        MongoCollection<Document> collection = database.getCollection("mycollection");
+
+        Document document = new Document();
+        document.put("name", "John Doe");
+        document.put("age", 29);
+        
+        collection.insertOne(document);
+    }
+}

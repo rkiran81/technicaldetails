@@ -78,3 +78,429 @@ NumberFormat usFormat = NumberFormat.getInstance(Locale.US);
 NumberFormat usFormat = NumberFormat.getInstance(Locale.GERMANY);
 
 DESIGN consideration
+
+
+																Adapter
+========================================================================================================================================
+Target (TextFormattable): The existing interface that clients communicate with.
+Adaptee (CsvFormattable): The new incompatible interface that needs adapting.
+Adapter (CsvAdapterImpl): A class that adapts the Adaptee to the Target.
+Client: Communicates with the Target.
+
+package guru.springframework.gof.adapter.source;
+public interface TextFormattable {
+    String formatText(String text);
+}
+
+package guru.springframework.gof.adapter.source;
+public class NewLineFormatter implements TextFormattable{
+    @Override
+    public String formatText(String text)
+    {
+        String formattedText=text.replace(".","\n");
+        return formattedText;
+    }
+}
+
+package guru.springframework.gof.adapter.adaptee;
+public interface CsvFormattable {
+    String formatCsvText(String text);
+}
+
+package guru.springframework.gof.adapter.adaptee;
+public class CsvFormatter implements CsvFormattable{
+    @Override
+    public String formatCsvText(String text){
+        String formattedText=text.replace(".",",");
+        return formattedText;
+    }
+}
+
+package guru.springframework.gof.adapter.csvadapter;
+
+import guru.springframework.gof.adapter.adaptee.CsvFormattable;
+import guru.springframework.gof.adapter.source.TextFormattable;
+
+public class CsvAdapterImpl implements TextFormattable {
+    CsvFormattable csvFormatter;
+    public CsvAdapterImpl(CsvFormattable csvFormatter){
+        this.csvFormatter=csvFormatter;
+    }
+    @Override
+    public String formatText(String text)
+    {
+        String formattedText=csvFormatter.formatCsvText(text);
+        return formattedText;
+    }
+}
+
+package guru.springframework.gof.adapter.source;
+
+import guru.springframework.gof.adapter.adaptee.CsvFormattable;
+import guru.springframework.gof.adapter.adaptee.CsvFormatter;
+import guru.springframework.gof.adapter.csvadapter.CsvAdapterImpl;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+public class NewLineFormatterTest {
+    @Test
+    public void testFormatText() throws Exception {
+
+            String testString=" Formatting line 1. Formatting line 2. Formatting line 3.";
+            TextFormattable newLineFormatter=new NewLineFormatter();
+            String resultString = newLineFormatter.formatText(testString);
+            System.out.println(resultString);
+
+            CsvFormattable csvFormatter=new CsvFormatter();
+            TextFormattable csvAdapter=new CsvAdapterImpl(csvFormatter);
+            String resultCsvString=csvAdapter.formatText(testString);
+            System.out.println(resultCsvString);
+    }
+}
+
+
+Target Interface (PaymentGateway): 
+	Defines the interface expected by the client.
+Existing Payment Gateway (PayPalPayment): 
+	Implements the target interface.
+New Payment Gateway (StripePayment): 
+	Has a different interface.
+Adapter (StripePaymentAdapter): 
+	Adapts the new payment gateway to the target interface.
+
+// PaymentGateway.java
+public interface PaymentGateway {
+    void processPayment(double amount);
+}
+
+// PayPalPayment.java
+public class PayPalPayment implements PaymentGateway {
+    @Override
+    public void processPayment(double amount) {
+        System.out.println("Processing payment of $" + amount + " through PayPal.");
+        // PayPal payment processing logic
+    }
+}
+
+// StripePayment.java
+public class StripePayment {
+    public void makePayment(double amount) {
+        System.out.println("Processing payment of $" + amount + " through Stripe.");
+        // Stripe payment processing logic
+    }
+}
+
+// StripePaymentAdapter.java
+public class StripePaymentAdapter implements PaymentGateway {
+    private StripePayment stripePayment;
+
+    public StripePaymentAdapter(StripePayment stripePayment) {
+        this.stripePayment = stripePayment;
+    }
+
+    @Override
+    public void processPayment(double amount) {
+        stripePayment.makePayment(amount);
+    }
+}
+
+// ECommerceApp.java
+public class ECommerceApp {
+    public static void main(String[] args) {
+        PaymentGateway paypal = new PayPalPayment();
+        paypal.processPayment(100.0);
+
+        StripePayment stripe = new StripePayment();
+        PaymentGateway stripeAdapter = new StripePaymentAdapter(stripe);
+        stripeAdapter.processPayment(200.0);
+    }
+}
+
+
+																Strategy
+========================================================================================================================================
+public class Encryptor {
+    private String algorithmName;
+    private String plainText;
+    public Encryptor(String algorithmName){
+       this.algorithmName=algorithmName;
+   }
+    public void encrypt(){
+        if (algorithmName.equals("Aes")){
+            System.out.println("Encrypting data using AES algorithm");
+            /*Code to encrypt data using AES algorithm*/
+        }
+       else if (algorithmName.equals("Blowfish")){
+            System.out.println("Encrypting data using Blowfish algorithm");
+            /*Code to encrypt data using Blowfish algorithm */
+        }
+        /*More else if statements for other encryption algorithms*/
+    }
+   /*Getter and setter methods for plainText*/
+        
+}
+
+
+Strategy (EncryptionStrategy): Is an interface common to all supported algorithm-specific classes.
+ConcreteStrategy (AesEncryptionStrategy and BlowfishEncryptionStrategy): Implements the algorithm using the Strategy interface.
+Context (Encryptor): Provides the interface to client for encrypting data. The Context maintains a reference to a Strategy object and is instantiated and initialized by clients with a 
+			ConcreteStrategy object.
+
+package guru.springframework.gof.strategy.strategies;
+public interface EncryptionStrategy {
+    void encryptData(String plainText);
+}
+
+package guru.springframework.gof.strategy.strategies;
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+public class AesEncryptionStrategy implements EncryptionStrategy{
+   @Override
+    public void encryptData(String plaintext) {
+       System.out.println("-------Encrypting data using AES algorithm-------");
+       try {
+           KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+           keyGenerator.init(128);
+           SecretKey secretKey = keyGenerator.generateKey();
+           byte[] plaintTextByteArray = plaintext.getBytes("UTF8");
+           Cipher cipher = Cipher.getInstance("AES");
+           cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+           byte[] cipherText = cipher.doFinal(plaintTextByteArray);
+           System.out.println("Original data: " + plaintext);
+           System.out.println("Encrypted data:");
+           for (int i = 0; i < cipherText.length; i++) {
+               System.out.print(cipherText[i] + " ");
+           }
+       }
+           catch(Exception ex){
+               ex.printStackTrace();
+           }
+       }
+   }
+
+package guru.springframework.gof.strategy.strategies;
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+public class BlowfishEncryptionStrategy implements EncryptionStrategy{
+    @Override
+    public void encryptData(String plaintext) {
+        System.out.println("\n-------Encrypting data using Blowfish algorithm-------");
+        try {
+            KeyGenerator keyGenerator = KeyGenerator.getInstance("Blowfish");
+            keyGenerator.init(128);
+            SecretKey secretKey = keyGenerator.generateKey();
+            byte[] plaintTextByteArray = plaintext.getBytes("UTF8");
+            Cipher cipher = Cipher.getInstance("Blowfish");
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            byte[] cipherText = cipher.doFinal(plaintTextByteArray);
+            System.out.println("Original data: " + plaintext);
+            System.out.println("Encrypted data:");
+            for (int i = 0; i < cipherText.length; i++) {
+                System.out.print(cipherText[i] + " ");
+            }
+        }
+        catch(Exception ex){
+            ex.printStackTrace();
+        }
+    }
+}
+
+package guru.springframework.gof.strategy.context;
+import guru.springframework.gof.strategy.strategies.EncryptionStrategy;
+public class Encryptor {
+    private EncryptionStrategy strategy;
+    private String plainText;
+    public Encryptor(EncryptionStrategy strategy){
+        this.strategy=strategy;
+    }
+    public void encrypt(){
+        strategy.encryptData(plainText);
+    }
+    public String getPlainText() {
+        return plainText;
+    }
+    public void setPlainText(String plainText) {
+        this.plainText = plainText;
+    }
+}
+
+
+package guru.springframework.gof.strategy.context;
+import guru.springframework.gof.strategy.strategies.AesEncryptionStrategy;
+import guru.springframework.gof.strategy.strategies.BlowfishEncryptionStrategy;
+import guru.springframework.gof.strategy.strategies.EncryptionStrategy;
+import org.junit.Test;
+import static org.junit.Assert.*;
+public class EncryptorTest {
+    @Test
+    public void testEncrypt() throws Exception {
+      EncryptionStrategy aesStrategy=new AesEncryptionStrategy();
+      Encryptor aesEncryptor=new Encryptor(aesStrategy);
+      aesEncryptor.setPlainText("This is plain text");
+      aesEncryptor.encrypt();
+        EncryptionStrategy blowfishStrategy=new BlowfishEncryptionStrategy();
+        Encryptor blowfishEncryptor=new Encryptor(blowfishStrategy);
+        blowfishEncryptor.setPlainText("This is plain text");
+        blowfishEncryptor.encrypt();
+    }
+}
+========================================================================================================================================
+
+																Memento
+========================================================================================================================================
+
+Originator (EmpOriginator): 
+	Is a class the state of whose object needs to be saved. It creates a Memento containing a snapshot of its current state. Originator uses the Memento to restore back its state.
+Memento (EmpMemento): 
+	Is a class whose objects stores states of the Originator. Memento denies other objects access to itself except the Originator.
+Caretaker (EmpCaretaker): 
+	Manages and safeguards Memento.
+
+package guru.springframework.gof.memento;
+public class EmpOriginator {
+    private int empId;
+    private String empName;
+    private String empPhoneNo;
+    private String empDesignation;
+    public EmpOriginator(int empId, String empName, String empPhoneNo,String empDesignation)
+    {
+        this.empId=empId;
+        this.empName=empName;
+        this.empPhoneNo=empPhoneNo;
+        this.empDesignation=empDesignation;
+    }
+    public int getEmpId() {
+        return empId;
+    }
+    public void setEmpId(int empId) {
+        this.empId = empId;
+    }
+    public String getEmpName() {
+        return empName;
+    }
+    public void setEmpName(String empName) {
+        this.empName = empName;
+    }
+    public String getEmpPhoneNo() {
+        return empPhoneNo;
+    }
+    public void setEmpPhoneNo(String empPhoneNo) {
+        this.empPhoneNo = empPhoneNo;
+    }
+    public String getEmpDesignation() {
+        return empDesignation;
+    }
+    public void setEmpDesignation(String empDesignation) {
+        this.empDesignation = empDesignation;
+    }
+    public EmpMemento saveToMemento() {
+        EmpMemento empMemento=new EmpMemento(this.empId, this.empName, this.empPhoneNo, this.empDesignation );
+        return empMemento;
+    }
+    public  void undoFromMemento(EmpMemento memento)
+    {
+        this.empId = memento.getEmpId();
+        this.empName = memento.getEmpName();
+        this.empPhoneNo = memento.getEmpPhoneNo();
+        this.empDesignation = memento.getEmpDesignation();
+    }
+    public void printInfo()
+    {
+        System.out.println("ID: "+ this.empId);
+        System.out.println("Name: "+ this.empName);
+        System.out.println("Phone Number: "+ this.empPhoneNo);
+        System.out.println("Designation: "+ this.empDesignation);
+    }
+}
+
+
+package guru.springframework.gof.memento;
+public class EmpMemento {
+    private int empId;
+    private String empName;
+    private String empPhoneNo;
+    private String empDesignation;
+    public EmpMemento(int empId,String empName,String empPhoneNo,String empDesignation) {
+        this.empId = empId;
+        this.empName = empName;
+        this.empPhoneNo = empPhoneNo;
+        this.empDesignation = empDesignation;
+    }
+   public int getEmpId() {
+        return empId;
+    }
+    public String getEmpName() {
+        return empName;
+    }
+    public String getEmpDesignation() {
+        return empDesignation;
+    }
+    public String getEmpPhoneNo() {
+        return empPhoneNo;
+    }
+    @Override
+    public String toString(){
+        String str="Current Memento State" + this.empId +" , "+this.empName +" , "+this.getEmpPhoneNo()+" , "+this.getEmpDesignation();
+        return str;
+    }
+    }
+
+
+package guru.springframework.gof.memento;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Stack;
+public class EmpCaretaker {
+    final Deque<EmpMemento> mementos = new ArrayDeque<>();
+    public EmpMemento getMemento()
+    {
+        EmpMemento empMemento= mementos.pop();
+        return empMemento;
+    }
+    public void addMemento(EmpMemento memento)
+    {
+        mementos.push(memento);
+    }
+}
+
+
+package guru.springframework.gof.memento;
+import org.junit.Test;
+import static org.junit.Assert.*;
+public class EmpOriginatorTest {
+    @Test
+    public void testMemento() throws Exception {
+        EmpOriginator empOriginator= new EmpOriginator(306,"Mark Ferguson", "131011789610","Sales Manager");
+        EmpMemento empMemento=empOriginator.saveToMemento();
+        EmpCaretaker empCaretaker=new EmpCaretaker();
+        empCaretaker.addMemento(empMemento);
+        System.out.println("\n Original EmpOriginator");
+        empOriginator.printInfo();
+        System.out.println("\n EmpOriginator after updating phone number");
+        empOriginator.setEmpPhoneNo("131011888886");
+        empMemento=empOriginator.saveToMemento();
+        empCaretaker.addMemento(empMemento);
+        empOriginator.printInfo();
+        System.out.println("\n EmpOriginator after updating designation");
+        empOriginator.setEmpDesignation("Senior Sales Manager");
+        empMemento=empOriginator.saveToMemento();
+        empCaretaker.addMemento(empMemento);
+       empOriginator.printInfo();
+        System.out.println("\n EmpOriginator after undoing designation update");
+        empMemento=empCaretaker.getMemento();
+        empOriginator.undoFromMemento(empMemento);
+        empMemento=empCaretaker.getMemento();
+        empOriginator.undoFromMemento(empMemento);
+        empOriginator.printInfo();
+        System.out.println("\n Original EmpOriginator after undoing phone number update");
+        empMemento=empCaretaker.getMemento();
+        empOriginator.undoFromMemento(empMemento);
+        empOriginator.printInfo();
+    }
+}
+
+
+========================================================================================================================================

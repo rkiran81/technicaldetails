@@ -1,0 +1,254 @@
+https://github.com/public-apis/public-apis
+TMDB movies api
+
+we have two collections in mongodb, how to fetch, merge them and return as flux
+=========================================
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+
+@Service
+public class MergeService {
+
+    @Autowired
+    private Entity1Repository entity1Repository;
+
+    @Autowired
+    private Entity2Repository entity2Repository;
+
+    public Flux<Object> fetchAndMergeData() {
+        Flux<Entity1> flux1 = entity1Repository.findAll();
+        Flux<Entity2> flux2 = entity2Repository.findAll();
+
+        return Flux.merge(flux1, flux2)
+                   .map(entity -> {
+                       // You can add custom merge logic here if needed
+                       return entity;
+                   });
+    }
+}
+
+=========================================
+in kafka publisher if broker is down all day what actions should we perform,how will we know broker is up
+AdminClient: 
+	Use Kafka's AdminClient class in your Java application to check the status of the brokers. 
+	The describeCluster method can be used to verify if the brokers are up and running
+Replication and Failover: 
+	If you have replication configured, Kafka will automatically failover to another broker in the cluster. 
+	Ensure that your replication settings are correctly configured to handle broker failures
+
+caching strategies and which one will you choose
+=================================================
+In Spring Boot, there are several caching strategies you can use to improve the performance of your application by reducing the number of database hits and speeding up data access. 
+Here are some common caching strategies:
+
+### 1. **In-Memory Caching**
+   - **Description**: Stores data in the application's memory (RAM) for faster access.
+   - **Examples**: Using libraries like EhCache, Caffeine, or Redis.
+   - **Use Case**: Ideal for frequently accessed data that doesn't change often.
+
+### 2. **Database Caching**
+   - **Description**: Stores data in the database cache to reduce the load on the database.
+   - **Examples**: First-level cache in Hibernate.
+   - **Use Case**: Useful for read-heavy applications where data is frequently accessed but rarely updated.
+
+### 3. **Web Server Caching**
+   - **Description**: Stores static resources (e.g., HTML, CSS, JavaScript) on the web server to reduce load times.
+   - **Examples**: Using web server configurations like Apache or Nginx.
+   - **Use Case**: Suitable for web applications with static content that needs to be served quickly.
+
+### 4. **Content Delivery Network (CDN) Caching**
+   - **Description**: Distributes content across multiple servers globally to reduce latency.
+   - **Examples**: Using services like Cloudflare or Akamai.
+   - **Use Case**: Best for applications with a global audience and high traffic.
+
+### Choosing the Right Caching Strategy
+The choice of caching strategy depends on several factors, including the nature of your application, 
+the type of data being cached, and the expected load on your system. Here are some considerations to help you decide:
+
+1. **Data Volatility**: If the data changes frequently, in-memory caching might be more suitable. 
+						For less volatile data, database caching can be effective.
+2. **Access Patterns**: Analyze the read/write patterns of your application. 
+						If reads are more frequent than writes, caching can significantly improve performance.
+3. **Scalability**: Consider the scalability requirements of your application. 
+					In-memory caching with Redis can be scaled horizontally, making it suitable for high-traffic applications.
+4. **Latency**: For applications with users distributed globally, using a CDN can reduce latency by serving content 
+				from servers closer to the users.
+5. **Resource Availability**: Evaluate the resources available for caching. In-memory caching requires more memory, 
+								while database caching leverages existing database infrastructure.
+
+### Example: Using Caffeine for In-Memory Caching
+Here's an example of how to use Caffeine for in-memory caching in a Spring Boot application:
+
+```java
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+
+@Service
+public class MyService {
+    @Cacheable("myCache")
+    public MyObject getData() {
+        // Expensive operation
+        return new MyObject();
+    }
+}
+```
+
+In this example, the `@Cacheable` annotation is used to indicate that the `getData` method's result should 
+be cached in the cache named "myCache".
+
+By carefully considering these factors and choosing the appropriate caching strategy, 
+you can significantly improve the performance and scalability of your Spring Boot application. 
+If you have any more questions or need further details, feel free to ask!
+
+													Hibernate
+First-Level Cache
+Purpose: The first-level cache is associated with the session (or entity manager) in Hibernate. It is enabled by default and is specific to a particular session. The primary goal is to reduce the number of database hits by caching entities within a session.
+
+Key Characteristics:
+Session-Scope: 
+	The first-level cache is scoped to a Hibernate session. Each session has its own first-level cache.
+Automatic and Mandatory: 
+	It is automatically enabled and cannot be disabled.
+Session Lifecycle: 
+	The cache is cleared when the session is closed.
+Entity Caching: 
+	When an entity is loaded, it is cached in the session. 
+	Subsequent requests for the same entity within the same session will be served from the cache.
+
+Example:
+Session session = sessionFactory.openSession();
+Transaction tx = session.beginTransaction();
+
+Employee emp1 = session.get(Employee.class, 1); // Loads from the database
+Employee emp2 = session.get(Employee.class, 1); // Loads from the cache
+
+tx.commit();
+session.close();
+
+Second-Level Cache
+Purpose: The second-level cache is associated with the session factory and can be shared across sessions. It is used to cache entities, collections, and query results to reduce the number of database hits even across different sessions.
+
+Key Characteristics:
+SessionFactory-Scope: 
+	The second-level cache is scoped to the session factory, meaning it is shared across sessions.
+Configurable: 
+	It is not enabled by default and requires configuration to use.
+Persistent: 
+	The cache can persist data beyond the session's lifecycle, making it available to other sessions.
+Supports Multiple Cache Providers: 
+	Hibernate supports multiple cache providers such as Ehcache, Redis, and others.
+Configuration: 
+	To enable second-level caching, you need to configure it in the Hibernate configuration file and choose a cache provider.
+
+Example Configuration: hibernate.cfg.xml:
+<property name="hibernate.cache.use_second_level_cache">true</property>
+<property name="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.EhCacheRegionFactory</property>
+@Entity
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+public class Employee {
+    @Id
+    private int id;
+    private String name;
+    // Getters and Setters
+}
+
+================================================
+how can we ensure consistency of cached data in distributed cache
+================================================
+
+
+================================================
+two collections in mongo db, how will you retrieve and send as Flux
+
+weak cohensions in a class
+
+4 partition and 2 consumer
+Partition Assignment
+Number of Partitions: 4 (P0, P1, P2, P3)
+Number of Consumers: 2 (C0, C1)
+In this case, with 4 partitions and 2 consumers, the partitions would be distributed as follows:
+Consumer C0: P0, P1
+Consumer C1: P2, P3
+This distribution ensures that the workload is evenly balanced between the consumers.
+
+when a broker is down
+strategy pattern
+factory pattern
+abstract factory pattern
+
+in java say I have a third party component which has two db operations and are not thread safe. I cannot modify that class but how can I make it thread safe
+Third party component
+public class DatabaseComponent {
+    public void readData() {
+        // Non-thread-safe read operation
+        System.out.println("Reading data...");
+    }
+
+    public void writeData() {
+        // Non-thread-safe write operation
+        System.out.println("Writing data...");
+    }
+}
+
+Synchronized Wrapper Class
+public class ThreadSafeDatabaseComponent {
+    private final DatabaseComponent databaseComponent;
+    private final Object lock = new Object();
+
+    public ThreadSafeDatabaseComponent(DatabaseComponent databaseComponent) {
+        this.databaseComponent = databaseComponent;
+    }
+
+    public void readData() {
+        synchronized (lock) {
+            databaseComponent.readData();
+        }
+    }
+
+    public void writeData() {
+        synchronized (lock) {
+            databaseComponent.writeData();
+        }
+    }
+}
+
+
+microservice A calls microservice B and microservice B calls microservice C microservice B is down. 
+what should microservice A do
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      serviceBCircuitBreaker:
+        failureRateThreshold: 50
+        minimumNumberOfCalls: 5
+        waitDurationInOpenState: 10000
+        permittedNumberOfCallsInHalfOpenState: 3
+  retry:
+    instances:
+      serviceBRetry:
+        maxAttempts: 3
+        waitDuration: 2000
+        retryExceptions:
+          - java.io.IOException
+		  
+The circuit breaker will not evaluate the failure rate until at least 5 calls have been made (minimumNumberOfCalls: 5).
+
+Once 5 calls have been made, the circuit breaker will use the last 10 calls (slidingWindowSize: 10) to calculate the failure 
+rate.
+
+If 5 out of the last 10 calls (50%) fail, the failure rate threshold (failureRateThreshold: 50) is met, 
+and the circuit breaker will open, stopping further calls to the failing service.
+
+
+microservice A calls microservice B and microservice B calls microservice C. 
+microservice C is down so what httpstatus do we send to microservice A
+	503 Service Unavailable: When microservice C is temporarily unavailable.
+	504 Gateway Timeout: When the request to microservice C times out.
+	502 Bad Gateway: When an invalid response is received from microservice C.
+	
+Retry Mechanism: Retries the call to microservice C a few times to handle transient failures.
+Circuit Breaker: Opens the circuit if the failure rate exceeds the threshold, preventing further calls and protecting microservice B.
+Error Handling: If both retry and circuit breaker fail, return an appropriate HTTP status code (e.g., 503 Service Unavailable) and a meaningful fallback response to microservice A.

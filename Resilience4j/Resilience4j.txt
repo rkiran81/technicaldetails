@@ -1,0 +1,156 @@
+
+Resilience4j features & modules
+	Circuit Breaker (fault tolerance)
+	Rate Limiter (block too frequent requests)
+	Time Limiter (Set a time limit when calling remote operation)
+	Retry mechanism (Automatically retry a failed remote operation)
+	Bulkhead (Avoid too many concurrent requests)
+	Cache (Store results of costly remote operations)
+
+dependencies
+	io.github.resilience4j
+	resilience4j-spring-boot2
+
+	starter-actuator		to check health of micro service
+	starter-aop			to send metrics to actuator
+
+
+management: 
+ health:
+  circuitbreakers:
+   enabled: true
+endpoints:
+ web:
+  exposure:
+   include: health
+endpoint:
+ health:
+  show-details: always
+resilience4j: circuitbreaker:
+ instances:
+  userService:
+   registerHealthIndicator: true
+   eventConsumerBufferSize: 10 
+   failureRateThreshold: 50
+   minimumNumberOfCalls: 5
+   automaticTransitionFromOpenToHalfOpenEnabled: true
+   waitDurationInOpenState: 55
+   permittedNumberOfCallsInHalfOpenState: 3
+   slidingWindowSize: 10
+   slidingWindowType: COUNT_BASED
+
+resilience4j.retry:
+ configs:
+  default:
+   maxAttempts: 3
+   waitDuration: 2s
+   retryExceptions:
+    - java.io.IOException
+
+1. registerHealthIndicator: true
+	Purpose: Registers a health indicator for the circuit breaker.
+	Function: Exposes the health status of the circuit breaker through Spring Boot Actuator. This allows monitoring tools to track the circuit breaker's health, providing insights into its state (closed, open, half-open).
+
+2. eventConsumerBufferSize: 10
+	Purpose: Sets the buffer size for event consumers.
+	Function: Defines the size of the buffer that holds circuit breaker events (e.g., state transitions, failures) before they are processed by event listeners. A buffer size of 10 means the buffer can hold up to 10 events.
+
+3. failureRateThreshold: 50
+	Purpose: Defines the failure rate threshold that triggers the circuit breaker.
+	Function: Specifies the percentage of failed calls that will open the circuit breaker. 
+	In this case, if 50% or more of the calls fail, the circuit breaker will transition to the open state.
+
+4. minimumNumberOfCalls: 5
+	Purpose: Sets the minimum number of calls required before evaluating the failure rate.
+	Function: Ensures that the circuit breaker does not make decisions based on a small sample size. 
+	At least 5 calls must be made before the failure rate is evaluated.
+
+5. automaticTransitionFromOpenToHalfOpenEnabled: true
+	Purpose: Enables automatic transition from open to half-open state.
+	Function: Allows the circuit breaker to automatically transition from the open state to the half-open state after the 
+	waitDurationInOpenState has elapsed, without manual intervention. This allows the circuit breaker to test the waters 
+	with a few calls before fully closing.
+
+6. waitDurationInOpenState: 55
+	Purpose: Specifies the duration the circuit breaker stays in the open state.
+	Function: Determines how long (in seconds) the circuit breaker will remain in the open state before transitioning to 
+	the half-open state. In this case, the duration is set to 55 seconds.
+
+7. permittedNumberOfCallsInHalfOpenState: 3
+	Purpose: Sets the number of permitted calls in the half-open state.
+	Function: Specifies how many test calls are allowed while the circuit breaker is in the half-open state. 
+	If these calls succeed, the circuit breaker will close; if they fail, it will reopen. Here, 3 calls are permitted.
+
+8. slidingWindowSize: 10
+	Purpose: Sets the size of the sliding window used to evaluate the failure rate.
+	Function: Determines the number of calls used to calculate the failure rate. The sliding window can be based on a count 
+	or time. In this case, the size is set to 10 calls.
+
+9. slidingWindowType: COUNT_BASED
+	Purpose: Defines the type of sliding window.
+	Function: Specifies whether the sliding window is based on the number of calls (COUNT_BASED) or 
+	a time duration (TIME_BASED). In this case, it is COUNT_BASED, meaning the failure rate is calculated over a 
+	fixed number of calls.
+
+Real-World Example:
+
+COUNT_BASED: 
+	If slidingWindowSize is 10, the failure rate is calculated based on the last 10 calls. This is useful when you want the evaluation to be based on a specific number of 
+interactions regardless of the time they occurred.
+
+TIME_BASED: 
+	If slidingWindowSize is set to 1 minute, the failure rate is calculated based on all calls made in the last minute. This is useful when you want to consider the rate of failures over 
+	a specific time period, which can be more reflective of the current system state during fluctuating loads.
+
+
+@Configuration
+@EnableResilience4j (classes = { RateLimiter.class, Circuit Breaker.class, TimeLimiter.class })
+// ^ Enable Resilience4j for RateLimiter, Circuit Breaker, and TimeLimiter
+public class Circuit BreakerConfig {
+	@Bean
+	public RouteLocator circuitBreakerRouteLocator (RouteLocatorBuilder builder,
+	ReactiveResilience4jCircuit BreakerFactory circuitBreakerFactory, TimeLimiterRegistry timeLimiterRegistry) {
+	return builder.routes()
+			.route(r => r.path("/books/**")
+				.filters(f-> f
+					.circuitBreaker (c ->
+						c.setName("bookServiceCircuit Breaker")
+						.setSlidingWindowSize(20)
+						.setFailureRateThreshold (50.0f)
+						.setWaitDurationInOpenState (Duration. of Seconds (30))
+						.setRingBufferSizeInHalfOpenState(5)
+						.setWaitDuration InOpenState (Duration. of Seconds (30))
+						.build())
+					.timeLimiter(t -> // Add TimeLimiter filter
+						t.setName("bookServiceTimeLimiter")
+						.setCancelTimeout (Duration. of Seconds (1)) // Set timeout to 1 second
+						.build())
+					.uri("lb://book-service") // Replace with actual service URL
+				)
+			.build();
+	}
+}
+
+1. Preserving path parameters
+
+routes:
+ - id: product-service
+   path: /api/v1/products/{id}
+   uri: http://product-service/{path} //Preserves the {id} parameter
+   
+2.Adding prefixes
+
+@RestController
+@RequestMapping("/api/v2") // common prefix for all endpoints in this controller
+
+elasticsearch
+	Elasticsearch is a NoSQL database that is based on the Lucene search engine which will helps us to store inputs/logs
+logstash
+	Logstash is a log pipeline tool that accepts inputs/logs from various sources, & exports the data to various targets
+kibana
+	Kibana is a visualization UI layer, which will helps developer to monitor application logs
+
+log file   ->       logstash        ->          elastic         ->         kibana
+		data processing			storage			 visulaize
+
+

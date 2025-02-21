@@ -1,0 +1,742 @@
+https://projectreactor.io/docs/core/release/reference/coreFeatures/simple-ways-to-create-a-flux-or-mono-and-subscribe-to-it.html
+https://github.com/reactive-streams/reactive-streams-jvm/blob/master/README.md#specification
+
+https://gist.github.com/jsturgis/3b19447b304616f18657
+
+twilio recovery - GF7YHQEJAY9NQ8V13HB4XS4N
+Account SID	-	ACd46a37ba2779b659c7a9bee1a3ed3763
+Auth Token	-	9c3443a1a753d230648a04717537e3df
+Twilio number	-	+19705948869
+
+what is reactive programming
+why we need reactive programming
+when to use reactive programming
+
+New programming paradigm
+Asynchronous and non blocking
+	requests are received by threads which delegate to db and return back.
+	once its notified it will return response
+Functional style code
+Data flow as event driven stream
+	
+Backpressure on data streams
+	if data returned is too high then configure database driver to not push all data at once
+	
+
+Non Blocking asynchronous components + data streams + Functional programming
+
+Publisher publishes data
+Subscriber sbscribes to publisher through subscription
+Processor process the data
+backpressure to slow down the data stream published by publisher to the processor or from processor to subscriber
+
+Project React implements the reactive specification and provides TYPES (Mono/Flux) and OPERATORS (filter/map/flapmap)
+
+Flux - data will be sent in chunks and we can see this in header "transport-encoding" as chunked
+	
+											
+													Reactive stream specification
+spring-boot-starter-webflux
+													
+Publisher
+	publish an event (database driver)
+	public interface Publisher<T>{
+	{
+		public void subscribe(Subscriber<? super T> s);
+	}
+
+Subscriber
+	Subscribe to event (backend app/browser)
+	public interface Subscriber<T>{
+	{
+		public void onSubscribe(Subscribtion s);
+		public void onNext(T t);
+		public void onError(Throwable t);
+		public void onComplete();
+	}
+Subscription
+	public interface Subscription
+	{
+		public void request(long n);
+		public void cancel();
+	}
+Processor	
+	public interface Processor<T, R> extends Subscriber<T>, Publisher<R>
+	{
+		
+	}
+	
+Publisher/Subscriber
+1. Subscriber will call subscribe method of publisher
+2. Publisher will call onSubscribe and send Subscription event
+3. subscriber will call request(n) to publisher through Subscription
+4. Publisher will publish n results calling onNext event n times			Backpressure on data streams
+5. once n results are sent then onComplete will be called or onError
+
+Flux.range(1,10).delayElements(Duration.ofSeconds(500)).doOnNext(i -> syso(i)).map(i->new Customer(i, "Name"+i)); //returns Flux<Customer>
+
+
+																	Functional Endpoint
+Traditional - 			Browser	->	controller	->	Service
+Functional Endpoint - 	Browser	->	Router		->	Handler	
+
+
+
+Exception handling is handled by DefaultErrorWebExceptionHandler extends AbstractErrorWebExceptionHandler	
+for custom exception handling extend AbstractErrorWebExceptionHandler and provide impl for 
+protected abstract RouterFunction<ServerResponse> getRoutingFunction(ErrorAttributes errorAttributes);	
+
+for providing custom fields in error response extend DefaultErrorAttributes and provide the fields	
+
+
+														PRJECT REACTOR TYPES AND OPERATORS
+TYPES	-	Mono and Flux
+OPERATORS	-	filter,map,flatMap		
+OPERATORS Types - Create,Peek, Split, filter, Transform, Sync, Time manipulation, Multicast, ERROR HANDLING		
+				  Create data streams, peek the data, split them, multicast data to multiple subscribers
+
+https://app.pluralsight.com/ilx/video-courses/8b979178-73fd-4bbe-ace3-a73eb8d8531d/cbce11b7-ed9c-49e9-8396-9ed578dfc778/af0ea1ec-2229-4c72-8697-4065cdcac888
+try		-	Mono.error(new SomeException())/Flux.error(new SomeException()) will be handled by @ExceptionHandler of @RestControllerAdvice
+Catch	-	onErrorReturn(fallbackObject) must return another Mono
+			onErrorResume(ex ->analyize ex and provide fallback based on it) must return another Mono
+			onErrorMap(ex -> otherEx)generic to custom ex
+finally	-	doFinally(signalType -> doStuff()) whether onComplete() or onError() (signalType can be onComplete/onError)
+
+if you want to handle product not found
+switchIfEmpty(Mono.error(new ProdNotFoundException("Product not found for given id")))
+
+onErrorReturn(new ReturnEmptyDtoObj())	-	works only in a reactive context. so repo.save(dto->entity).map().onErrorReturn won't reach onErrorReturn. 
+										so first wrap to reactive context. Mono.just(dto).map(dto->entity).flatMap(repo.save).map(entity->dto).onErrorReturn
+										Why flatMap - map(dto->entity) - repo.save returns Mono of Mono - so flatMap is to unwrap inner Mono
+
+PEEK operators	-	very usefull for debugging purpose and preparing resources before processing and closing them
+					There are 12 peek operators
+.doFirst()	-	before subscription happens .doOnSubscribe() -> .doOnRequest() -> .doOnNext()					.doOnTerminate()->.doAfterTerminate().doFinally()
+																								.doOnCancel()
+																								.doOnError()
+																								.doOnComplete()	Flux Type
+																								.doOnSuccess()	Mono Type
+.doOnEach()
+
+Mono/Flux
+.doFirst()	-	before subscription happens 
+.doOnSubscribe()
+.doOnRequest()
+.doOnNext()
+.doOnCancel()
+.doOnError()
+
+Flux Type
+.doOnComplete()
+
+Mono Type
+.doOnSuccess()
+
+Mono/Flux
+.doOnTerminate()		will be called every time reactive stream ends either oncomplete/onerror. executes before last element is propogated to stream
+.doAfterTerminate()		executes after last element is propogated to the data stream
+.doFinally()			always executed at the end of the chain
+
+.doOnEach()				executes everytime there is a event/trigger in event stream
+
+															WEBCLIENT
+Has built in support for 
+	Reactive Client, 
+	Jetty Reactive HttpClient
+	Apache HttpComponents
+
+WebClient.create()
+WebClient.createBaseUrl(String url).create()
+WebClient.put().body(BodyInserters.fromValue(dto))
+BodyInserters is a utility class used to create BodyInserter instances, which are responsible for writing data to the body of a request or response. 
+BodyInserters provides a variety of static methods to create BodyInserter instances for different types of data, such as strings, objects, and publishers.
+fromValue(Object value): 
+	Creates a BodyInserter that writes the given object to the body.
+
+fromPublisher(Publisher<? extends T> publisher, Class<T> elementClass): 
+
+	Creates a BodyInserter that writes data from the given publisher to the body.
+	import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+public class WebClientExample {
+
+    public static void main(String[] args) {
+        WebClient webClient = WebClient.create("http://example.com");
+
+        Flux<DataBuffer> dataBufferFlux = Flux.just(
+                DataBufferUtils.readToDataBuffer(new ByteArrayInputStream("data1".getBytes())),
+                DataBufferUtils.readToDataBuffer(new ByteArrayInputStream("data2".getBytes()))
+        );
+
+        Mono<ServerResponse> response = webClient.post()
+                .body(BodyInserters.fromPublisher(dataBufferFlux, DataBuffer.class))
+                .retrieve();
+
+        response.block();
+    }
+}
+
+
+fromFormData(MultiValueMap<String, String> formData): 
+	Creates a BodyInserter that writes form data to the body.
+	import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
+import java.util.HashMap;
+import java.util.Map;
+
+public class WebClientExample {
+
+    public static void main(String[] args) {
+        WebClient webClient = WebClient.create("http://example.com");
+
+        Map<String, String> formData = new HashMap<>();
+        formData.put("username", "user123");
+        formData.put("password", "pass123");
+
+        Mono<ServerResponse> response = webClient.post()
+                .body(BodyInserters.fromFormData(formData))
+                .retrieve();
+
+        response.block();
+    }
+}
+
+
+fromMultipartData(MultiValueMap<String, Part> multipartData): 
+	Creates a BodyInserter that writes multipart data to the body.
+	
+	import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
+import java.util.HashMap;
+import java.util.Map;
+
+public class WebClientExample {
+
+    public static void main(String[] args) {
+        WebClient webClient = WebClient.create("http://example.com");
+
+        Map<String, Object> multipartData = new HashMap<>();
+        multipartData.put("username", "user123");
+        multipartData.put("file", new FileSystemResource("path/to/file.jpg"));
+
+        Mono<ServerResponse> response = webClient.post()
+                .body(BodyInserters.fromMultipartData(multipartData))
+                .retrieve();
+
+        response.block();
+    }
+}
+
+
+when doing both db operation and calling another api we can use @Transactional
+
+Client
+==========================================================================================
+											.retrieve()						.onStatus()
+.get()																		.bodyToMono()
+.post()					.uri()												.bodyToFlux()
+.put()					.headers()											.toEntity()
+.patch()				.cookie()												
+.delete()				.body()
+.head()															
+.options()
+.mutate() 
+(clone/alter existing web client)										
+
+											.exchange(response -> {})		
+											
+											
+															
+																EXCEPTION HANDLING
+
+
+														ERROR HANDLING WITH ONSTATUS
+														
+														webClient.post().retrieve()
+														
+4xxResponse												.onStatus(HttpStatus::is4xxClientError, response ->)
+5xxResponse												.onStatus(HttpStatus::is5xxServerError, response ->)																
+2xxResponse												.bodyToMono(2xxResponse.class)
+ 
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.ClientResponse;
+import reactor.core.publisher.Mono;
+
+public class WebClientExample {
+
+    private final WebClient webClient;
+
+    public WebClientExample(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.baseUrl("https://api.example.com").build();
+    }
+
+    public Mono<String> fetchData() {
+        return webClient.get()
+                        .uri("/data")
+                        .retrieve()
+                        .onStatus(status -> status.is4xxClientError(), this::handle4xxError)
+                        .onStatus(status -> status.is5xxServerError(), this::handle5xxError)
+                        .bodyToMono(String.class);
+    }
+
+    private Mono<? extends Throwable> handle4xxError(ClientResponse response) {
+        return response.bodyToMono(String.class)
+                       .flatMap(errorBody -> {
+                           System.out.println("4xx Error: " + errorBody);
+                           return Mono.error(new RuntimeException("Client Error: " + errorBody));
+                       });
+    }
+
+    private Mono<? extends Throwable> handle5xxError(ClientResponse response) {
+        return response.bodyToMono(String.class)
+                       .flatMap(errorBody -> {
+                           System.out.println("5xx Error: " + errorBody);
+                           return Mono.error(new RuntimeException("Server Error: " + errorBody));
+                       });
+    }
+}
+
+
+response.createException().flatMap(webClientResponseException -> Mono.error(|))
+	This can be handled by @ExceptionHandler
+response.bodyToMono(ErrorResponse.class) .flatMap(errorResponse -> Mono.error(	))	
+	can pass more info through dto
+																		
+														ERROR HANDLING WITH EXCHANGE
+
+
+
+webClient
+	.post()
+	.exchangeToMono(response -> {										200OK		.bodyToMono(Response.class)
+									response.getStatusCode.isError()
+})																		Error		.bodyToMono(ErrorMessage.class).flatMap(errorResponse -> Mono.error(new StockCreationException("Server Error: " + errorBody)))
+
+
+			subscribe()
+WebClient										
+			block()			synchronous call makes Mono/Flux to wait for completion
+
+
+FILTERS - can we used to add headers for jwt tokens/traceid
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.function.client.WebClient;
+
+@Configuration
+public class WebClientConfig {
+
+    @Bean
+    public WebClient webClient(JwtUtil jwtUtil) {
+        return WebClient.builder()
+                .baseUrl("https://api.example.com")
+                .defaultHeader("Authorization", "Bearer " + jwtUtil.generateToken("your_username"))
+                .build();
+		
+		this.webClient = WebClient.builder()
+                .baseUrl(baseUrl)														//ExchangeFilterFunction required a Mono
+                .filter(ExchangeFilterFunction.ofRequestProcessor(						// Adds request header to every request.
+                        request -> Mono.just(ClientRequest.from(request)				// taken request and generate new request with "X-Trace-Id" header
+                                .header("X-Trace-Id", UUID.randomUUID().toString())
+                                .build())
+                        ))
+                .build();
+    }
+}
+
+	
+			
+															TESTING - PROJECT REACTOR TEST LIBRARY
+															
+Unit			-	smaller in size but much larger in size. primarily designed to test business logic
+Integration		-	to test between two modules/components/. ex service and database layers
+E2E				-	designed to test user flows
+
+
+WebServices		-	WireMock, MockServer etc...
+databases		-	Embedded h2/mongo
+TestContainers
+																					expect()					
+StepVerifier	can test behaviour of Mono/Flux when subscribed			create()				verify()[verifyComplete()/verifyError()]
+																					assert()
+
+TestPublisher	we can test which signals are emitted and when
+
+PublisherProbe	like argument captor	
+
+
+UNIT TEST
+
+@Mock
+dependentutil
+
+@mock
+dependentrepo
+
+@InjectMocks
+service	
+
+@BeforeEach
+void setUp
+MockitoAnnotation.openMocks(this)  // initializes all declared mocks	
+
+@Test	
+
+//Given
+build dto/data
+when(dependentutil.method).thenReturn(somedata)Mono.just(dto)
+when(dependentrepo.method).thenReturn(somedata)Mono.just(someobject) or new RuntimeException("msg") to verify negative scenario
+
+//When
+StepVerifier.create(service.createProduct(dto))		
+
+//Then
+assertNext(response -> {					//because stepverifier verfies every step encountered
+	assertEquals(id,response.id)
+	assertEquals(price,response.price)
+})
+.verifyComplete() or verifyError(CustomException.class)																
+
+
+INTEGRATION TEST (chapter 5 StockIT.java)
+
+We need app to run and access to context we add @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT). 
+App will start before test and stop after test
+Use WebTestClient for integration test
+
+											WebClient									
+											
+											get()						expectStatus()
+											post()						expectBody()
+WebTestClient			=					put()				+		expectHeader()
+											headers()					expectCookie()
+											...							expectAll()
+											
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
+
+@MockBean
+repo
+
+@MockBean
+client
+
+@AutoWired
+WebTestClient
+
+
+@Test
+//Given
+
+//When
+setting pre requistes
+//Then
+
+													
+															BACKPRESSURE
+Backpressure in Spring WebFlux is a mechanism to control the flow of data between producers and consumers, ensuring that the consumer is not overwhelmed 
+by the volume of data being produced.
+Backpressure is the ability of a consumer to signal to a producer that it cannot handle the current rate of data production. 
+This helps prevent resource exhaustion and ensures that the system remains stable and responsive.	
+
+limitRate
+	return Flux.range(1, 1000)
+	   .map(i -> "Item " + i)
+	   .limitRate(100); // Limit the rate to 100 items at a time
+
+onBackpressureBuffer	-	scale consumers horizontally, persist etc....
+	return Flux.range(1, 1000)
+	   .map(i -> "Item " + i)
+	   .onBackpressureBuffer(100); // Buffer up to 100 items
+	   
+	 return Flux.interval(Duration.ofMillis(100))
+		   .map(tick -> random.nextInt(100))
+		   .onBackpressureBuffer(10, item -> {
+			   // Send overflowed item to Kafka
+			   kafkaTemplate.send("buffer-overflow-topic", item.toString());
+		   });
+	   
+onBackpressureDrop	-	This operator is useful when you want to prioritize processing speed over data retention, and you are okay with losing some data.
+						You can also provide a custom action to handle the dropped items, such as logging or storing them for later processing.
+	return Flux.interval(Duration.ofMillis(100))
+	   .map(tick -> random.nextInt(100))
+	   .onBackpressureDrop(droppedItem -> {
+		   // Custom action for dropped items
+		   System.out.println("Dropped item: " + droppedItem);
+		   // Optionally, store the dropped item in a database or file for later processing
+	   });
+onBackpressureLatest	
+	return Flux.interval(Duration.ofMillis(100))
+	   .map(tick -> random.nextInt(100))
+	   .onBackpressureLatest();
+
+Sinks.Many<String> sink = Sinks.many().multicast().onBackpressureBuffer();
+        Flux<String> flux = sink.asFlux();
+
+        flux.subscribe(System.out::println);
+
+        sink.tryEmitNext("Hello");
+        sink.tryEmitNext("World");
+public void processStockPrice(Double price) {
+        sink.tryEmitNext(price);				//sink.tryEmitNext(price) emits stock prices to the processor.
+    }
+return stockPriceService.getStockPriceStream()
+                                .doOnNext(stockPriceProcessor::processStockPrice);
+								
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import java.time.Duration;
+import java.util.Random;
+
+@Service
+public class StockPriceService {
+
+    private final Random random = new Random();
+
+    public Flux<Double> getStockPriceStream() {
+        return Flux.interval(Duration.ofMillis(100))
+                   .map(tick -> 100 + random.nextDouble() * 10)
+                   .onBackpressureBuffer(10, 
+                       droppedItem -> System.out.println("Dropped stock price: " + droppedItem));
+    }
+}
+
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
+
+@Service
+public class StockPriceProcessor {
+
+    private final Sinks.Many<Double> sink = Sinks.many().multicast().onBackpressureBuffer();
+
+    public void processStockPrice(Double price) {
+        sink.tryEmitNext(price);
+    }
+
+    public Flux<Double> getProcessedStockPriceStream() {
+        return sink.asFlux()
+                   .onBackpressureDrop(droppedItem -> System.out.println("Dropped processed stock price: " + droppedItem));
+    }
+}
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
+
+@RestController
+public class StockPriceController {
+
+    @Autowired
+    private StockPriceService stockPriceService;
+
+    @Autowired
+    private StockPriceProcessor stockPriceProcessor;
+
+    @GetMapping("/stock-prices")
+    public Flux<Double> getStockPriceStream() {
+        return stockPriceService.getStockPriceStream()
+                                .doOnNext(stockPriceProcessor::processStockPrice);
+    }
+
+    @GetMapping("/processed-stock-prices")
+    public Flux<Double> getProcessedStockPriceStream() {
+        return stockPriceProcessor.getProcessedStockPriceStream();
+    }
+}
+
+															Openapi
+springdoc-openapi-webflux-core and springdoc-openapi-webflux-ui
+
+
+Spring WebFlux is a reactive web framework introduced in Spring 5.0. It is designed to handle asynchronous and non-blocking operations, 
+making it ideal for building scalable and high-performance web applications. 
+Unlike the traditional Spring Web MVC framework, which is based on the Servlet API and follows a synchronous, blocking model, 
+Spring WebFlux leverages reactive programming principles and supports Reactive Streams back pressure.
+
+Key Features of Spring WebFlux
+Reactive Programming: 
+	Spring WebFlux is built on top of Project Reactor, which provides reactive programming support with its Flux and Mono types. 
+	These types represent asynchronous sequences of data and allow for non-blocking operations.
+
+Non-Blocking I/O: 
+	Spring WebFlux uses non-blocking I/O, which means it can handle a large number of concurrent connections without blocking threads. 
+	This makes it suitable for applications that require high concurrency and low latency.
+
+Server Support: 
+	Spring WebFlux can run on various servers, including Netty, Undertow, and traditional Servlet containers like Tomcat. 
+	This flexibility allows developers to choose the server that best fits their needs.
+
+Annotation-Based and Functional Programming Models: 
+	Spring WebFlux supports both annotation-based programming (similar to Spring MVC) and functional programming models. 
+	This allows developers to choose the style that best suits their application.
+	
+Use Cases
+Real-Time Applications: 
+	Spring WebFlux is well-suited for real-time applications like chat applications, live updates, and streaming data.
+
+Microservices: 
+	Its non-blocking nature makes it ideal for building microservices that need to handle a large number of concurrent requests.
+
+APIs: 
+	Spring WebFlux can be used to build high-performance APIs that require low latency and high throughput.
+
+
+
+
+While CompletableFuture and event-driven support in Spring WebMVC provide some level of asynchronous and non-blocking capabilities, 
+Spring WebFlux offers several advantages that make it a better choice for certain use cases:
+
+Key Differences and Advantages of Spring WebFlux
+Reactive Programming Model:
+	Spring WebMVC: Uses a synchronous, blocking model by default. While CompletableFuture can be used for asynchronous operations, 
+					it doesn't provide a fully reactive programming model.
+
+	Spring WebFlux: Built on top of Project Reactor, providing a fully reactive programming model with Flux and Mono types. 
+					This allows for more fine-grained control over asynchronous data streams and backpressure handling.
+
+Non-Blocking I/O:
+	Spring WebMVC: Primarily uses blocking I/O, which can limit scalability when handling a large number of concurrent connections.
+	Spring WebFlux: Uses non-blocking I/O, allowing it to handle a large number of concurrent connections efficiently. 
+					This makes it ideal for applications that require high concurrency and low latency.
+
+Backpressure Handling:
+	Spring WebMVC: Lacks built-in support for backpressure, which can lead to resource exhaustion when dealing with high-throughput scenarios.
+	Spring WebFlux: Supports backpressure natively through Reactive Streams, allowing the system to handle varying loads gracefully and 
+					prevent resource exhaustion.
+
+Server Support:
+	Spring WebMVC: Runs on traditional Servlet containers like Tomcat, Jetty, and Undertow.
+	Spring WebFlux: Can run on both traditional Servlet containers and non-blocking servers like Netty, providing more flexibility in deployment options.
+
+Functional Programming Model:
+	Spring WebMVC: Primarily uses an annotation-based programming model.
+	Spring WebFlux: Supports both annotation-based and functional programming models, allowing developers to choose the style 
+					that best suits their application.
+
+
+
+How Spring WebFlux Asynchronous Non-Blocking Threads works
+===================================================================
+Client Request: 
+	A client sends an HTTP request to the server.
+
+Event Loop: 
+	The request is received by the event loop, which is a single-threaded loop that continuously checks for new events (like incoming requests).
+
+Request Handling: 
+	The event loop delegates the request to a worker thread from a thread pool.
+
+Non-Blocking I/O: 
+	The worker thread performs non-blocking I/O operations, such as database calls or external API requests. 
+	Instead of waiting for the I/O operation to complete, the thread is freed up to handle other tasks.
+
+Reactive Streams: 
+	The I/O operation returns a Mono or Flux, which represents a reactive stream of data. The stream is processed asynchronously.
+
+Response Handling: 
+	Once the data is available, the event loop picks up the response and sends it back to the client.	
+
+
+whose responsibility it is to create and manage worked thread pool in spring webflux reactive programming
+===================================================================
+In Spring WebFlux reactive programming, the responsibility for creating and managing the worker thread pool lies with the underlying reactive library, 
+such as Project Reactor, and the server configuration.
+
+### Key Components
+
+1. **Reactor Scheduler**:
+   - **Schedulers**: Project Reactor provides various schedulers to manage thread pools. For example, `Schedulers.elastic()` creates a thread pool that 
+					 grows as needed, while `Schedulers.parallel()` provides a fixed-size thread pool.
+   - **Usage**: You can specify which scheduler to use for specific operations, allowing you to control the threading model for different parts 
+                of your application.
+
+2. **Server Configuration**:
+   - **Netty**: When using Netty as the server, Spring WebFlux leverages Netty's event loop and thread pool management. 
+				Netty is designed to handle non-blocking I/O operations efficiently.
+   - **Servlet Containers**: When using traditional Servlet containers like Tomcat, the container's thread pool configuration is used. However, 
+							 the reactive nature of WebFlux ensures that threads are not blocked during I/O operations.
+
+### Example
+Here's an example of how to use a specific scheduler in a Spring WebFlux application:
+
+```java
+import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class ExampleController {
+
+    @GetMapping("/data")
+    public Flux<String> getData() {
+        return Flux.just("Item1", "Item2", "Item3")
+                   .subscribeOn(Schedulers.parallel())
+                   .map(item -> {
+                       // Simulate a blocking operation
+                       Thread.sleep(1000);
+                       return item;
+                   });
+    }
+}
+```
+
+In this example, the `subscribeOn(Schedulers.parallel())` method specifies that the `parallel` scheduler should be used for the `getData` operation, 
+allowing it to run on a fixed-size thread pool.
+
+### Summary
+- **Reactor Scheduler**: Manages thread pools for reactive operations.
+- **Server Configuration**: Determines the threading model based on the server being used (Netty, Tomcat, etc.).
+
+By leveraging these components, Spring WebFlux ensures efficient and scalable management of worker threads in a reactive application.
+
+
+MYSQL reactive	spring-boot-starter-data-r2dbc/Use the dev.miku:r2dbc-mysql driver to connect R2DBC to MySQL 
+Mongo			spring-boot-starter-data-mongodb-reactive
+MARIA DB		r2dbc-mariadb
+
+R2DBC	-	REACTIVE RELATIONAL DATABASE CONNECTIVITY
+
+
+														OPERATOR TYPES
+https://ranawakay.medium.com/java-reactive-with-project-reactor-essential-operators-2b9c178b9dbc
+
+Operator Types
+Create
+
+Mono							Flux
+just()							just()
+justOrEmpty()					.fromArray()
+.fromSupplier() 				.fromlterable()
+.fromCallable()					.fromStream()						
+.fromRunnable					.generate()
+.fromFuture()					.range()
+.empty()						.empty()							
+.error()						.error()							
+.never()						.never()						
+.defer()						.defer()						
+.using()						.using()							
+.create()						.create()
+								
+
+For the project reactor, if you are a beginner, as an important step, you will have to get your hands dirty with some operators. 
+From this, you can refer to 10 essential operators in reactive java with examples.
+
+So, these are the operators that are going to be reviewed.
+
+map
+flatMap
+flatMapSequential
+switchIfEmpty
+defaultIfEmpty
+concat/concatWith
+merge/mergeWith
+mergeSequential
+zip
+Mono defer								

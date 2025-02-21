@@ -1,0 +1,162 @@
+management.endpoints.web.exposure.include=*
+#management.endpoints.web.exposure.exclude=info, beans 
+management.endpoints.enabled-by-default=false 
+management.endpoint.info.enabled=true
+
+management.endpoint.health.show-details=ALWAYS
+management.endpoint.health.group.health-group.include=ping,diskSpace
+
+
+===================================================================
+<artifactId>spring-boot-actuator-demo</artifactId>
+<version>0.0.1-SNAPSHOT</version>
+<name>spring-boot-actuator-demo</name>
+<description>Demo project for LinkedInLearning</description>
+<properties>
+	<java.version>11</java.version> 
+	<maven.build.timestamp.format>
+		yyyy-MM-dd HH:mm:ss
+	</maven.build.timestamp.format>
+</properties>
+
+info.app.name=@project.name@
+info.app.description=@project.description@
+info.app.version=@project.version@
+info.app.java.version=@java.version@
+info.build-timestamp=@maven.build.timestamp@
+
+now hit http://localhost:8080/actuator/info  // displays above details
+===================================================================
+change /actuator base path
+management.endpoints.web.base-path=/manage
+from http://localhost:8080/actuator to http://localhost:8080/manage
+
+change /health
+management.endpoints.web.base-path=/
+management.endpoints.web.path-mapping.health=/healthcheck
+from http://localhost:8080/actuator/health to http://localhost:8080/healthcheck
+
+===================================================================
+implement HealthIndicator
+
+package com.tech552.springbootactuatordemo.monitor;
+
+import java.util.Random;
+
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.stereotype.Component;
+
+@Component
+public class DBHealthIndicator implements HealthIndicator {
+
+	@Override
+	public Health health() {
+		if(isDBHealthy()) {
+			return Health.up().withDetail("ExternalDB","Healthy").build();
+		}else {
+			return Health.down().withDetail("ExternalDB", "Not Healthy").build();
+		}
+	}
+	
+	public boolean isDBHealthy() {
+		Random random = new Random();
+		return random.nextBoolean();
+	}
+}
+
+implement custom endpoint
+
+@ReadOperation		//GET
+@WriteOperation		//POST
+@DeleteOperation	//DELETE
+
+@Endpoint (id = "custom")
+@Component
+public class MyCustomActuator Endpoint {
+	@ReadOperation
+	public Map<String, String> myCustomActuator EndPoint (String someId) { 
+		Map<String, String> hashMap = new HashMap<>();
+		hashMap.put("someId", someId);
+		return hashMap;
+	}
+}
+http://localhost:8080/actuator/custom?id=101
+===================================================================
+secure actuator endpoints
+
+1. add spring seurity dependency
+2. management.endpoint.health.show-details=WHEN_AUTHORIZED
+3.
+   
+	@Configuration (proxyBeanMethods = false)
+	public class CustomSecurityConfig extends WebSecurityConfigurerAdapter {
+	
+		@Override
+		protected void configure(HttpSecurity http) throws Exception {
+			http.authorizeRequests()
+				.requestMatchers (EndpointRequest.to (HealthEndpoint.class)). permitAll() .requestMatchers
+				(EndpointRequest.toAnyEndpoint()).hasRole("ADMIN");
+				http.csrf().and().httpBasic();
+		}
+	}
+4. spring.security.user.name=admin
+   spring.security.user.passowrd=pass
+   spring.security.user.role=ADMIN
+
+===================================================================
+actuator metrics
+
+Latency	How much time a request takes
+Traffic How many requests per sec/min
+Error	Howmany requests are failing
+
+spring boot provides support for metrics instrumentation library called micrometer. 
+
+It is a vendor-neutral application metrics facade that captures and exposes metrics from our app to several monitoring 
+systems and time-series databases such as Prometheus, Datadog, New Relic, Grafana and so much more. 
+
+Micrometer also gives us the ability to create our own custom metrics by leveraging the different types of metrics 
+that it exposes which are timers, counters and gauges. 
+
+A timer is used to measure event duration times such as how long it takes for a method to execute. 
+
+A counter that is used to measure events that only increase over time such as the total task completed. 
+
+Gauges however are used to measure values that rise and fall such as memory usage. 
+
+Once micrometer is added to our app, it sits there collecting and exposing our applications metrics so that we can leverage 
+a metrics based monitoring and alerting tools such as Prometheus to scrape and analyze those metrics.
+
+add dependency
+	io.micrometer
+	micrometer-registry-prometheus
+doing so we get another endpoint /actuator/prometheus
+
+Prometheus is a monitoring system for gathering metrics at intervals, evaluating rules, as well as triggering alerts. 
+It leverages a pool-based approach when fetching our applications metrics. 
+Therefore, it needs to know where and how often to script the metrics that's exposed by our application. 
+This means we'll need to create a configuration file to scrape our data from the actuator/prometheus endpoint.
+
+prometheus.yml
+	
+	global:
+	 scrape_interval: 5s #scrape every 5 seconds
+	 evaluation_interval: 5s #evaluate rules every 5 secs
+	 
+	rule_files:
+	# - "one_rule.yml"
+	
+	scrape_configs:
+	 - job_name: 'prometheus' 
+	   static_configs:
+		- targets: ['127.0.0.1:9090']
+	 - job_name: 'spring-boot-app'
+	   metrics_path: '/actuator/prometheus'
+	   scrape_interval: 5s
+	   static_configs:
+	    - targets: ['host.docker.internal:8080'] #host and port
+		
+	basic_auth:
+	 username: "admin"
+	 password: "pass"

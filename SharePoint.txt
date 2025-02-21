@@ -1,0 +1,52 @@
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.List;
+
+public class SharePointDownloader {
+    private static final String BASE_URL = "https://your-sharepoint-site-url";
+    private static final String DOWNLOAD_URL = BASE_URL + "/_api/web/GetFileByServerRelativeUrl('path-to-file')/$value";
+
+    public static void main(String[] args) {
+        List<String> fileUrls = getFilesFromSharePoint(); // Method to retrieve file URLs
+        ExecutorService executor = Executors.newFixedThreadPool(10); // Create a thread pool with 10 threads
+
+        for (String fileUrl : fileUrls) {
+            executor.submit(() -> downloadFile(fileUrl));
+        }
+
+        executor.shutdown();
+        while (!executor.isTerminated()) {
+            // Wait for all tasks to finish
+        }
+    }
+
+    private static void downloadFile(String fileUrl) {
+        try {
+            URL url = new URL(fileUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            InputStream inputStream = connection.getInputStream();
+            String fileName = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
+            try (FileOutputStream outputStream = new FileOutputStream(fileName)) {
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static List<String> getFilesFromSharePoint() {
+        // Implement method to retrieve file URLs from SharePoint
+        return List.of("https://your-sharepoint-site-url/file1.docx", "https://your-sharepoint-site-url/file2.pdf");
+    }
+}
+
+
+Spring Boot and Microservices - highlight experience in 2 -3 points
