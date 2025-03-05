@@ -1,7 +1,8 @@
 https://docs.spring.io/spring-security/site/docs/3.0.x/reference/security-filter-chain.html
 https://docs.spring.io/spring-security/reference/servlet/architecture.html
 https://medium.com/@rasheed99/introduction-on-spring-security-architecture-eb5d7de75a4f#:~:text=Spring%20Security%20acts%20as%20a,your%20data%20from%20unauthorized%20access.
-
+https://medium.com/@aprayush20/spring-security-authentication-configuration-demystified-e44be02322fb
+https://medium.com/@aprayush20/understanding-spring-security-authentication-flow-f9bb545bd77
 
 default login page
 username :	user
@@ -13,17 +14,27 @@ logging.level.org.springframework.security.web.FilterChainProxy=true
 
 
 Spring Security Filters
-A series of Spring Security filters intercept each request & work together to identify if Authentication is required or not. If authentication is
-required, accordingly navigate the user to login page or use the existing details stored during initial authentication.
+A series of Spring Security filters intercept each request & work together to identify if Authentication is required or not. 
+If authentication is required, accordingly navigate the user to login page or use the existing details stored during initial 
+authentication.
 
-Authentication : Filters like UsernamePasswordAuthenticationFilter will extract username/ password from HTTP request & prepare Authentication type object
-Because Authentication is the core standard of storing authenticated user details insdie Spring Security framework.
-AuthenticationManager : Once received request from filter, it delegates the validating of the user details to the authentication providers available. Since there can be
-multiple providers inside an app, it is the responsibility of the AuthenticationManager to manage all the authentication providers available.
-AuthenticationProvider : AuthenticationProviders has all the core logic of validating user details for authentication
-UserDetailsManager/UserDetailsService : It helps in retrieving, creating, updating, deleting the User Details from the DB/storage systems.
-PasswordEncoder : Service interface that helps in encoding & hashing passwords. Otherwise we may have to live with plain text passwords &
-SecurityContext : Once the request has been authenticated, the Authentication will usually be stored in a thread-local SecurityContext managed by the SecurityContextHolder. This helps during the upcoming requests from the same user.
+Authentication : 
+	Filters like UsernamePasswordAuthenticationFilter will extract username/ password from HTTP request & prepare 
+	Authentication type object Because Authentication is the core standard of storing authenticated user details insdie 
+	Spring Security framework.
+AuthenticationManager : 
+	Once received request from filter, it delegates the validating of the user details to the authentication providers 
+	available. Since there can be multiple providers inside an app, it is the responsibility of the AuthenticationManager 
+	to manage all the authentication providers available.
+AuthenticationProvider : 
+	AuthenticationProviders has all the core logic of validating user details for authentication
+UserDetailsManager/UserDetailsService : 
+	It helps in retrieving, creating, updating, deleting the User Details from the DB/storage systems.
+PasswordEncoder : 
+	Service interface that helps in encoding & hashing passwords. Otherwise we may have to live with plain text passwords &
+SecurityContext : 
+	Once the request has been authenticated, the Authentication will usually be stored in a thread-local SecurityContext 
+	managed by the SecurityContextHolder. This helps during the upcoming requests from the same user.
 
 
 
@@ -139,4 +150,59 @@ This will enable database authentication but it will show login page for every r
 12. http.authorizationrequests.antmathers("/authenticate").permitall.anyrequests.authenticated
 	.session.sessionpolicy.stateless
 	http.addfilterbefore(jwtfilter, usernamepasswordauthenticationfilter.class);
+	
+	
+	
+	
+	============================================================================================================
+	
+	http element below is the HttpSecurity object we configure in websecurityconfigureradapter in spring boot
+	
+	<beans:beans xmlns="http://www.springframework.org/schema/security"
+    xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/security
+        http://www.springframework.org/schema/security/spring-security.xsd
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- HTTP security configurations -->
+    <http>
+        <intercept-url pattern="/login" access="permitAll" />
+        <intercept-url pattern="/**" access="authenticated" />
+        
+        <!-- Form-based login configuration -->
+        <form-login
+            login-page="/login"
+            default-target-url="/home"
+            authentication-failure-url="/login?error=true"
+            username-parameter="username"
+            password-parameter="password" />
+        
+        <!-- Logout configuration -->
+        <logout
+            logout-success-url="/login?logout=true"
+            invalidate-session="true"
+            delete-cookies="JSESSIONID" />
+        
+        <!-- CSRF protection -->
+        <csrf />
+        
+        <!-- Session management -->
+        <session-management>
+            <concurrency-control max-sessions="1" expired-url="/login?expired=true" />
+        </session-management>
+    </http>
+
+    <!-- Authentication manager configuration -->
+    <authentication-manager>
+        <authentication-provider>
+            <user-service>
+                <user name="user" password="{noop}password" authorities="ROLE_USER" />
+            </user-service>
+        </authentication-provider>
+    </authentication-manager>
+
+</beans:beans>
+
 	

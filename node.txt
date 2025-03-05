@@ -3,7 +3,7 @@ kiranrkumar
 WTlgikV1XQNEZHbC
 
 
-Node.jsis a powerful, open-source, cross-platform runtime environment that allows you to run JavaScript code outside of a web browser. 
+Node.js is a powerful, open-source, cross-platform runtime environment that allows you to run JavaScript code outside of a web browser. 
 It uses the V8 JavaScript engine, which is the same engine that powers Google Chrome, to execute code. 
 Node.js is designed to build scalable network applications and is particularly well-suited for developing server-side and networking applications.
 

@@ -1,0 +1,149 @@
+Kubernetes
+======================
+
+container orchestration tool
+1. High availability or no down time
+2. Scalability or high performance
+3. disaster recovery or backup and restore
+
+Architecture
+	One Master and multiple worker node. in prod usually we have two master nodes in case one fails or you can have many
+	Each worker node has a kubelet process running on it that helps every node/clusters communicate with each other
+	each worker node has docker containers of different applications running on it
+	on master node has several kubernetes process running that are necessary to manage the clusters to work properly
+	
+	API Server - 		 entry point to k8s cluster - UI, APi, CLI talks to this api server
+	Controller manager - tracks what's happening in cluster, wherther something needs to be repaired, 
+						 may be a container died and needs to be restarted
+	Scheduler - 		 responsible for scheduling containers on different nodes based on workload and available server resources on each node.
+	etcd - 				 key-value storage which basically holds at anytime the current state of the k8s cluster.contains all config and status 
+						 data of each node and each container. backup/restore basically recover cluster state can be made based on etcd snapshots 
+						 becaue it contains the current state of cluster
+    vistual network -	 turns all the nodes inside of a cluster into one powerfull machine that is sum of all the resources of individual nodes					 
+
+Basic concepts
+	pod - pod is a smallest unit that you as a user configure and interact with. wrapper of a container.
+		  each worker node can have multiple pods and each pod can have multiple containers
+		  usually we will have one pod per container/application. db in one pod, message brober in one pod and server(node/java app) in one pod.
+		  we will have muliple containers if we have one main application and it has some helper containers  
+		  virtual network assigns each pod its own IP address so each pod in itself is a self contained server with its own IP address.
+		  every pod commuicates with each other using this IP.
+		  pod is a abstration provided for our containers. if a continers dies pods takes care of restarting or spinning up another container.
+		  pods are ephemeral (that lives short time) components which means pods can also die very frequently and when a pod dies new one 
+		  gets created and here is where notion of service comes into play. so when a pod dies a new pod is created and assigned a new IP address
+		  so because of this dynamic IP address behaviour we have a service that sits in front pod for communication and not tied to that pod.
+		  
+		  Service has two main functionalities 
+			permanent IP address	-	to communicate between pods
+			load balancer
+			
+	container
+
+
+kind - Deployment, Service, ConfigMap, Secret
+type - NodePort, LoadBalancer, ClusterIP (to access resource within cluster)
+
+ClusterIP - which is the default and only exposes the service internally within the cluster.
+
+NodePort and LoadBalancer are two types of services used to expose your applications to external traffic
+
+NodePort - Kubernetes allocates a port from a range (default: 30000-32767) on each node, we can access service by http://<NodeIP>:<NodePort>/app
+http://<NodeIP>:30001/app
+http://<NodeIP>:30002/app
+
+IP can be mapped to DNS name but port has to be specified by client. if service fails and starts new instance the IP changes 
+and now client need to update the new port assigned (range: 30000-32767). for this we can create a proxy server which is again work load
+
+
+Load Balancer - Kubernetes requests a load balancer from the cloud provider. cloud provider assigns a fixed, external IP to the service.
+				this static IP for each service is expensive
+
+kubectl version --client
+kubectl version --client --output=yaml
+minicube start
+eval $(minicube docker-env)
+docker build -t imagename:tag .
+docker images
+kubectl apply -f .yaml
+kubectl get configmap
+kubectl get secrets
+kubectl get deployments
+kubectl get svc/services
+kubectl get pods
+kubectil logs podname
+minicube ip;
+minicube dashboard;
+echo -n 'admin' | base64		kubectl command to encrypt a string in base64
+
+connect to mysql instance in pod
+=================================
+kubectl exec -it mysql-instance-podname /bin/bash		(-it integrated terminal)
+mysql -h mysql -u usename -p pasword					(-h host)
+show databases;
+use database;
+show tables;
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecret
+type: Opaque
+data:
+  username: YWRtaW4=
+  password: MWYyZDFlMmU2N2Rm
+-------------------------------
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecret
+type: Opaque
+stringData:
+  config.yaml: |
+    apiUrl: "https://my.api.com/api/v1"
+    username: <user>
+    password: <password>
+----------------------------------------
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecret
+type: Opaque
+data:
+  username: YWRtaW4=
+stringData:
+  username: administrator
+  
+kubectl get secret mysecret -o yaml
+kubectl delete secret mysecret
+
+
+Ingress (NGINX) NGINX. Others Traefik and HAProxy
+===========================================
+we have NodePort and LoadBalancer but still why we need Ingress
+if nginx ingress is not enabled by defaylt then run "minikube addons enable ingress"
+
+
+
+npm for Node
+pip for python
+Helm for Kubernetes
+
+Helm is the package management system for Kubernetes
+Helm deploys all Kubernetes manifests at once and allows you to version and rollback deployments.
+
+without Helm
+	copy and paste lot of files
+	Running commands over and over
+	kubectl apply -f secret.yml
+	kubectl apply -f configmap.yml
+	kubectl apply -f deployment.yml
+	
+with Helm
+	install with one command
+	create chart versions
+	upgrade versions
+	debug deployments
+	Roll back as needed
+Helms templating engine lets you pass in data and render values dynamically meaning you can deploy same application
+in many environments using different sets of values
+	

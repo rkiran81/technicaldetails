@@ -1,8 +1,10 @@
-Loading an Angular app involves several stages, starting from the initial request to the server and ending with the app being fully operational in the browser. Here's a detailed overview of the process:
+Loading an Angular app involves several stages, starting from the initial request to the server and ending with the app 
+being fully operational in the browser. Here's a detailed overview of the process:
 
 ### 1. Initial Request and Index.html
 
-When a user navigates to an Angular application, the browser makes an HTTP request to the server. The server responds with the `index.html` file, which is the entry point of the Angular app.
+When a user navigates to an Angular application, the browser makes an HTTP request to the server. The server responds 
+with the `index.html` file, which is the entry point of the Angular app.
 
 ### 2. Loading of Index.html
 
@@ -27,7 +29,10 @@ The `index.html` file contains the basic HTML structure and a `<base>` tag to sp
 
 ### 3. JavaScript Bundle and Angular Bootstrapping
 
-The main JavaScript bundle (e.g., `main.js`) contains the compiled Angular application code. It includes all the components, services, and dependencies. This bundle is loaded into the browser, and Angular bootstraps the application by initializing the root module (usually `AppModule`).
+The main JavaScript bundle (e.g., `main.js`) contains the compiled Angular application code. 
+It includes all the components, services, and dependencies. 
+This bundle is loaded into the browser, and Angular bootstraps the application by initializing the root module 
+(usually `AppModule`).
 
 **Example Root Module (`AppModule`)**:
 ```typescript
@@ -50,7 +55,8 @@ export class AppModule { }
 
 ### 4. Angular CLI Configuration
 
-The Angular CLI (`angular.json`) specifies the entry point for the application and how the build process should be configured. It defines the source files, output path, and other build options.
+The Angular CLI (`angular.json`) specifies the entry point for the application and how the build process should be configured.
+ It defines the source files, output path, and other build options.
 
 **Example `angular.json`**:
 ```json
@@ -150,7 +156,8 @@ Sure! Let's dive into each of these Angular concepts:
 ```
 
 **Two-Way Data Binding**:
-- **Definition**: Data flows bidirectionally between the component and the view. Changes in the view are reflected in the component, and vice versa.
+- **Definition**: Data flows bidirectionally between the component and the view. Changes in the view are reflected in the 
+component, and vice versa.
 - **Usage**: Achieved using the `[(ngModel)]` directive.
 
 **Example**:
@@ -452,3 +459,319 @@ You can create your own custom directives to encapsulate reusable behaviors.
 Angular directives provide a powerful way to create reusable, maintainable, and testable code by extending the capabilities of the DOM.
 
 If you have any more questions or need further details, feel free to ask!
+
+
+
+
+													ANGULAR ARCHITECTURE
+Modules - group related components,services etc and can import them into another module
+												
+Root Module
+	parent module of the app.solely responsible for bootstraping the application.
+Feature Module
+	group individual features. invertory module, billing module, shooping cart module
+Shared Module
+	to avoid code duplication. common services or functions that can be imported where ever required
+Core Module
+	generally our apps will have one core module which provides singleton services to our application
+	singleton services
+		services that must be instantiated only once or only exist once. example authentication service
+		
+Components (standalone)
+	usually components encapsulate html, css and typescript to generate a particular view
+	
+standalone components do not have to be included within a module
+import their dependencies directly using import statementin the file
+used to architect smaller, simpler angular apps
+
+
+Services
+	encapsulate business logic or some fucntions
+		utility functions/shared code 
+		business logic
+		backend,data access code like http
+	imported by modules or by other standalone components
+	
+	
+	
+===================================================
+https://app.pluralsight.com/ilx/video-courses/d5d30ea4-0af1-447a-b13a-e60a095337a6/0491e5a0-c6fd-4bfd-827b-27b85663a75a/e1ccbe1a-0053-4445-8ed8-6775804c9008
+node -v
+npm -v
+npm i -g @angular/cli@16.0.0
+ng v
+ng g c home
+
+git clone https://github.com/jmcooper/joes-robot-shop.git
+
+decorator - are javascript concepts to add metadata to your class. e.g @Component
+
+<app-home></app-home>	correct
+<app-home/>					wrong
+
+app-home - app is the prefix. must be unique. so we can change this prefixin angular.json which helps cli
+in angular json find this "prefix": "app", and change the value appropriately
+
+images by default will be loaded from src/assets because this is configured by cli in angular.json.
+and we can add our custom paths into assets array like say "src/app/home/images" but when you access leave off "src/" from 
+path
+
+component lifecycle
+
+ONCE					WHEN INPUT DATA CHANGES
+OnInit					OnChanges
+AfterContentInit		DoCheck
+AfterViewInit			AfterContentChecked
+OnDestroy				AfterViewChecked	
+
+
+										ANGULAR TEMPLATE SYNTAX
+Interpolation	
+	<h1> 2 + 2 = </h1> displays 2 + 2 =
+	<h1> 2 + 2 = {{2 + 2}} </h1> displays 2 + 2 = 4
+	alt = "{{product.name}}"
+	
+Attribute Binding
+	we use brackets to bind to expressions. expressions are evaluated and return a new value
+	[alt] = "product.name" - one way, from component class to html
+	[src] = "getImageUrl(product)" - 
+	
+Angular Directives
+	only recognized by angular *ngFor, *ngIf, ngClass
+	structural directive have asterisk meaning they change the structure of html - *ngFor, *ngIf
+	
+	<ul class="products">
+      <li class="product-item" *ngFor="let product of getFilteredProduct()">
+        <div class="product">
+          <div class="product-details">
+            <!-- <img src="{{ '/assets/images/robot-parts/' + product.imageName }}" alt="{{ product.na }}" /> -->
+            <!-- <img [src]="'/assets/images/robot-parts/' + product.imageName" [alt]="product.name" /> -->
+            <img [src]="getImageUrl(product)" [alt]="product.name" />
+            <div class="product-info">
+              <div class="name"> {{ product.name }}</div>
+              <div class="description"> {{ product.description }}</div>
+              <div class="category">Part Type: {{ product.category }}</div>
+            </div>
+          </div>
+	
+	<div *ngIf="product.discount === 0">${{ product.price.toFixed(2) }}</div>
+	<div class="discount" *ngIf="product.discount > 0"> ${{ (product.price * (1 - product.discount)).toFixed(2) }} </div>
+	
+Event Binding
+	we use parathesis to bind to statements. statemenst return no value but typically change state of the application
+	(click) = "filter='Heads'" = one way, from html to component class.
+	
+										Handling null values with a SAFE NAVIGATION OPERATORs
+say we are displaying array of products name and description like {{product.name}} and {{product.description}} using ul/li
+and one of product is null. the moment null object is encounterd {{product.name}} will faill with cannot read properties
+of null and html display is interrupted. so we can have product != null checks.but this isnot clean and cumbersome.
+Angular provides a better way to handle this using SAFE NAVIGATION OPERATOR as below	
+
+{{product?.name}} and {{product?.description}}.this is also valid {{shipping?.address?.city}}
+
+product!: Iproduct;
+
+! - tells compiler to ignore if product is not initialized
+										PIPES FOR FORMATTING DATA
+<div *ngIf="product.discount === 0">${{ product.price.toFixed(2) }}</div>
+<div class="discount" *ngIf="product.discount > 0"> ${{ (product.price * (1 - product.discount)).toFixed(2) }} </div>
+
+<div *ngIf="product.discount === 0">{{ product.price | currency }}</div>
+<div class="discount" *ngIf="product.discount > 0"> {{ (product.price * (1 - product.discount)) | currency }} </div>
+Now displays dollar symbol.
+
+to display in pound
+<div *ngIf="product.discount === 0">{{ product.price | currency:'GBP' }}</div>
+<div class="discount" *ngIf="product.discount > 0"> {{ (product.price * (1 - product.discount)) | currency:'GBP' }} </div>
+
+import { Pipe, PipeTransform } from '@angular/core';
+
+@Pipe({
+  name: 'capitalizeFirst'
+})
+export class CapitalizeFirstPipe implements PipeTransform {
+  transform(value: string): string {
+    if (!value) {
+      return value;
+    }
+    return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+  }
+}
+<p>{{ 'hello world' | capitalizeFirst }}</p>
+
+import { Pipe, PipeTransform } from '@angular/core';
+
+@Pipe({
+  name: 'multiParam'
+})
+export class MultiParamPipe implements PipeTransform {
+  transform(value: number, decimalPlaces: number, currencySymbol: string): string {
+    if (isNaN(value)) {
+      return value.toString();
+    }
+    return currencySymbol + value.toFixed(decimalPlaces);
+  }
+}
+<p>{{ 1234.5678 | multiParam:2:'$' }}</p>
+$1234.57																
+	
+	
+										STYLING ANGULAR COMPONENTS
+Applictaion-wide styling										
+CSS encapsulation - providing css for a particular component.
+	any css in particular component css file get applied to only that component
+ngClass and ngStyle changes style as state changes
+	<div [ngClass]="{strikethrough : product.discount > 0}">{{ product.price | currency:'GBP' }}</div>
+	<div [ngClass]="getCSSClasses(product)">{{ product.price | currency:'GBP' }}</div>
+	getCSSClasses(product: Iproduct){
+		return {strikethrough : product.discount > 0};
+		if(product.discount > 0)
+			return 'strikethrough'
+		else
+			return ''
+		if(product.discount > 0)
+			return 'strikethrough bold'
+		else
+			return ''
+		if(product.discount > 0)
+			return ['strikethrough', 'bold']
+		else
+			return []
+	}
+	
+ngStyle
+	<div [style.color]="'red'" [ngClass]="getCSSClasses(product)">{{ product.price | currency:'GBP' }}</div>
+	
+	<div [style.color]="product.discount  > 0 ? 'red' : ''" 
+		[ngClass]="getCSSClasses(product)">{{ product.price | currency:'GBP' }}</div>
+		
+	<div [ngStyle]="{'color': product.discount  > 0 ? 'red' : '' }" 
+		[ngClass]="getCSSClasses(product)">{{ product.price | currency:'GBP' }}</div>
+	
+CSS framework - third party css library like saas (.scss), bootstrap, tailwind	
+										
+										COMMUNICATING BETWEEN ANGULAR COMPONENTS
+One way communication Parent component to child component
+
+Parent   --  data  ->>    Child		@Input send data to child
+Parent   <<- event --    Child		@Output send events to parent		
+
+Parent
+	<li class="product-item" *ngFor="let product of getFilteredProduct()">
+		<bot-product-detail [product]="product"></bot-product-detail>
+	</li>
+Child
+	@Input() product!: Iproduct;	
+
+
+										CREATING AND USING ANGULAR SERVICES
+default dependency injection
+	1.create service
+		export class LoginService{}
+	2. dependency inject
+		export class LoginComponent(){
+			constructor(private loginsvc: LoginService){}
+			
+			handleLogin(){
+				this.loginsvc.login();
+			}
+		}
+		
+inject function		
+	do not use constructor injection rather
+	private cartService: CartService = inject(CartService); //inject is from @angular/core. issues in unit test
+	
+	
+	
+										HTTP
+Observables
+	dealing with asynchronous data
+	let observe = getSomeData();
+	observe.subscribe({
+		next: userData => {//process data},
+		error: error => {//handle error},
+		onComplete: () => {//handle complete}
+	});
+	observe.pipe(
+		//modify data
+	);
+	
+LEARN ABOUT PIPING STREAMS OF DATA
+
+SOURCE           PIPE TO TRANSFORM          SUBSCRIBE
+
+let obsv = from([1,2,3,4]);
+let obsv = from(4);
+
+obsv.pipe(
+	map( num => num + 1);
+);
+
+obsv.subscribe( data => console.log(data));  //5
+
+
+the obsevable we get from http do not have next method because once we receive data we dont need to emit anything
+
+let behav = new BehaviorSubject<number>();
+
+behav.subscribe(num => console.log(num));
+
+behav.next(1); //this is when we need to create our own observable and add/emit data.
+prints 1
+behav.next(2);
+prints 2
+	
+Proxy setup
+GET
+POST
+
+											ROUTES
+ng g m router --flat --module=app
+const routes : Routes = [
+	{path='home', component: HomeComponent,title: 'page title'},
+	{path='catalog', component: CatalogComponent,title: 'page title'},
+	{path='cart', component: CartComponent,title: 'page title'},
+	{path='inventory/:id', component: CartComponent,title: 'page title'},   //path param is mandatory, queryParama optional
+	{path: 'lazy', loadChildren: () => import('./lazy/lazy.module').then(m => m.LazyModule) }
+	{path='', redirectTo:'/home', pathMatch:'full'},
+];
+RouterModule.forRoot(routes)	
+export:[RouterModule]	
+
+<router-outlet></router-outlet>		
+
+<a routerLink='catalog' [queryParama] = {filter: 'heads'} routerActivate={cssclassname}>Heads	
+<a routerLink='catalog' [queryParama] = {filter: 'Toros'} routerActivate={cssclassname}>Toros
+<a routerLink='' routerActivate={cssclassname} routeeActivateOptions={exact:true}>	All
+
+this.router.navigate(['/catalog']);	
+this.route.queryParams.subscribe( (params) => {
+	this.filterValue = params['filter'];
+});		
+
+
+												Angular Forms
+Template driven
+Reactive Forms	
+
+Template driven
+	import FormsModule
+
+user.model.ts
+export interface IUserCredentials{
+	email: string;
+	password: string
+}	
+
+component.ts
+let credentials :IUserCredentials = {email : '', password : ''}
+component.html
+<input type="text" name="email" [(ngModel)] = "credentials.email"		//twoway binding. ngModel needs name attribute
+
+<form name="xxxx" (ngSubmit)="signIn()">
+<button type="submit" />
+</form>
+
+
+Template variables
+	

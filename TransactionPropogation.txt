@@ -47,3 +47,285 @@ If another transaction adds a new employee with a salary above that amount while
 the first transaction will see this new employee in subsequent reads, causing a phantom read.
 
 Phantom reads are prevented by the highest isolation level, SERIALIZABLE, which ensures complete isolation from other transactions.
+
+
+
+OPTIMISTIC AND PESSIMISTIC LOCKING are two strategies used to manage concurrent access to resources (like database records) 
+to prevent conflicts and ensure data consistency. Here’s a breakdown of each:
+
+### Pessimistic Locking
+Pessimistic locking assumes that conflicts between concurrent transactions are likely to occur. When a transaction needs to access a resource, it locks that resource, preventing other transactions from modifying it until the lock is released.
+
+- **How it works:**
+  - When a transaction reads or modifies a record, it obtains a lock on that record.
+  - Other transactions that try to access the locked record must wait until the lock is released.
+  - This approach ensures that conflicts are avoided, but it can lead to reduced concurrency and potential performance bottlenecks.
+
+- **Use case:**
+  - Suitable for scenarios where conflicts are expected to be frequent and the cost of resolving them is high.
+  - Example: A banking system where multiple transactions might update the same account balance.
+
+### Optimistic Locking
+Optimistic locking assumes that conflicts between concurrent transactions are rare. Transactions proceed without locking resources initially. Before committing changes, a check is performed to ensure that no other transaction has modified the resource.
+
+- **How it works:**
+  - When a transaction reads a record, it also retrieves a version number or a timestamp.
+  - The transaction performs its modifications.
+  - Before committing the changes, it checks the version number or timestamp to ensure that it hasn’t been changed by another transaction.
+  - If a conflict is detected (i.e., another transaction has modified the record), the current transaction is rolled back and may be retried.
+
+- **Use case:**
+  - Suitable for scenarios where conflicts are rare, and the overhead of locking is undesirable.
+  - Example: An online shopping system where users are adding items to their cart.
+
+Here’s a comparison table:
+
+| Aspect                 | Pessimistic Locking                          | Optimistic Locking                       |
+|------------------------|---------------------------------------------|------------------------------------------|
+| Assumption             | Conflicts are likely                        | Conflicts are rare                       |
+| Locking Mechanism      | Locks resources immediately                 | Checks for conflicts before committing   |
+| Concurrency            | Lower, due to resource locking              | Higher, as transactions proceed without locks initially |
+| Performance            | Can lead to bottlenecks                     | Better performance in low-conflict scenarios |
+| Use Case Example       | Banking system                              | Online shopping system                   |
+
+Both strategies have their pros and cons. The choice between them depends on the specific requirements and characteristics of your application.
+
+
+===============================================================================================================
+
+### Comparison Table:
+
+| Aspect                | JpaTransactionManager                | JtaTransactionManager                |
+|-----------------------|--------------------------------------|--------------------------------------|
+| Transaction Type      | Local (Single Data Source)           | Distributed (Multiple Data Sources)  |
+| Use Case              | Simple applications with a single database | Enterprise applications with multiple databases and resources |
+| Two-Phase Commit      | Not Supported                        | Supported                            |
+| Transaction Scope     | Single JPA EntityManagerFactory      | Multiple transactional resources     |
+
+### When to Use Which:
+- Use **JpaTransactionManager** when your application deals with transactions that are confined 
+		to a single JPA entity manager factory or a single data source.
+- Use **JtaTransactionManager** when your application requires distributed transactions involving 
+	multiple data sources or transactional resources, and you need to ensure data consistency across those resources.
+
+
+===============================================================================================================
+
+Sure! Let's dive into a real-world example of a distributed transaction using `JtaTransactionManager` involving multiple databases and a message queue, followed by an example of the two-phase commit protocol.
+
+### Real-World Example: Distributed Transaction with JtaTransactionManager
+
+Imagine an e-commerce application where an order placement involves updating multiple databases and sending a message to a message queue. Here's how you can configure and manage such a distributed transaction using `JtaTransactionManager`.
+
+1. **Dependencies:**
+   Ensure you have the necessary dependencies in your `pom.xml` or `build.gradle` file.
+
+   ```xml
+   <!-- pom.xml -->
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-data-jpa</artifactId>
+   </dependency>
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-activemq</artifactId>
+   </dependency>
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-jta-atomikos</artifactId>
+   </dependency>
+   <dependency>
+       <groupId>mysql</groupId>
+       <artifactId>mysql-connector-java</artifactId>
+   </dependency>
+   <dependency>
+       <groupId>org.postgresql</groupId>
+       <artifactId>postgresql</artifactId>
+   </dependency>
+   ```
+
+2. **Configuration:**
+   Configure the data sources and message queue in your `application.properties` file.
+
+   ```properties
+   # DataSource 1 (MySQL)
+   spring.datasource1.url=jdbc:mysql://localhost:3306/db1
+   spring.datasource1.username=root
+   spring.datasource1.password=password
+   spring.datasource1.driver-class-name=com.mysql.cj.jdbc.Driver
+
+   # DataSource 2 (PostgreSQL)
+   spring.datasource2.url=jdbc:postgresql://localhost:5432/db2
+   spring.datasource2.username=postgres
+   spring.datasource2.password=password
+   spring.datasource2.driver-class-name=org.postgresql.Driver
+
+   # ActiveMQ
+   spring.activemq.broker-url=tcp://localhost:61616
+   spring.activemq.user=admin
+   spring.activemq.password=admin
+   ```
+
+3. **Data Source Configuration Classes:**
+
+   ```java
+   // DataSource1Config.java
+   @Configuration
+   @Primary
+   @EnableTransactionManagement
+   @EnableJpaRepositories(
+       basePackages = "com.example.repository.datasource1",
+       entityManagerFactoryRef = "datasource1EntityManagerFactory",
+       transactionManagerRef = "transactionManager"
+   )
+   public class DataSource1Config {
+       
+       @Bean
+       @Primary
+       @ConfigurationProperties(prefix = "spring.datasource1")
+       public DataSource dataSource1() {
+           return DataSourceBuilder.create().build();
+       }
+
+       @Bean
+       @Primary
+       public LocalContainerEntityManagerFactoryBean datasource1EntityManagerFactory(
+           EntityManagerFactoryBuilder builder,
+           @Qualifier("dataSource1") DataSource dataSource1) {
+           return builder
+               .dataSource(dataSource1)
+               .packages("com.example.entity.datasource1")
+               .persistenceUnit("datasource1")
+               .build();
+       }
+   }
+   
+   // DataSource2Config.java
+   @Configuration
+   @EnableTransactionManagement
+   @EnableJpaRepositories(
+       basePackages = "com.example.repository.datasource2",
+       entityManagerFactoryRef = "datasource2EntityManagerFactory",
+       transactionManagerRef = "transactionManager"
+   )
+   public class DataSource2Config {
+       
+       @Bean
+       @ConfigurationProperties(prefix = "spring.datasource2")
+       public DataSource dataSource2() {
+           return DataSourceBuilder.create().build();
+       }
+
+       @Bean
+       public LocalContainerEntityManagerFactoryBean datasource2EntityManagerFactory(
+           EntityManagerFactoryBuilder builder,
+           @Qualifier("dataSource2") DataSource dataSource2) {
+           return builder
+               .dataSource(dataSource2)
+               .packages("com.example.entity.datasource2")
+               .persistenceUnit("datasource2")
+               .build();
+       }
+   }
+   ```
+
+4. **Transaction Manager Configuration:**
+
+   ```java
+   @Configuration
+   public class JtaConfig {
+
+       @Bean
+       public JtaTransactionManager transactionManager(UserTransaction userTransaction, TransactionManager transactionManager) {
+           return new JtaTransactionManager(userTransaction, transactionManager);
+       }
+   }
+   ```
+
+5. **Service Layer:**
+
+   ```java
+   @Service
+   public class OrderService {
+
+       @Autowired
+       private OrderRepository orderRepository;
+
+       @Autowired
+       private InventoryRepository inventoryRepository;
+
+       @Autowired
+       private JmsTemplate jmsTemplate;
+
+       @Transactional
+       public void placeOrder(Order order) {
+           // Save order to MySQL database
+           orderRepository.save(order);
+
+           // Update inventory in PostgreSQL database
+           inventoryRepository.updateInventory(order.getProductId(), order.getQuantity());
+
+           // Send message to ActiveMQ
+           jmsTemplate.convertAndSend("order.queue", order);
+       }
+   }
+   ```
+
+### Two-Phase Commit Protocol Example
+
+The two-phase commit (2PC) protocol ensures atomicity in distributed transactions. It consists of two phases: the prepare phase and the commit phase.
+
+1. **Prepare Phase:**
+   - The transaction manager asks all participating resources (databases, message queues) to prepare for the transaction.
+   - Each resource performs necessary checks and responds with a vote (commit or abort).
+
+2. **Commit Phase:**
+   - If all resources vote to commit, the transaction manager sends a commit message to all resources.
+   - If any resource votes to abort, the transaction manager sends a rollback message to all resources.
+
+Here’s a simplified example of the 2PC protocol:
+
+```java
+public class TwoPhaseCommitExample {
+
+    public static void main(String[] args) {
+        // Initialize transaction manager and resources
+        TransactionManager transactionManager = new TransactionManager();
+        Resource resource1 = new DatabaseResource("db1");
+        Resource resource2 = new DatabaseResource("db2");
+        Resource resource3 = new MessageQueueResource("mq1");
+
+        // Begin transaction
+        transactionManager.begin();
+
+        try {
+            // Prepare phase
+            boolean allPrepared = resource1.prepare() && resource2.prepare() && resource3.prepare();
+
+            if (allPrepared) {
+                // Commit phase
+                resource1.commit();
+                resource2.commit();
+                resource3.commit();
+                transactionManager.commit();
+            } else {
+                // Rollback phase
+                resource1.rollback();
+                resource2.rollback();
+                resource3.rollback();
+                transactionManager.rollback();
+            }
+        } catch (Exception e) {
+            // Handle exceptions and rollback
+            resource1.rollback();
+            resource2.rollback();
+            resource3.rollback();
+            transactionManager.rollback();
+        }
+    }
+}
+```
+
+In this example, the `TransactionManager` coordinates the transaction across multiple resources (two databases and a message queue) using the 2PC protocol. Each resource implements the `prepare`, `commit`, and `rollback` methods to handle the transaction phases.
+
+I hope this helps! If you have any more questions or need further clarification, feel free to ask.

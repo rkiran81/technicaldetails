@@ -1,0 +1,738 @@
+CREATE TABLE employees (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    email VARCHAR(100),
+    hire_date DATE
+);
+
+
+use library;
+create tableifnot exists Library(
+typecode varchar(255),
+typesubcode varchar(255),
+typename varchar(255),
+primary key(typecode, typesubcode)
+);
+
+spring.datasource1.url=jdbc:mysql://localhost:3306/db1
+spring.datasource1.username=root
+spring.datasource1.password=password
+spring.datasource1.driver-class-name=com.mysql.cj.jdbc.Driver
+
+spring.datasource2.url=jdbc:mysql://localhost:3306/db2
+spring.datasource2.username=root
+spring.datasource2.password=password
+spring.datasource2.driver-class-name=com.mysql.cj.jdbc.Driver
+
+spring.datasource.url= jdbc:mysql://localhost:3306/javatechie
+spring.datasource.username = root
+spring.datasource.password = Password
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.jpa.hibernate.ddl-auto = update
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL5Dialect
+spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=password
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.jpa.hibernate.ddl-auto=update
+
+
+@Primary
+@Bean(name = "datasource1")
+@ConfigurationProperties(prefix = "spring.datasource1")
+public DataSource dataSource1() {
+	return new DriverManagerDataSource();
+}
+
+@Bean(name = "datasource2")
+@ConfigurationProperties(prefix = "spring.datasource2")
+public DataSource dataSource2() {
+	return new DriverManagerDataSource();
+}
+
+@Primary
+@Bean(name = "jdbcTemplate1")
+public JdbcTemplate jdbcTemplate1(@Qualifier("datasource1") DataSource ds) {
+	return new JdbcTemplate(ds);
+}
+
+@Bean(name = "jdbcTemplate2")
+public JdbcTemplate jdbcTemplate2(@Qualifier("datasource2") DataSource ds) {
+	return new JdbcTemplate(ds);
+}
+
+
+
+persistence.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="3.0" xmlns="https://jakarta.ee/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+    <!-- Define Persistence Unit -->
+    <persistence-unit name="library_persistence_unit" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+        <properties>
+            <property name="jakarta.persistence.jdbc.driver" value="org.mariadb.jdbc.Driver" />
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:mariadb://localhost:3306/library" />
+            <property name="jakarta.persistence.jdbc.user" value="root" />
+            <property name="jakarta.persistence.jdbc.password" value="mariadb" />
+            <property name="hibernate.show_sql" value="true" />
+        </properties>
+    </persistence-unit>
+</persistence>
+
+EntityManagerFactory emf = Persistence.createEntityManagerFactory("library_persistence_unit");//persistence unit name
+EntityManager em = emf.createEntityManager();
+
+implement PersistenceUnitInfo and ovveride methods to return 
+	getPersistenceUnitName, getPersistenceProviderClassName, getTransactionType, 
+	//if we use persistence.xml hibernate willuseits internal implementation of data source
+	getNonJTADatasource (Hikari)         
+			HikariDataSource hikari = new HikariDataSource
+			hikari.setjdbcurl,hikari.setusername, hikari.setpassword,
+	getManagedClassNames
+
+	
+
+
+
+
+												### `@OneToOne` Relationship
+												
+- **`@JoinColumn`**: Used to specify the foreign key column.
+- **`@MappedBy`**: Used to specify the field that owns the relationship.
+
+#### Example:
+```java
+@Entity
+public class Address {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @OneToOne(mappedBy = "address")
+    private Person person;
+}
+
+@Entity
+public class Person {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @OneToOne
+    @JoinColumn(name = "address_id")
+    private Address address;
+}
+```
+
+- `Person` entity owns the relationship. The foreign key `address_id` is in the `Person` table.
+- `Address` entity refers to `Person` using the `mappedBy` attribute.
+
+
+										join table not used in one to one
+import javax.persistence.*;
+
+@Entity
+public class Person {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @OneToOne
+    @JoinTable(
+        name = "person_address",
+        joinColumns = @JoinColumn(name = "person_id"),
+        inverseJoinColumns = @JoinColumn(name = "address_id")
+    )
+    private Address address;
+
+    // Getters and Setters
+}
+
+@Entity
+public class Address {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @OneToOne(mappedBy = "address")
+    private Person person;
+
+    // Getters and Setters
+}
+
+										
+										### `@OneToMany` Relationship
+- **`@JoinColumn`**: Used to specify the foreign key column in the owning entity.
+- **`@MappedBy`**: Used to specify the field in the owning entity that maps the relationship.
+
+#### Example:
+```java
+import javax.persistence.*;
+import java.util.List;
+
+@Entity
+public class Department {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+
+    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Employee> employees;
+
+    // Getters and Setters
+}
+
+
+import javax.persistence.*;
+
+@Entity
+public class Employee {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+
+    @ManyToOne
+    @JoinColumn(name = "department_id")
+    private Department department;
+
+    // Getters and Setters
+}
+
+```
+
+- `Employee` entity owns the relationship. The foreign key `department_id` is in the `Employee` table.
+- `Department` entity refers to `Employee` using the `mappedBy` attribute.
+
+												join table not used in one to many
+
+import javax.persistence.*;
+
+@Entity
+public class Department {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @OneToMany
+    @JoinTable(
+        name = "department_employee",
+        joinColumns = @JoinColumn(name = "department_id"),
+        inverseJoinColumns = @JoinColumn(name = "employee_id")
+    )
+    private List<Employee> employees;
+
+    // Getters and Setters
+}
+
+@Entity
+public class Employee {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinTable(
+        name = "department_employee",
+        joinColumns = @JoinColumn(name = "employee_id"),
+        inverseJoinColumns = @JoinColumn(name = "department_id")
+    )
+    private Department department;
+
+    // Getters and Setters
+}
+
+
+
+
+### `@ManyToMany` Relationship
+- **`@JoinColumn`**: Typically used in a join table.
+- **`@MappedBy`**: Used to specify the owning side of the relationship.
+
+#### Example:
+```java
+@Entity
+public class Student {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToMany(mappedBy = "students")
+    private List<Course> courses;
+}
+
+@Entity
+public class Course {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToMany
+    @JoinTable(
+        name = "student_course",
+        joinColumns = @JoinColumn(name = "course_id"),
+        inverseJoinColumns = @JoinColumn(name = "student_id")
+    )
+    private List<Student> students;
+}
+```
+
+- `Course` entity owns the relationship. The join table `student_course` links `Course` and `Student`.
+- `Student` entity refers to `Course` using the `mappedBy` attribute.
+
+### What Happens If They Are Omitted?
+
+- **Without `@JoinColumn`**: 
+  - For `@OneToOne` and `@ManyToOne`, the foreign key column name will default to `<field_name>_id`.
+  - For `@ManyToMany`, a default join table name and column names will be generated.
+
+- **Without `@MappedBy`**:
+  - For `@OneToOne` and `@OneToMany`, both sides will assume ownership, potentially resulting in multiple foreign keys.
+  - For `@ManyToMany`, it will create a duplicate join table, as both sides will think they own the relationship.
+
+Using these annotations properly ensures the relationships are correctly mapped and maintained. Feel free to ask if you need more details!
+
+
+												INHERITANCE STRATEGIES
+
+
+JPA (Java Persistence API) provides different inheritance strategies for mapping an inheritance hierarchy of entity classes to a database. There are three primary strategies:
+
+
+In JPA, the `@MappedSuperclass` inheritance strategy is used to define common properties and mappings that can be shared across multiple entity classes. The `@MappedSuperclass` annotation marks a class whose properties will be inherited by subclasses, but it itself is not an entity and won't be persisted directly in the database.
+
+### Characteristics of `@MappedSuperclass`:
+- **Not an Entity**: Classes annotated with `@MappedSuperclass` are not entities themselves. They don't get their own tables in the database.
+- **Common Properties**: These classes can contain common properties and mappings that will be inherited by all subclasses.
+- **Inheritance**: Subclasses of the `@MappedSuperclass` inherit its properties and can be entities themselves, which will be mapped to database tables.
+
+### Example:
+
+#### Mapped Superclass:
+```java
+import javax.persistence.MappedSuperclass;
+
+@MappedSuperclass
+public abstract class BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String createdBy;
+    private LocalDateTime createdDate;
+
+    // Getters and Setters
+}
+```
+- The `BaseEntity` class contains common properties like `id`, `createdBy`, and `createdDate` which are shared among different entity classes.
+
+#### Subclass Entities:
+```java
+import javax.persistence.Entity;
+
+@Entity
+public class Customer extends BaseEntity {
+    private String name;
+    private String email;
+
+    // Getters and Setters
+}
+
+@Entity
+public class Order extends BaseEntity {
+    private String orderNumber;
+    private LocalDate orderDate;
+
+    // Getters and Setters
+}
+```
+- The `Customer` and `Order` classes inherit the properties from `BaseEntity` and are mapped to their respective tables in the database.
+
+### Advantages of `@MappedSuperclass`:
+- **Code Reusability**: Allows you to define common properties and mappings in one place and reuse them across multiple entity classes.
+- **Consistency**: Ensures consistent mappings and properties across different entity classes.
+- **Maintenance**: Easier to maintain and update common properties and mappings.
+
+### Key Points:
+- **No Table**: The `@MappedSuperclass` itself does not have a table in the database. Only the subclasses have tables.
+- **Inheritance**: Subclasses inherit the properties and mappings from the `@MappedSuperclass`.
+- **Usage**: Typically used for defining common properties like `id`, audit fields (`createdBy`, `createdDate`), and other shared attributes.
+
+By using the `@MappedSuperclass` annotation, you can create a base class with common properties and mappings that can be inherited by multiple entity classes, making your code more modular and easier to maintain.
+
+Feel free to ask if you have any more questions or need further clarification!
+
+
+### 1. **Single Table Inheritance**:
+In this strategy, all classes in the hierarchy are mapped to a single database table. This table contains columns for all fields of the classes in the hierarchy, including a discriminator column to differentiate between the different types.
+
+#### Example:
+```java
+@Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "type")
+public abstract class Person {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+}
+
+@Entity
+@DiscriminatorValue("STUDENT")
+public class Student extends Person {
+    private String course;
+}
+
+@Entity
+@DiscriminatorValue("TEACHER")
+public class Teacher extends Person {
+    private String subject;
+}
+```
+
+- **Table**: A single table named `person` with columns `id`, `name`, `course`, `subject`, and `type`.
+- **Advantages**: Simple schema, no joins required for polymorphic queries.
+- **Disadvantages**: Potential for many null values, limited column size.
+
+### 2. **Joined Table Inheritance**:
+In this strategy, each class in the hierarchy is mapped to its own table. The base class table contains common fields, and each subclass table contains specific fields, along with a foreign key reference to the base table.
+
+#### Example:
+```java
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+public abstract class Person {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+}
+
+@Entity
+public class Student extends Person {
+    private String course;
+}
+
+@Entity
+public class Teacher extends Person {
+    private String subject;
+}
+```
+
+- **Tables**: Separate tables for `person`, `student`, and `teacher`. The `student` and `teacher` tables have foreign key references to `person`.
+- **Advantages**: Normalized schema, no null values.
+- **Disadvantages**: Joins required for polymorphic queries.
+
+### 3. **Table Per Class Inheritance**:
+In this strategy, each class in the hierarchy is mapped to its own table, including the base class. 
+There are no foreign keys or joins required between the tables.
+
+#### Example:
+```java
+@Entity
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+public abstract class Person {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+}
+
+@Entity
+public class Student extends Person {
+    private String course;
+}
+
+@Entity
+public class Teacher extends Person {
+    private String subject;
+}
+```
+
+- **Tables**: Separate tables for `person`, `student`, and `teacher`, each containing their respective fields.
+- **Advantages**: Simple queries for specific types, each table contains only relevant fields.
+- **Disadvantages**: Duplicates common fields across tables, polymorphic queries require union queries.
+
+### Choosing the Right Strategy
+- **Single Table**: Best for simple hierarchies with few fields and limited null values.
+- **Joined Table**: Best for complex hierarchies with many fields and minimal null values.
+- **Table Per Class**: Best for hierarchies where each class is significantly different from the others.
+
+Feel free to ask if you have more questions or need further clarification on any of these strategies!
+
+
+
+											CRITERIA QUERY API
+import javax.persistence.*;
+import javax.persistence.criteria.*;
+import java.util.List;
+
+public class ProductService {
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    public List<Product> getProducts(String category, Double minPrice, Double maxPrice, Boolean available) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Product> cq = cb.createQuery(Product.class);
+		
+        Root<Product> product = cq.from(Product.class);
+
+        Predicate categoryPredicate = cb.equal(product.get("category"), category);
+        Predicate pricePredicate = cb.between(product.get("price"), minPrice, maxPrice);
+        Predicate availablePredicate = cb.equal(product.get("available"), available);
+
+        cq.select(product)
+          .where(cb.and(categoryPredicate, pricePredicate, availablePredicate));
+
+        return entityManager.createQuery(cq).getResultList();
+    }
+}
+
+import javax.persistence.*;
+import javax.persistence.criteria.*;
+import java.util.List;
+
+public class OrderService {
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    public List<Order> getOrdersWithCustomerDetails(String orderStatus) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Order> cq = cb.createQuery(Order.class);
+        Root<Order> order = cq.from(Order.class);
+        Join<Order, Customer> customer = order.join("customer");
+
+        Predicate statusPredicate = cb.equal(order.get("status"), orderStatus);
+
+        cq.select(order)
+          .where(statusPredicate)
+          .orderBy(cb.asc(order.get("orderDate")));
+
+        return entityManager.createQuery(cq).getResultList();
+    }
+}
+
+import javax.persistence.*;
+import javax.persistence.criteria.*;
+import java.util.List;
+
+public class ProductService {
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    public List<Product> getProducts(int page, int size, String sortBy, String sortOrder) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Product> cq = cb.createQuery(Product.class);
+        Root<Product> product = cq.from(Product.class);
+
+        if ("asc".equalsIgnoreCase(sortOrder)) {
+            cq.orderBy(cb.asc(product.get(sortBy)));
+        } else {
+            cq.orderBy(cb.desc(product.get(sortBy)));
+        }
+
+        TypedQuery<Product> query = entityManager.createQuery(cq);
+        query.setFirstResult(page * size);
+        query.setMaxResults(size);
+
+        return query.getResultList();
+    }
+}
+
+
+import javax.persistence.*;
+import javax.persistence.criteria.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Date;
+
+public class OrderService {
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    public List<Order> searchOrders(String customerName, Date startDate, Date endDate, Double minOrderTotal) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Order> cq = cb.createQuery(Order.class);
+        Root<Order> order = cq.from(Order.class);
+        Join<Order, Customer> customer = order.join("customer");
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (customerName != null && !customerName.isEmpty()) {
+            predicates.add(cb.like(customer.get("name"), "%" + customerName + "%"));
+        }
+        if (startDate != null && endDate != null) {
+            predicates.add(cb.between(order.get("orderDate"), startDate, endDate));
+        }
+        if (minOrderTotal != null) {
+            predicates.add(cb.greaterThanOrEqualTo(order.get("totalAmount"), minOrderTotal));
+        }
+
+        cq.select(order)
+          .where(predicates.toArray(new Predicate[0]));
+
+        return entityManager.createQuery(cq).getResultList();
+    }
+}
+											
+
+
+
+
+java list of integers find the sum of sqares that are even numbers and also divisible by 4
+import java.util.Arrays;
+import java.util.List;
+
+public class Main {
+    public static void main(String[] args) {
+        List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+
+        int sumOfSquares = numbers.stream()
+                                  .map(n -> n * n) // Square each number
+                                  .filter(n -> n % 2 == 0 && n % 4 == 0) // Filter even numbers divisible by 4
+                                  .reduce(0, Integer::sum); // Sum the filtered numbers
+
+        System.out.println("Sum of squares of even numbers divisible by 4: " + sumOfSquares);
+    }
+}
+
+
+
+java given list of integers find the sum of sqares that are even numbers and also divisible by 4 that are at odd index
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.IntStream;
+
+public class Main {
+    public static void main(String[] args) {
+        List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+
+        int sumOfSquares = IntStream.range(0, numbers.size())
+                                    .filter(i -> i % 2 != 0) // Filter odd indices
+                                    .map(i -> numbers.get(i)) // Get the element at the odd index
+                                    .map(n -> n * n) // Square each number
+                                    .filter(n -> n % 2 == 0 && n % 4 == 0) // Filter even numbers divisible by 4
+                                    .sum(); // Sum the filtered numbers
+
+        System.out.println("Sum of squares of even numbers divisible by 4 at odd indices: " + sumOfSquares);
+    }
+}
+
+
+https://github.com/ombharatiya/FAANG-Coding-Interview-Questions
+
+
+====================================================================N+1 Hibernate====================================================================
+The N+1 problem in Hibernate (and other Object-Relational Mapping (ORM) frameworks) is a common performance issue that arises when an application executes N+1 SQL queries to retrieve related data. This usually happens when fetching a collection of entities and their associated entities.
+
+### N+1 Problem Explained:
+1. **Scenario:**
+   - You have an entity `Author` that has a one-to-many relationship with the entity `Book`.
+   - You want to fetch a list of authors and their books.
+
+2. **N+1 Queries:**
+   - The first query fetches the list of authors (`N` authors).
+   - For each author, a separate query is executed to fetch the associated books.
+   - If there are `N` authors, you end up with `N+1` queries (1 query for the authors and `N` queries for the books).
+
+### Example:
+Suppose you have the following entities:
+
+```java
+@Entity
+public class Author {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+
+    @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
+    private List<Book> books;
+}
+
+@Entity
+public class Book {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String title;
+
+    @ManyToOne
+    @JoinColumn(name = "author_id")
+    private Author author;
+}
+```
+
+Fetching authors and their books:
+
+```java
+List<Author> authors = entityManager.createQuery("SELECT a FROM Author a", Author.class).getResultList();
+
+for (Author author : authors) {
+    System.out.println(author.getName());
+    for (Book book : author.getBooks()) {
+        System.out.println("  " + book.getTitle());
+    }
+}
+```
+
+This code will result in N+1 queries, where `N` is the number of authors.
+
+### Solution: Using Fetch Joins
+To solve the N+1 problem, you can use fetch joins to retrieve the related entities in a single query.
+
+### Example of Fetch Join:
+
+```java
+List<Author> authors = entityManager.createQuery(
+    "SELECT a FROM Author a LEFT JOIN FETCH a.books", Author.class).getResultList();
+
+for (Author author : authors) {
+    System.out.println(author.getName());
+    for (Book book : author.getBooks()) {
+        System.out.println("  " + book.getTitle());
+    }
+}
+```
+
+This approach ensures that Hibernate fetches authors and their books in a single query, thus eliminating the N+1 problem.
+
+### Another Solution: Entity Graphs
+You can also use entity graphs to specify which associations should be fetched eagerly.
+
+### Example of Entity Graph:
+
+```java
+@Entity
+@NamedEntityGraph(
+    name = "Author.books",
+    attributeNodes = @NamedAttributeNode("books")
+)
+public class Author {
+    // ... fields and annotations ...
+}
+
+// Fetching with Entity Graph
+EntityGraph<?> entityGraph = entityManager.getEntityGraph("Author.books");
+Map<String, Object> properties = new HashMap<>();
+properties.put("javax.persistence.loadgraph", entityGraph);
+
+List<Author> authors = entityManager.createQuery("SELECT a FROM Author a", Author.class)
+    .setHint("javax.persistence.loadgraph", entityGraph)
+    .getResultList();
+```
+
+### Summary:
+
+The N+1 problem can significantly impact the performance of your application. By using fetch joins or entity graphs, you can optimize your queries and reduce the number of database round-trips, resulting in better performance.
+
+If you have any further questions or need additional help, feel free to ask!
+========================================================================================================================================

@@ -3,6 +3,9 @@ https://github.com/reactive-streams/reactive-streams-jvm/blob/master/README.md#s
 
 https://gist.github.com/jsturgis/3b19447b304616f18657
 
+https://projectreactor.io/docs
+https://www.reactive-streams.org/
+
 twilio recovery - GF7YHQEJAY9NQ8V13HB4XS4N
 Account SID	-	ACd46a37ba2779b659c7a9bee1a3ed3763
 Auth Token	-	9c3443a1a753d230648a04717537e3df
@@ -13,6 +16,9 @@ why we need reactive programming
 when to use reactive programming
 
 New programming paradigm
+Goal of reactive programming
+streams of data arriving to your application at the rate you cannot control is where we use reactive programming
+
 Asynchronous and non blocking
 	requests are received by threads which delegate to db and return back.
 	once its notified it will return response
@@ -740,3 +746,66 @@ merge/mergeWith
 mergeSequential
 zip
 Mono defer								
+
+
+
+
+										DEVOXX
+Publisher<Music>
+Subscriber<Music>
+	void onSubscribe(Subscription)
+	void onNext(Music m)
+	void onError(Throwable t)
+	void onComplete()
+Subscription[Music]
+	void request(long)
+	void cancel()
+	
+Project reactor is for backend java
+RxJava is for Android
+
+Flux.of(1,2,3)
+Flux.fromIterable(list)
+Flux.just(1)
+Flux.empty()
+
+for null data  -  Mono.empty()
+no return data -  Mono<Void>	
+
+avoid subscribe()/block() is illegal
+
+block() - legal at app startup, blocking MQ listener, @scheduled - reactorcontext does not propagate
+
+use R2bdcRepository instead of JPArepository in reactive app
+
+SecurityContextHolder -> ReactiveSecurityContextHolder
+
+Mono.zip - for parallelization
+switchIfEmpty - This method is used in reactive programming when you want to provide an alternative source of data if the original source is 
+				empty. If the original Mono or Flux is empty, switchIfEmpty will switch to the provided alternative Mono or Flux.
+filterWhen - This method allows you to filter elements of a Flux based on a condition provided by another Mono or Flux. 
+			The elements are retained if the Mono or Flux returned by the provided function emits true.
+delayUntil - This method delays the emission of each element from the Flux or Mono until another Publisher (such as Mono or Flux) completes. 
+			It ensures that the elements are only emitted after the specified condition is met.
+single - This method ensures that the Mono or Flux emits exactly one item or completes. If the source emits more than one item, it will result in an error.
+then- This method allows you to execute a sequence of actions after the current Mono or Flux completes. It is often used for chaining reactive operations in a specific order.
+Mono.zip - The Mono.zip method in Spring Reactive programming is used to combine multiple Mono sources into a new Mono by combining their 
+			emitted items. This is useful when you need to aggregate the results of several asynchronous operations.
+			The Mono.zip method can take a variable number of sources and a combinator function to create a result from the combined values:
+Sinks.Many<T> eventsSink = Sinks.many().multicast().directBestBuffer(); //does not buffer if conn down. try backpressure();
+eventsSink.tryEmitNext(T t);					//use sink and emit events from a source like rabbitMQ,kafka consumer methods
+eventsSink.asFlux().filter().map() -> Flux<T>
+collectList()
+
+
+Test
+StepVerifier - helps to subscribe with verify()
+Stepverifier.create(flux) // returns all
+Stepverifier.create(flux, long) // returns requested amount of data
+Stepverifier.create(flux).expectNext(comma separated values).expectComplete().verify();	
+Stepverifier.create(flux).expectNext(comma separated values).expectError(someexception.class).verify();	
+
+Flux.interval(Duration.ofMillis(100)); // infinite
+Flux.interval(Duration.ofMillis(100)).take(10); // emits 10 events
+
+Mono.never(); // never emit a signal

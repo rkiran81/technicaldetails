@@ -163,6 +163,10 @@ how can we ensure consistency of cached data in distributed cache
 two collections in mongo db, how will you retrieve and send as Flux
 
 weak cohensions in a class
+Weak cohesion in a class refers to a situation where the elements of the class (such as methods and fields) are not closely 
+related or unified. This often results in a class that has multiple, unrelated responsibilities, 
+making it harder to maintain, understand, and test. 
+Cohesion is a measure of how strongly-related and focused the responsibilities of a class are.
 
 4 partition and 2 consumer
 Partition Assignment

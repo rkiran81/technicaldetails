@@ -614,3 +614,91 @@ in PCF bind our service and circitbreaker
 
 
 										Microservice - Cloud Config Server in Pivotal Cloud Foundry
+										
+						how many consurrent requests can a tomcat server handle say per second or per minute	
+
+									
+<Connector port="8080" protocol="HTTP/1.1"
+           connectionTimeout="20000"
+           redirectPort="8443"
+           maxThreads="200"
+           acceptCount="100"
+           maxConnections="1000" />
+maxThreads: 
+	This parameter in the server.xml file specifies the maximum number of request processing threads to be created by the 
+	server. Each thread can handle one request at a time. Increasing this value allows Tomcat to handle more concurrent 
+	requests, but setting it too high can lead to resource exhaustion.	
+acceptCount: 
+	This parameter specifies the maximum queue length for incoming connection requests when all request processing threads 
+	are in use. Requests that cannot be queued will be rejected.	
+maxConnections: 
+	This parameter specifies the maximum number of connections that the server will accept and process at any given time. 
+	This includes both active and idle connections.	
+Performance Considerations
+		Hardware, Application Logic and Database and External Services
+		
+	
+which is the best web server to handle more concurrent requests between tomcat,undertow, netty
+Tomcat: 
+	Generally performs well for traditional web applications but may struggle with very high concurrency due to its 
+	thread-per-request model.
+
+Undertow: 
+	Offers better performance and resource utilization for high-concurrency scenarios due to its non-blocking architecture.
+
+Netty: 
+	Excels in high-concurrency environments, providing the best performance and scalability among the three.
+	It uses an event-driven model, which allows it to handle multiple requests per thread.
+	
+	
+	
+													12 factors
+Codebase:
+	One codebase tracked in revision control, many deploys. Each microservice should have its own codebase, 
+	which is tracked in a version control system (like Git). Multiple environments (e.g., development, staging, production) 
+	are based on the same codebase.
+
+Dependencies:
+	Explicitly declare and isolate dependencies. Each microservice should explicitly declare its dependencies and use a 
+	dependency management tool (like Maven or Gradle for Java, npm for Node.js) to isolate them.
+
+Config:
+	Store config in the environment. Configuration, such as database connection strings or API keys, should be stored in 
+	the environment and not hardcoded in the codebase.
+
+Backing Services:
+	Treat backing services as attached resources. Backing services (like databases, message queues, or external APIs) 
+	should be treated as attached resources and accessed via configuration.
+
+Build, Release, Run:
+	Strictly separate build and run stages. The build stage converts the code repository into an executable bundle, 
+	the release stage combines the build with the environment configuration, and the run stage runs the app in the 
+	execution environment.
+
+Processes:
+	Execute the app as one or more stateless processes. Microservices should be stateless and share nothing. 
+	State should be stored in a backing service.
+
+Port Binding:
+	Export services via port binding. Microservices should expose their functionality by binding to a port and listening 
+	for incoming requests.
+
+Concurrency:
+	Scale out via the process model. Scale out applications by running multiple instances of the service, enabling 
+	horizontal scaling.
+
+Disposability:
+	Maximize robustness with fast startup and graceful shutdown. Services should start up and shut down quickly and 
+	gracefully, allowing them to be resilient and robust.
+
+Dev/Prod Parity:
+	Keep development, staging, and production as similar as possible. Reduce the gap between development and production 
+	to ensure that changes are deployed reliably and consistently.
+
+Logs:
+	Treat logs as event streams. Logging should be treated as event streams that can be aggregated, indexed, and analyzed.
+
+Admin Processes:
+	Run admin/management tasks as one-off processes. Administrative or maintenance tasks should be run as one-off 
+	processes in the same environment as the application.													
+										

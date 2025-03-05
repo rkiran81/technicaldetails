@@ -1,0 +1,23 @@
+devoxx
+
+
+https://www.meetup.com/european-software-crafters/
+https://victorrentea/community
+youtube.com/vrentea
+
+
+Goal of reactive programming
+streams of data arriving to your application at the rate you cannot control is where we use reactive programming
+
+Publisher<Music>
+Subscriber<Music>
+	void onSubscribe(Subscription)
+	void onNext(Music m)
+	void onError(Throwable t)
+	void onComplete()
+Subscription[Music]
+	void request(long)
+	void cancel()
+	
+Project reactor is for backend java
+RxJava is for Android

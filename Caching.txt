@@ -22,6 +22,19 @@ Here are some common caching strategies:
    - **Description**: Distributes content across multiple servers globally to reduce latency.
    - **Examples**: Using services like Cloudflare or Akamai.
    - **Use Case**: Best for applications with a global audience and high traffic.
+   
+	spring.resources.static-locations=https://your-cdn-url/
+	@Configuration
+	public class WebConfig implements WebMvcConfigurer {
+
+		@Override
+		public void addResourceHandlers(ResourceHandlerRegistry registry) {
+			registry.addResourceHandler("/**")
+					.addResourceLocations("classpath:/static/")
+					.setCachePeriod(3600) // Cache for 1 hour
+					.resourceChain(true);
+		}
+	}
 
 ### Choosing the Right Caching Strategy
 The choice of caching strategy depends on several factors, including the nature of your application, the type of data being cached, and the expected load on your system. Here are some considerations to help you decide:
@@ -132,6 +145,107 @@ Ensuring the consistency of cached data in a distributed cache system can be cha
 
 ### 7. **Monitoring and Alerts**
    - Implement monitoring and alerting for cache hits, misses, and performance. This helps to identify issues and optimize cache usage.
+
+How Eventual Consistency is Implemented
+
+Replication: 
+	Data is replicated across multiple nodes. Each node has a copy of the data, and updates can be made to any of the 
+	replicas.
+
+Propagation: 
+	When a data item is updated on one replica, the change is propagated to other replicas asynchronously. 
+	The system does not wait for the update to be applied on all replicas before acknowledging the operation.
+
+Conflict Resolution: 
+	In cases where conflicting updates occur (e.g., two updates made to the same data item on different replicas), 
+	conflict resolution mechanisms are employed to ensure consistency. Common techniques include:
+
+	LAST WRITE WINS: The most recent update based on timestamp is considered the correct version.
+	MERGE FUNCTION: A custom function is used to merge conflicting updates.
+
+Gossip Protocol: 
+	Nodes periodically exchange information with each other to ensure data convergence. 
+	This can be done using gossip protocols, where each node randomly contacts other nodes to synchronize their state.
+
+Client-Side Considerations: 
+	Clients interacting with the system should be aware that data may be temporarily inconsistent. 
+	Techniques like READ REPAIR (checking and fixing inconsistencies during read operations) 
+	and QUORUM READS/WRITES (requiring a majority of nodes to agree on the value) can be used to mitigate the impact of 
+	inconsistencies.
+
+
+Use distributed locking mechanisms to ensure that only one instance of the application can update the cache at a time
+
+<dependencies>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.redisson</groupId>
+        <artifactId>redisson-spring-boot-starter</artifactId>
+        <version>3.16.5</version>
+    </dependency>
+</dependencies>
+
+
+spring.redis.host=localhost
+spring.redis.port=6379
+spring.redis.password=yourpassword
+
+
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class RedissonConfig {
+
+    @Bean
+    public RedissonClient redissonClient() {
+        Config config = new Config();
+        config.useSingleServer().setAddress("redis://localhost:6379").setPassword("yourpassword");
+        return Redisson.create(config);
+    }
+}
+
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.concurrent.TimeUnit;
+
+@Service
+public class CacheService {
+
+    @Autowired
+    private RedissonClient redissonClient;
+
+    public void updateCache() {
+        RLock lock = redissonClient.getLock("cacheLock");
+
+        try {
+            // Try to acquire the lock
+            if (lock.tryLock(10, 30, TimeUnit.SECONDS)) {
+                try {
+                    // Perform cache update operation
+                    System.out.println("Updating cache...");
+                    // Add your cache update logic here
+                } finally {
+                    lock.unlock(); // Always release the lock in a finally block
+                }
+            } else {
+                System.out.println("Could not acquire lock");
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
 
 ### Example: Using Redis for Distributed Caching
 Here's an example of how to use Redis for distributed caching in a Spring Boot application and ensure data consistency using a combination of the above strategies:

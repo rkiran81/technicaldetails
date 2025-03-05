@@ -20,7 +20,8 @@ now the client is unware of this. This is where SSL certificates come into pictu
 SSL Issuer/Let's Encrypt
 1. server shares its public key and sever url to issuer and asks for certificates
 2. issuer also has a private and public key.
-3. issuer creates a certificate using the server url and creates certificate, using a signature equal to server pub key + issuer pub key
+3. issuer creates a certificate using the server url and creates certificate, 
+	using a signature equal to server pub key + issuer pub key
 4. now during client server interaction server shares its asymmetric public and certificate to client.
 5. client contacts issuer and receives its public key and client verfies that public key is same as in certificate.
 6. if same then its assured that server aymmetric public key is not changed by any hacker.

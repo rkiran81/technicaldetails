@@ -1,0 +1,129 @@
+SO: 41134107
+WFM ID
+218995
+HM ID
+164627
+
+Java 8, spring boot, spring security, spring batch, spring data, Angular, Hibernate, Kafka, GraphQL, MongoDB, MySql, MSQL
+
+I have worked on microservices based projects using RestTemplate. Have worked on Kafka nd GraphQL client side.have some hands on publisher side as well. Experience in Mongo Queries.
+Have worked on Angular front end as well. Worked on java streams api and completablefuture. I am a good team player who can contribute as well support the team and a quick learner.
+
+
+SO: 31621106
+Morgan Stanley Advantage Services Pvtltd
+WFM ID
+C95277
+HM ID
+249983
+Mandatory Skills
+Core Java,Spring Framework,SQL
+
+Design, develop, and maintain Java-based applications to support business requirements.
+Collaborate with cross-functional teams to gather and analyze requirements, and translate them into functional specifications.
+Implement scalable and high-performance solutions following industry best practices.
+Troubleshoot and resolve software defects and performance issues in a timely manner.
+Participate in code reviews to ensure high code quality and adherence to standards.
+Stay updated with the latest trends and advancements in Java technologies and financial software.
+Mandatory Skillsets:
+
+Strong Proficiency in Core Java: Extensive experience and deep understanding of Java programming concepts, object-oriented programming (OOP) principles, and Java 8+ features.
+
+Multithreading and Concurrency: Solid experience with building multithreaded applications, understanding Java concurrency mechanisms, and managing thread synchronization issues.
+
+Experience with Spring Framework: Hands-on experience with the Spring Framework (including Spring Boot), understanding dependency injection, RESTful APIs, and creating enterprise-level applications.
+
+Preferred Qualifications:
+
+Bachelor’s degree in Computer Science, Engineering, or a related field.
+Experience with database technologies such as SQL, Oracle, or NoSQL databases.
+Familiarity with version control systems, preferably Git.
+Knowledge of DevOps practices and CI/CD pipelines.
+Excellent problem-solving skills and the ability to work in a team-oriented environment.
+
+
+
+									To Apply
+SO: 24450144
+EY
+java,microservices,springboot
+
+SO: 69294853
+Lead I - Software Engineering
+Mandatory Skills
+Full Stack Developer,React JS,JavaScript
+Account
+Sigma Aldrich Corporation
+
+SO: 78134403
+Lead I - Software Engineering
+Mandatory Skills
+Account
+Java, Aws Services,Docker, Kubernetes, GIT,Kafka, Scuba, CICD
+Sony India Software Centre Pvt. Ltd
+
+
+
+SO: 97350529
+Lead I - Software Engineering
+Mandatory Skills:
+Java, Microservices, AWS Technologies, Kubernetes, Docker, NoSQL like Mongo, Distributed Technologies
+Skill to Evaluate:
+Java, Microservices, AWS-Technologies, Kubernetes, Docker, NoSQL, MongoDB, Distributed-Technologies
+Job Description:
+Requirements
+BS in Computer Science or equivalent work experience
+5-10 years of relevant development experience
+Skills & Knowledge
+In-depth experience in Java
+Experience with AWS technologies 
+Knowledge of Kubernetes, Docker, Helm
+Development experience with Linux and Bash
+Intermediate knowledge of version control tools such as git and GitLab
+Familiarity with CI/CD pipelines, ArgoCD
+Knowledge in NoSQL, Prometheus, Elasticsearch, Kibana, and other CNCF technologies
+Experience with distributed systems architectures
+Understanding of concepts such as concurrency, parallelism, and event driven architecture
+Knowledge of Web technologies including REST and gRPC
+Additional Attributes
+Experience with Python a plus
+Familiar with Agile development concepts
+Enjoys working in a multifaceted and fast-paced environment
+Strong communication and documentation skills
+Accountability and motivation
+Contribution to the open-source community (ie. blogs, source code, etc)
+
+======================================================================================================================================
+
+1.	Lead I - Software Engineering - Java,Aws,Angularjs
+•	Experience with a backend microservices, based on one of the following: Spring Boot (Spring MVC, Spring WebFlux), pure Spring Framework;
+•	Understanding and experience of multi-threaded concurrent environment, added caveats and challenges
+•	Multiyear experience in Java based RESTful web services development lifecycle, experience in event-driven architecture is an advantage.
+•	Experience with using SQL/NoSQL solutions: Postgres, DynamoDB, MongoDB, etc; ability to measure and optimized SQL queries; understanding of ACID;
+•	REST API design and development
+•	Exposed to microservice design and development best practices: understanding design and development patterns
+•	Experience with reactive java frameworks (Reactor, RxJava) is an advantage
+•	AWS native solutions experience: SQS, DynamoDB, S3, Aurora, SNS, etc is an advantage
+•	Knowledge of modern security mechanisms and authentication types is an advantage
+•	English language skills 
+2.	Developer I - Software Engineering - Junior Developer - Spring boot,Aws,rest api
+•	Advanced knowledge in Java
+•	Experience with Spring / SpringBoot
+•	2 years of experience in java web services development (ideally REST APIs)
+•	Knowledge of Design Patterns
+•	Knowledge in any DB (Sql and NoSql)
+•	Experience developing in concurrent/multithreaded environment
+•	Knowledge of object-oriented development principles: SOLID, YAGNI, DRY
+•	Understanding of object-oriented programming
+•	Experience writing unit tests and API tests: mockito, RestAssured, Wiremock, JUnit, TestContainers, etc
+•	Knowledge of functional and reactive programming is an advantage
+•	Experience with ORM frameworks is an advantage
+•	good English knowledge
+
+
+
+=======================================================================================================================================================
+
+Develop end-to-end ML pipelines encompassing the ML lifecycle from data ingestion, data transformation, model training, model validation, model serving, and model evaluation over time. • Collaborate closely with AI scientists to accelerate productionization of ML algorithms. • Setup CI/CD/CT pipelines for ML algorithms. • Deploy models as a service both on-cloud and on-prem. • Learn and apply new tools, technologies, and industry best practices. Key Qualifications • MS in Computer Science, Software Engineering, or equivalent field • Experience with Cloud Platforms, especially GCP and Azure, and related skills: Docker, Kubernetes, edge computing • Familiarity with task orchestration tools such as MLflow, Kubeflow, Airflow, Vertex AI, Azure ML, etc. • Fluency in at least one general purpose programming language. Python or Java preferred. Strong DevOps skills: Linux/Unix environment, testing, troubleshooting, automation, Git, , dependency management, and build tools (GCP Cloud Build, Jenkins, Gitlab CI/CD, Github Actions, etc.). • Data engineering skills a plus, such as Beam, Spark, Pandas, SQL, Kafka, GCP Dataflow, etc. • 3+ years of experience, including academic experience, in any of the above
+
+=======================================================================================================================================================

@@ -49,7 +49,8 @@ Convert React JavaScript to use JSX
 Explain the meaning of F(G(x)) in a component tree
 	x is the state
 
-useState - is a react hook. Track data chnages over the life time of the component. changing data makes our component reactive
+useState - is a react hook. Track data chnages over the life time of the component. 
+changing data makes our component reactive
 
 parents pass data to child through attributes
 for child to pass data to parent pass a function to child
@@ -58,9 +59,10 @@ export default functio ToDo(props){
 const entries = props.entries
 const deleteItem = props.deleteItem
 }
-export default functio ToDo({entries, deleteItem}){} //using destructuring syntax we can control what exactly we need in this component.
+//using destructuring syntax we can control what exactly we need in this component.
+export default functio ToDo({entries, deleteItem}){} 
 
-jsx (Javascript Expression) codes is encapsulated with {} whichin return can return more jsx code
+jsx (Javascript Expression) codes is encapsulated with {} which in return can return more jsx code
 
 react components link together to create a virtual dom
 any updates in react app only changes virtual dom
@@ -391,7 +393,7 @@ useContext
 	export const ThemeContext = createContext();
 	
 	export default function Parent{
-		const [theme, setTheme] = useState("dark");
+		const [theme, setTheme] = useState(false);
 		const toggleTheme = () => setTheme(!theme);
 		const value = {
 			theme,
@@ -565,7 +567,7 @@ reducing the number of re-renders
 designed to make react apps more responsive
 they change state update priority
 if there are slow running tasks
-when filtering by typing on textbox we sometimes feelits stick because background tasks are filtering records
+when filtering by typing on textbox we sometimes feel its stick because background tasks are filtering records
 we can solve this by below hooks
 
 useDefferedvalue

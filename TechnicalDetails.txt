@@ -352,9 +352,9 @@ use Letsencrypt.org openssl for self signed certificates
 
 Redis
 =====================
-Remore Directory Service
+Remote Directory Service
 Inmemory data structure
-driven by keystore beased datastructure
+driven by keystore based datastructure
 db, cache, message broker
 
 @Cacheable	-	when you want to cache data

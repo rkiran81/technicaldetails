@@ -1,0 +1,84 @@
+interface Flight{
+	type();
+	int caapcity();
+	chekinEarly()
+}
+
+Enum{
+	A360, A250, 
+}
+
+Airbus implements Flight{
+	type(){
+		return ENUM.A#^)
+	}
+
+	capacity(){
+		return 500;
+	}
+
+	checkin(){
+		true;
+	}
+}
+
+compact implements Flight{
+	type(){
+		return ENUM.A250
+	}
+
+	capacity(){
+		return 200;
+	}
+}
+
+
+class flightRoutes{
+	Class source;
+	Class destination;
+	Flight flight;
+	Date from:
+	Date To;
+	totalavaibaeSeats;
+}
+
+Class User{
+	name,dob,email;
+}
+
+
+Class Booking{
+
+	user,
+	flightRoute;
+	bookingDate;
+	isCancelled;
+	seats
+}
+
+
+Table Routes
+
+ID, Source, Destination, Flight(FK), starttime, endtime
+
+
+
+Table Flights
+ID, Type, capacity, 
+
+
+Table booking
+id, userid, flightrouteid, bookingdate, isCancelled
+
+Table country
+table country, city
+
+
+
+kaka topic events type booking (userid (key), Source, Destination, flightroute, dates, seats)
+
+consumers topis check for availability events booking not avaulable
+		notification booking done
+
+
+

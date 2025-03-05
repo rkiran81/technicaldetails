@@ -1,0 +1,72 @@
+https://www.youtube.com/watch?v=0hQvWIdwnw4
+
+list.stream() - lazy operations
+reduce - from collection to single value
+		converts stream to something concerete
+collect - is a reduce operation
+
+OOPS	-	Polymorphism
+Functional Programming	-	Functional Composition + lazy evaluation
+Lazy evaluation	-	requires purity of function
+
+Pure function	-	is a function that returns same result everytime for the same input - also called idempotence
+					don't have side effects
+
+grouping, mapping -		Function, collector
+collectingAndThen -		Collector, Function
+teeing            -		Collector, Collector, operation
+
+map and mapToInt
+======================
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class Main {
+    public static void main(String[] args) {
+        List<Integer> numbers = List.of(1, 2, 3, 4, 5, 6);
+
+        List<Integer> result = numbers.stream()
+            .filter(n -> n % 2 == 0) // Filter even numbers
+            .mapToInt(n -> n * 2) // Double the numbers and convert to IntStream
+            .boxed() // Convert back to Stream<Integer>
+            .collect(Collectors.toList());
+
+        System.out.println(result); // Output: [4, 8, 12]
+    }
+}
+
+The main difference is that mapToInt returns an IntStream, which provides additional operations specific to primitive int 
+values, such as sum(), average(), min(), max(), etc. If you don't need these specific operations, using map is sufficient 
+and keeps the code more straight forward.
+
+
+parallelstream must have immutable data/object else we may get undesired results
+parallelstream runs on forkjoinpool commonpool of threads
+stream().parallel()
+stream().sequential()
+parallelStream()
+stream()
+	.parallel()
+	.map()
+	.sequential()// this is before termination operation and takes precedence and runs everything sequential
+	.foreach()
+	
+STREAMS																	REACTIVE STREAMS
+sequential vs parallel													sync vs async
+
+entire pipeline runs sequential or parallel								subscribeOn - no segments			
+no segments																observeOn - segments
+																		can run entire pipeline with multiple 
+																		segments/no segments
+																		
+Java 1			-		Threads
+Java 5			-		ExecutorService (has pool induced dead lock)		
+Java 7			-		forkjoinpool to avoid pool induced dead lock														
+
+
+reduce(identity, (a, b) -> a+b)
+Identity Element: There must be an identity element that does not change the result when combined with any other element 
+using the operation.
+// add identity is 0 because x + 0 = x
+// mul identity is 1 because x * 1 = x
+// string concat identity is "" because x + "" = x

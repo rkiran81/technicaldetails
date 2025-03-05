@@ -284,10 +284,12 @@ Would you like more details on any specific part of this process?
 
 Discuss how you manage transactions in Spring Data JPA. What strategies do you use to ensure data consistency?
 
-Managing transactions in Spring Data JPA is crucial for ensuring data consistency and integrity. Here’s a detailed explanation of how to manage transactions and the strategies used to ensure data consistency:
+Managing transactions in Spring Data JPA is crucial for ensuring data consistency and integrity. 
+Here’s a detailed explanation of how to manage transactions and the strategies used to ensure data consistency:
 
 1. Configuring Transactions
-Spring Data JPA simplifies transaction management by providing the @Transactional annotation. This annotation can be applied at the class or method level to define the transactional behavior.
+Spring Data JPA simplifies transaction management by providing the @Transactional annotation. 
+This annotation can be applied at the class or method level to define the transactional behavior.
 
 Example Configuration:
 import org.springframework.context.annotation.Configuration;
@@ -299,7 +301,8 @@ public class PersistenceJPAConfig {
     // Configuration beans for EntityManagerFactory and TransactionManager
 }
 2. Using the @Transactional Annotation
-The @Transactional annotation is used to demarcate transaction boundaries. It can be applied to service methods to ensure that operations within the method are executed within a transaction.
+The @Transactional annotation is used to demarcate transaction boundaries. 
+It can be applied to service methods to ensure that operations within the method are executed within a transaction.
 
 Example Usage:
 import org.springframework.stereotype.Service;
@@ -325,7 +328,8 @@ public void updateUser(User user) {
     // Business logic to update a user
 }
 4. Isolation Levels
-Isolation levels define the degree to which the operations in one transaction are isolated from those in other transactions. Common isolation levels include:
+Isolation levels define the degree to which the operations in one transaction are isolated from those in other transactions. 
+Common isolation levels include:
 
 READ_COMMITTED: Prevents dirty reads.
 REPEATABLE_READ: Prevents dirty reads and non-repeatable reads.
@@ -336,7 +340,8 @@ public void processOrder(Order order) {
     // Business logic to process an order
 }
 5. Handling Rollbacks
-By default, Spring rolls back transactions on unchecked exceptions. You can customize this behavior using the rollbackFor and noRollbackFor attributes.
+By default, Spring rolls back transactions on unchecked exceptions. 
+You can customize this behavior using the rollbackFor and noRollbackFor attributes.
 
 Example:
 @Transactional(rollbackFor = Exception.class)
@@ -362,7 +367,8 @@ Configuration Issues: Ensuring correct configuration of transaction management, 
 Performance: Balancing transaction isolation levels and performance, as higher isolation levels can impact performance.
 Concurrency: Handling concurrent access and updates to shared data.
 Error Handling: Ensuring that transactions are correctly rolled back in case of errors.
-Spring Data JPA provides powerful tools for managing transactions, but it requires careful configuration and testing to ensure data consistency and integrity123.
+Spring Data JPA provides powerful tools for managing transactions, 
+but it requires careful configuration and testing to ensure data consistency and integrity123.
 
 Would you like more details on any specific aspect of transaction management in Spring Data JPA?
 

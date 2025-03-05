@@ -18,7 +18,7 @@ private MockMvc mockmvc;
 @Autowired
 private WebApplicationContext context;
 
-ObjectMapper mapper = new ObjectMapper();	//controllerdon't receive objectbut json string
+ObjectMapper mapper = new ObjectMapper();	//controller don't receive object but json string
 
 @Before				//provideby Junit
 public void init(){

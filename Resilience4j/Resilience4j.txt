@@ -109,7 +109,7 @@ TIME_BASED:
 public class Circuit BreakerConfig {
 	@Bean
 	public RouteLocator circuitBreakerRouteLocator (RouteLocatorBuilder builder,
-	ReactiveResilience4jCircuit BreakerFactory circuitBreakerFactory, TimeLimiterRegistry timeLimiterRegistry) {
+	ReactiveResilience4jCircuitBreakerFactory circuitBreakerFactory, TimeLimiterRegistry timeLimiterRegistry) {
 	return builder.routes()
 			.route(r => r.path("/books/**")
 				.filters(f-> f

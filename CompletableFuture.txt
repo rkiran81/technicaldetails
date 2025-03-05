@@ -1,0 +1,11 @@
+Virtual threads - https://openjdk.org/jeps/444
+
+CombineCompletableFuture
+	//combine two dependent future - use thenCompose because thenApply returns nested completablefuture objects
+	
+	//combine two independent future (2) - use thenCombine
+	
+	//combine multiple independent future (more than 2) - 
+									wait for all task to complete use allOf (this will not block main thread but will wait until all tasks completed). asyn non blocking
+	
+		//combine multiple independent future (more than 2) - use anyOf

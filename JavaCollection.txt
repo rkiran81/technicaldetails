@@ -21,6 +21,7 @@ List Interface: Ordered collection (sequence) that allows duplicate elements.
 
 ArrayList: Resizable array implementation. Vector is similar to ArrayList but it is synchronized. 
 			better to use ArrayList/CopyOnWriteArrayList
+			default capacity 10
 LinkedList: Doubly-linked list implementation.
 Vector: Synchronized resizable array.
 Stack: Last-in, first-out (LIFO) stack.	Primarily used for LIFO operations like reversing data, 
@@ -39,10 +40,11 @@ Deque Interface:
 	Double-ended queue that allows insertion and removal of elements from both ends, 
 	supporting both LIFO and FIFO (First-In-First-Out) operations.
 ArrayDeque: Resizable array implementation of the Deque interface.
-LinkedList: Also implements Deque interface.
+LinkedList: Also implements Deque interface. The LinkedList class in Java is a doubly linked list. This means that each node in the list has references to both the next node and the previous node, allowing for bidirectional traversal of the list.
 Map Interface: Not a true collection, but a collection of key-value pairs.
 
 HashMap: Hash table-based implementation.
+		default initial capacity (16) and the default load factor (0.75).
 LinkedHashMap: Hash table and linked list implementation.
 TreeMap: Red-Black tree-based implementation.
 Hashtable: Synchronized hash table.
@@ -86,7 +88,8 @@ HashMap - in java 8 internally it uses balanced tree instead of linkedlist after
 	if reference of two objects are same if so it will replace existing value in that bucket for that index
 	if not it will add that entry as next node
 5. If a Key is null then that entry directly placed in bucket 0
-			
+
+		
 
 order object with id and date. no hash and equals impl. how it will work in hashmap
 Default hashCode(): 
@@ -116,6 +119,23 @@ public boolean equals(Object obj) {
     Order order = (Order) obj;
     return id == order.id && Objects.equals(date, order.date);
 }
+
+
+concurrentHashMap
+====================
+Stripes and CAS - Java 8:
+In Java 8, the implementation of ConcurrentHashMap was improved by eliminating segments.
+Instead, it uses striped locks and Compare-And-Swap (CAS) operations to ensure thread safety.
+The map is divided into multiple "buckets," each bucket containing a chain of nodes (or a tree in case of high collision).
+
+4. CAS Operations:
+CAS operations are used to update the values of nodes without locking the entire structure.
+This technique helps in maintaining high concurrency by minimizing the time spent in critical sections.
+
+5. Tree Bins:
+If a bucket contains too many entries (high collision), the structure is converted from a linked list to a balanced tree 
+(red-black tree).
+This conversion helps in maintaining efficient performance even with a high number of entries.
 
 													Collections.synchronizedList
 Synchronization: 

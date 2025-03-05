@@ -16,7 +16,7 @@ public class APIResponse<T>{
 
 Optional
 ==================
-if any method retuns just a plain object then wrap it with Optional.offNullable(obj) to avoid NPE
+if any method returns just a plain object then wrap it with Optional.offNullable(obj) to avoid NPE
 
 Caching
 ==============
@@ -211,9 +211,11 @@ spring.config.import=files://users/xxxx/desktop/test.properties
 @ConfigurationProperties(prefix="spring.datasource")		
 	//This is just a configuration properties class that binds externalized config properties to bean variables.not instantiated by spring context
 	
-@enableconfigurationproperties	this allows to register @configurationproperties as beans or else provide @configuration along with @ConfigurationProperties
+@enableconfigurationproperties	this allows to register @configurationproperties as beans or 
+else provide @configuration along with @ConfigurationProperties
 Why Use @EnableConfigurationProperties?
-Separation of Concerns: It allows you to keep your configuration properties class as a plain POJO, separating it from the configuration logic.
+Separation of Concerns: It allows you to keep your configuration properties class as a plain POJO, 
+						separating it from the configuration logic.
 Flexibility: You can enable multiple @ConfigurationProperties classes in a single configuration class.
 
 											How will you resolve bean dependency ambiguity
@@ -245,7 +247,8 @@ ProxyMode: When the Spring application context is initialized, there may not be 
 			
 											define custom bean scope
 											============================================================
-say we want to create a bean for each thread. we can created a custombeanscope class implementing Scope interface, override get, remove, registerDestructioncallback
+say we want to create a bean for each thread. we can created a custombeanscope class implementing Scope interface, 
+override get, remove, registerDestructioncallback
 register the scope using context.getBeanFactory().registerScope(giveaname, customscopeclass)
 
 1. cretae a runnable and instantiate the class annoted with custombeanscope
@@ -306,8 +309,10 @@ public Products getProductsByProductName(@RequestParam(name="productName", requi
 											why restcontroller not controller
 											============================================================
 restcontroller return type is anything
-controller by default expects returntype as modelanndview. if we need to change this then add Produces=media_type.plantext or application/json and add @responsebody
-The @ResponseBody annotation in Spring MVC is used to indicate that the return value of a method should be written directly to the HTTP response body. 
+controller by default expects returntype as modelanndview. if we need to change this then add Produces=media_type.plantext 
+or application/json and add @responsebody
+The @ResponseBody annotation in Spring MVC is used to indicate that the return value of a method should be written directly 
+to the HTTP response body. 
 This is typically used in RESTful web services to return data in formats like JSON or XML.
 
 											how to deserialize json payload into an object in spring mnv controller
@@ -316,7 +321,8 @@ This is typically used in RESTful web services to return data in formats like JS
 											
 											difference between post and put
 											============================================================
-In HTTP, idempotence refers to the property of certain HTTP methods where multiple identical requests have the same effect as a single request. 
+In HTTP, idempotence refers to the property of certain HTTP methods where multiple identical requests have the same effect 
+as a single request. 
 This means that making the same request multiple times will not change the result											
 idempotent - no resource is created on server
 POST is non idempotent
@@ -333,8 +339,10 @@ POST: Creates a new resource on the server. Multiple identical POST requests can
 PATCH: Partially updates a resource on the server. The effect of multiple identical PATCH requests can vary depending on the implementation.
 
 									Importance of Idempotence
-Reliability: Idempotent methods ensure that repeated requests do not cause unintended side effects, making the system more reliable.
-Error Handling: In case of network failures or timeouts, clients can safely retry idempotent requests without worrying about duplicating actions.
+Reliability: Idempotent methods ensure that repeated requests do not cause unintended side effects, 
+			making the system more reliable.
+Error Handling: In case of network failures or timeouts, clients can safely retry idempotent requests without worrying 
+				about duplicating actions.
 Caching: Idempotent methods are easier to cache, as the response to identical requests will be the same.
 
 											can we send requestbody in get method
@@ -361,16 +369,16 @@ Accept: application/json															Content-Type: application/json
 401		authentican error
 402		Payment Required
 403		unauthorized
+404		not found, url/rsource not availble
 405		method not allowed
 415		unsupported media type
-404		not found, url/rsource not availble
 500		internal server error
 502		bad gateway
 503		server unavailable
 200		Ok
 201		Created
 301		permanent redirect
-302		temporary redirect toprovided Location
+302		temporary redirect to provided Location
 
 											how to customize staus code of your application
 											============================================================
@@ -379,7 +387,8 @@ Accept: application/json															Content-Type: application/json
 
 											how to cross origin
 											============================================================
-cross origin is securitty feature to not allow requests from other domains but we can configure what all domains can access using
+cross origin is securitty feature to not allow requests from other domains but we can configure what all domains can 
+access using
 @CrossOrigin(origins="http://localhost:4200")
 
 @EnablewebMvc
@@ -432,7 +441,8 @@ resttemplate
 	template.getForObject(url, responsetypeclass.class);
 	template.postForObject();
 feign client
-	declarative web service client developed by netflix. by default enables loadBalancing. testing is easy. integrates with service discovey like eureka by name
+	declarative web service client developed by netflix. by default enables loadBalancing. testing is easy. 
+	integrates with service discovey like eureka by name
 	
 	@feignclient(url="", name="USER_CLIENT")
 	public interface UserClient{
@@ -443,3 +453,60 @@ feign client
 webclient
 	is used for reactive programming to achieve asynchronous and non blocking programs
 advanced rest client	springboot 3.2
+
+
+when deprecating an api what are the things to consider
+
+Deprecating an API is a process that requires careful consideration and planning to ensure a smooth transition for developers and users who rely on it. Here are some key things to consider when deprecating an API:
+
+### 1. Communication
+- **Advance Notice**: Provide ample advance notice about the deprecation. This allows users time to transition to the new API or make necessary changes.
+- **Clear Messaging**: Clearly communicate the reason for deprecation, the timeline, and the steps users need to take. Use multiple channels such as documentation, emails, blog posts, and developer portals.
+
+### 2. Documentation
+- **Deprecation Notice**: Add a deprecation notice to the API documentation and code comments. Highlight the deprecation status prominently.
+- **Migration Guide**: Provide a detailed migration guide with examples to help users transition to the new API. Include information about new features, differences, and any breaking changes.
+
+### 3. Versioning
+- **Versioning Strategy**: Use versioning to indicate the deprecated API and its replacement. Maintain the deprecated version while users transition to the new one.
+- **Grace Period**: Offer a grace period during which both the old and new APIs are available. This helps users gradually move to the new API.
+
+### 4. Monitoring and Support
+- **Usage Monitoring**: Monitor the usage of the deprecated API to understand its impact and to identify key users who may need additional support.
+- **Customer Support**: Provide dedicated support channels for users experiencing issues during the transition. Address their concerns promptly.
+
+### 5. Technical Considerations
+- **Backward Compatibility**: Ensure that deprecating the API does not break existing applications immediately. Maintain backward compatibility during the deprecation period.
+- **Error Handling**: Implement proper error handling and provide meaningful error messages for deprecated endpoints. Inform users about the deprecation and guide them to the new API.
+
+### 6. Deprecation Timeline
+- **Phased Approach**: Follow a phased approach for deprecation:
+  - **Announcement Phase**: Inform users about the upcoming deprecation.
+  - **Deprecation Phase**: Mark the API as deprecated and start encouraging users to migrate.
+  - **Sunset Phase**: Provide a final deadline for discontinuation and eventually remove the deprecated API.
+
+### 7. Legal and Compliance
+- **Compliance Check**: Ensure that the deprecation process complies with any legal or contractual obligations. This may include notifying users within a specific timeframe.
+- **Data Migration**: If the API involves data, ensure that data migration or access to data is handled properly.
+
+### Example Notification
+Here's an example of a deprecation notice:
+
+```plaintext
+We are writing to inform you that the `v1` version of our API will be deprecated on January 1, 2026. This change is necessary to introduce new features and improvements in the `v2` version.
+
+Timeline:
+- January 1, 2025: Deprecation notice
+- July 1, 2025: Final date to migrate to `v2`
+- January 1, 2026: `v1` API will be discontinued
+
+Migration Guide:
+Please refer to our [migration guide](https://example.com/migration-guide) for detailed instructions on transitioning to the `v2` API. If you have any questions or need assistance, our support team is here to help.
+
+Thank you for your understanding and cooperation.
+
+Best regards,
+The API Team
+```
+
+By considering these factors, you can ensure a smooth and efficient deprecation process that minimizes disruption for your users and allows for a seamless transition to the new API. If you have any further questions or need additional assistance, feel free to ask!
