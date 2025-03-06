@@ -1,0 +1,123 @@
+gh repo list rkiran81 --limit 4000 | while read -r repo _; do
+  gh repo clone "$repo" "$repo"
+done
+
+error: failed to push some refs to 'https://github.com/rkiran81/MyData.git' 
+hint: Updates were rejected because the tip of your current branch is behind hint: its remote counterpart. 
+If you want to integrate the remote changes, hint: use 'git pull' before pushing again. 
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+git fetch origin
+git rebase origin/main
+git push -u origin main
+
+If you encounter any conflicts during the rebase, Git will prompt you to resolve them. 
+After resolving the conflicts, you can continue the rebase with:
+git rebase --continue
+
+==========================================================
+Total 241 (delta 65), reused 161 (delta 59), pack-reused 0 (from 0) error: RPC failed; HTTP 400 curl 22 The requested URL returned error: 
+400 send-pack: unexpected disconnect while reading sideband packet fatal: the remote end hung up unexpectedly
+
+Increase the HTTP post buffer size:
+git config --global http.postBuffer 157286400
+If the above command doesn't work, try setting a larger buffer size:
+git config --global http.postBuffer 524288000
+git push -u origin main
+
+
+==========================================================
+$ git remote set-url origin https://github.com/rkiran81/corejava.git
+fatal: detected dubious ownership in repository at 'E:/rkiran81github/corejava'
+'E:/rkiran81github/corejava' is owned by:
+        BUILTIN/Administrators (S-1-5-32-544)
+but the current user is:
+        DESKTOP-7M80L8K/Lenovo (S-1-5-21-810608101-4241438416-654458880-1002)
+To add an exception for this directory, call:
+
+        git config --global --add safe.directory E:/rkiran81github/corejava
+		
+git config --global --add safe.directory E:/rkiran81github/technicaldetails
+git config --global --get-all safe.directory
+
+
+
+==========================================================
+
+
+Check the current remote URL:
+git remote -v
+
+Change the remote URL to the correct one:
+git remote set-url origin https://github.com/rkiran81/technicaldetails.git
+
+===========================================================
+(?) Learn how to resolve a blocked push
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push
+
+
+===========================================================
+
+In `vim`, you can save and exit the editor with the following steps:
+
+1. Press `Esc` to enter Command mode.
+2. Type `:wq` (which stands for write and quit).
+3. Press `Enter`.
+
+If you want to exit without saving changes, you can use the following steps instead:
+
+1. Press `Esc` to enter Command mode.
+2. Type `:q!` (which stands for quit without saving).
+3. Press `Enter`.
+
+These commands should help you save and exit or simply exit without saving your changes in `vim`. Let me know if you need any more help!
+===========================================================
+Removing a secret introduced by the latest commit on your branch
+If the blocked secret was introduced by the latest commit on your branch, you can follow the guidance below.
+
+Remove the secret from your code.
+
+To commit the changes, run git commit --amend --all. 
+This updates the original commit that introduced the secret instead of creating a new commit.
+
+Push your changes with git push.
+===========================================================
+large files are still part of your commit history, even though you've deleted them. 
+Git doesn't automatically remove files from the commit history when you delete them from your working directory. 
+You need to rewrite your commit history to remove the large files.
+
+Here are steps to help you remove those large files from the commit history:
+
+Remove the files from the history: Use the filter-branch command to remove the files from the entire commit history:
+git filter-branch --force --index-filter \
+'git rm --cached --ignore-unmatch Bytebytego_Big_Archive_System_Design_2023.pdf React/Ex_Files_React_EssT.zip' \
+--prune-empty --tag-name-filter cat -- --all
+
+Clean up the history: After running the above command, it's a good idea to clean up unnecessary files and optimize the repository:
+rm -rf .git/refs/original/
+git reflog expire --expire=now --all
+git gc --prune=now --aggressive
+
+Push the changes to the remote repository: After cleaning up the history, force push the changes to the remote repository:
+git push origin --force --all
+git push origin --force --tags
+
+
+Alternatively, you can use Git Large File Storage (LFS) to handle large files:
+
+git lfs install
+
+git lfs track "Bytebytego_Big_Archive_System_Design_2023.pdf"
+git lfs track "React/Ex_Files_React_EssT.zip"
+git lfs track "Ex_Files_Building_Reactive_App_Angular_Spring_Boot_2"
+git lfs track "implementing-event-log-kafka"
+
+
+git add .gitattributes
+
+
+git add .
+git commit -m "Add large files to Git LFS"
+git push origin master
+
+
+=========================================================

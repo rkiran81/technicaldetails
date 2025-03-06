@@ -1,0 +1,324 @@
+default implementation of linkedlist is doubly linked list
+linkedlist reverse iterator
+
+sleep(),currentThread().join() - whichis used to stop executing the currently runnings threads until the thread it 
+joins with completes its task
+-join() is used to stop the execution of the currently running thread until the thread it joins with completes its task.
+
+
+======
+1l << 32);  // result = x * 2^n = 1 * 2^32 = 4294967296
+int unsignedInt = Integer.parseUnsignedInt(string, 10); -1
+
+Here’s a step-by-step explanation:
+
+The maximum value for an unsigned 32-bit integer is 4294967295.
+
+Java parses this value correctly using Integer.parseUnsignedInt.
+
+Internally, Java stores this value in a signed 32-bit int, which has a range from -2147483648 to 2147483647.
+
+The value 4294967295 cannot be represented directly as a signed 32-bit integer because it exceeds the positive range.
+
+When the value overflows, it wraps around to the negative range, resulting in -1.
+
+So, Integer.parseUnsignedInt("4294967295", 10) results in -1 due to overflow when storing the unsigned value in a signed integer type.
+
+what jdbc driver type(s) can you use in a three tier architecture and if the web server and the dbms are running on the 
+same machine
+
+====
+In a three-tier architecture, you can use any of the four types of JDBC drivers. Here's a quick overview:
+
+1. **Type 1: JDBC-ODBC Bridge Driver**: This driver uses ODBC to connect to the database. It's not recommended for production use due to performance issues.
+2. **Type 2: Native-API Partly Java Driver**: This driver uses the client-side libraries of the database. It's faster than Type 1 but requires the client-side libraries to be installed on the application server.
+3. **Type 3: Network Protocol Driver**: This driver communicates with a middleware server using a proprietary network protocol. The middleware server then communicates with the database server.
+4. **Type 4: Thin Driver**: This driver is a pure Java driver that communicates directly with the database server.
+
+If the web server and the DBMS are running on the same machine, you can use any of the four types of JDBC drivers can you use in a three-tier architecture](https://www.examveda.com/which-jdbc-driver-types-can-you-use-in-a-three-tier-architecture-and-if-the-web-server-and-the-dbms-are-running-on-the-same-machine-24336/) can you use in a three-tier ...](https://www.numerade.com/ask/question/which-jdbc-driver-types-can-you-use-in-a-three-tier-architecture-and-if-the-web-server-and-the-dbms-are-running-on-the-same-machine-09629/). However, in practice, Type 3 and Type 4 drivers are more commonly used due to their performance and ease of use.
+
+If you have more questions or need further clarification, feel free to ask!
+
+
+=======
+public interface InfA {
+		//Illegal modifier for the interface method getName; 
+		//only public, private, abstract, default, static and strictfp are permitted
+		protected String getName();
+	}
+
+=======
+@basictype, @basic, @basictypw 
+out of these select the attribute type which is used to map an attribute type to a database column
+@Basic: This is a JPA (Java Persistence API) annotation used to specify that a particular attribute should be mapped to a 
+column in the database. It can be used to define the basic properties of an entity attribute.
+============
+db.inventory - write a mongo find query to select all documents where item field value does not start with a letter p
+db.inventory.find({ item: { $not: /^p/i } })
+
+==============
+we have a table department with feilds dept_id and dept_name and 
+another table employee with fields emp_id,emp_name,salary,dept_id
+
+you need to find out the names of all employees who belong to the department name ACCOUNTS
+
+for answering above question using subqueries, the number of rows returned as the result of subquery evaluation is?
+
+SELECT emp_name FROM employee WHERE dept_id = 
+( SELECT dept_id FROM department WHERE dept_name = 'ACCOUNTS' ); // 1 row
+
+====================
+we have a queue val1 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12} and what is the result in val3 below
+
+we have a stack val2 and queue val3
+
+while(!val1.empty()){val2.push(val1.front());val1.pop())}
+while(!val2.empty()){val3.push(val2.top();val2.pop())}
+return val3
+
+val2 = [12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1] //stack (LIFO - Last In, First Out)
+val3 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] //queue (FIFO - First In, First Out)
+========================
+you want to sort an array arr such that the sorted array contains the first element as first maximum in arr and 
+second element is first minimum in arr and so on.you are using the following pseudo code to achieve this
+
+n=sizeof(arr)/sizeof(arr[10]);
+sort(int arr[],int n){
+	sortarry(arr,arr+n);
+	int i=0,j=n-1;
+	while(i<j){
+		XXX
+	}
+	if(i%2!=0){
+		print(arr[i]);
+	}
+}
+what can you use in place of XXX to complete it
+
+arr[j--];  // Place maximum element
+arr[i++];  // Place minimum element
+========================
+you have implemented a class have two sunchronized methods and a parametrized constructor. 
+now you decide to make the constructor a synchronized one. 
+
+what will happen if you execute the program after above mentioned modification?
+
+In Java, synchronizing a constructor is not possible.
+However, you can achieve a similar effect by using synchronized blocks within the constructor if you need to synchronize 
+access to shared resources during object initialization.
+public MyClass(int value) {
+	synchronized (lock) {
+		this.value = value;
+		// Perform other initialization steps
+	}
+}
+===========================
+you want to immediately load a module when lazy-loading in angular 8. how can you achieve this with one one of these options
+(1.by importing the module in a file thats eagerly loaded when the app starts.
+2.by bundling configuration.
+3.by creatingmanualbundles.
+4.by starting the root app module)
+
+To immediately load a module when lazy-loading in Angular 8, you can achieve this by importing the module in a file that’s 
+eagerly loaded when the app starts. This ensures that the module is loaded immediately as part of the initial bundle, 
+bypassing lazy-loading.
+
+Eager Loading: 
+	When you import a module in a file that is eagerly loaded (such as in the AppModule or any other module that's 
+	loaded at application startup), the module will be included in the main bundle and loaded immediately.
+
+Lazy Loading: 
+	Lazy-loaded modules are typically defined in the routing configuration with the loadChildren property. 
+	These modules are only loaded when the user navigates to a route that requires them.
+	================================
+
+which of the following is true
+1. is NG_VALIDATORS is a predefined provider with an extensible collection of validators
+2.you can add its selector, appforbiddenname once the forbiddenvalidatordirective is ready
+
+Let's analyze both statements to determine which one is true:
+
+1. **NG_VALIDATORS is a predefined provider with an extensible collection of validators**:
+   - This statement is **true**. `NG_VALIDATORS` is an Angular predefined provider that allows you to extend the collection 
+   of validators available to the framework. You can use this provider to add custom validators to forms in Angular.
+
+2. **You can add its selector, appforbiddenname once the forbiddenvalidatordirective is ready**:
+   - This statement is also **true**. Once you have created a custom validator directive, 
+   such as `ForbiddenValidatorDirective`, you can use its selector (for example, `appForbiddenName`) to apply the directive 
+   to form controls in your template.
+
+In conclusion, both statements are true. If you have more questions or need further clarification, feel free to ask!
+
+import { Directive, Input } from '@angular/core';
+import { NG_VALIDATORS, Validator, AbstractControl, ValidationErrors } from '@angular/forms';
+import { forbiddenNameValidator } from './forbidden-name-validator';
+
+@Directive({
+  selector: '[appForbiddenName]',
+  providers: [{ provide: NG_VALIDATORS, useExisting: ForbiddenValidatorDirective, multi: true }]
+})
+export class ForbiddenValidatorDirective implements Validator {
+  @Input('appForbiddenName') forbiddenName: string;
+
+  validate(control: AbstractControl): ValidationErrors | null {
+    return this.forbiddenName ? forbiddenNameValidator(new RegExp(this.forbiddenName, 'i'))(control) : null;
+  }
+}
+===================
+explain this @viewchild('username') input:ElementRef<HTMLInputElement>
+import { Component, ViewChild, ElementRef } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html'
+})
+export class AppComponent {
+  @ViewChild('username') input: ElementRef<HTMLInputElement>;
+
+  focusInput() {
+    this.input.nativeElement.focus();
+  }
+}
+
+<!-- app.component.html -->
+<input #username type="text" />
+<button (click)="focusInput()">Focus Input</button>
+===================
+you get below error.which of  the following points 1 and 2 are valid reasons
+"Function calls are not supported . consider replacing the function  or lambda with a reference to an exported function"
+
+1. you have set a providers usefactory to an anonymous function
+2. you have set a providers usefactory to an arrow function
+
+providers: [
+  {
+    provide: MyService,
+    useFactory: () => new MyService() // This will cause the error
+  }
+]
+
+// my-service-factory.ts
+import { MyService } from './my-service';
+
+export function myServiceFactory() {
+  return new MyService();
+}
+//
+import { myServiceFactory } from './my-service-factory';
+
+providers: [
+  {
+    provide: MyService,
+    useFactory: myServiceFactory
+  }
+]
+=======================
+============================================================================
+
+
+
+import java.io.*;
+import java.util.*;
+import java.lang.Math;
+
+
+public class Solution {
+    public static int maxSize(int N, int K, String S) {
+        int maxSize = 0;
+        String concatenated = "";
+        for(int i = 0; i < N; i++){
+            concatenated+=S;
+        }
+
+        boolean zeroFound = false;
+        boolean notZero = false;
+        TreeSet<Integer> maxZeroSize = new TreeSet<>();
+
+        char[] chars = concatenated.toCharArray();
+        int count = 0;
+        for(int i = 0; i < concatenated.length() - 1; i++){
+            zeroFound = zeroFound(chars[i]);
+            notZero = notZero(chars[i]);
+            if(zeroFound){
+                count++;
+            }
+
+            if(notZero && count > 0){
+                maxZeroSize.add(count);
+                count = 0;
+            }
+        }
+        if(count > 0){
+            maxZeroSize.add(count);
+        }
+
+        if(maxZeroSize.size() > 0){
+            maxSize = maxZeroSize.descendingSet().pollFirst();
+        }
+
+        return maxSize;
+    }
+
+    public static boolean zeroFound(char a){
+        return a == '0';
+    }
+
+    public static boolean notZero(char a){
+        return a != '0';
+    }
+
+    public static void main(String[] args) {
+        Scanner scan = new Scanner(System.in);
+    
+        int N = Integer.parseInt(scan.nextLine().trim());
+        
+        int K = Integer.parseInt(scan.nextLine().trim());
+        
+        String S = scan.nextLine();
+    
+        int result = maxSize(N, K, S);
+    
+        System.out.println(result);
+    }
+}
+
+====================================================================
+
+int maxSegmentLength = 0;
+        int currentSegmentLength = 0;
+
+        // Calculate max segment length in one copy of s
+        for (char ch : s.toCharArray()) {
+            if (ch == '0') {
+                currentSegmentLength++;
+                maxSegmentLength = Math.max(maxSegmentLength, currentSegmentLength);
+            } else {
+                currentSegmentLength = 0;
+            }
+        }
+
+        // Find length of zero segment that wraps around the boundary of s
+        int startZeroLength = 0, endZeroLength = 0;
+        for (int i = 0; i < n; i++) {
+            if (s.charAt(i) == '0') {
+                startZeroLength++;
+            } else {
+                break;
+            }
+        }
+        for (int i = n - 1; i >= 0; i--) {
+            if (s.charAt(i) == '0') {
+                endZeroLength++;
+            } else {
+                break;
+            }
+        }
+        
+        // Calculate maximum zero segment in T
+        int maxZeroSegmentInT = maxSegmentLength; // Max in single copy
+        if (k > 1 && startZeroLength + endZeroLength > 0) {
+            maxZeroSegmentInT = Math.max(maxZeroSegmentInT, endZeroLength + startZeroLength);
+        }
+        if (k > 2) {
+            maxZeroSegmentInT = Math.max(maxZeroSegmentInT, endZeroLength + startZeroLength + (k - 2) * n);
+====================================================================

@@ -1,0 +1,3 @@
+[ \t]+$ - remove trailing spaces and tabs
+$ - append someting to end
+^ - prepend something at the start
